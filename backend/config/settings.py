@@ -140,6 +140,9 @@ REST_FRAMEWORK = {
     )
 }
 
+# Tell dj-rest-auth to use JWT authentication
+REST_USE_JWT = True
+
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:3000",
     "http://127.0.0.1:3000",
