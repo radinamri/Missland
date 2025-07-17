@@ -41,14 +41,12 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   const registerUser = async ({
     email,
-    username,
     password,
     password2,
   }: RegisterCredentials) => {
     try {
       const response = await api.post("/api/auth/register/", {
         email,
-        username,
         password,
         password2,
       });

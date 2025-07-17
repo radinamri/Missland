@@ -5,7 +5,6 @@ import AuthContext from "@/context/AuthContext";
 
 export default function RegisterPage() {
   const [email, setEmail] = useState("");
-  const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [password2, setPassword2] = useState("");
   const auth = useContext(AuthContext);
@@ -17,7 +16,7 @@ export default function RegisterPage() {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    registerUser({ email, username, password, password2 });
+    registerUser({ email, password, password2 });
   };
 
   return (
@@ -29,13 +28,6 @@ export default function RegisterPage() {
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           placeholder="Email"
-          required
-        />
-        <input
-          type="text"
-          value={username}
-          onChange={(e) => setUsername(e.target.value)}
-          placeholder="Username"
           required
         />
         <input
