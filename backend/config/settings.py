@@ -40,6 +40,7 @@ INSTALLED_APPS = [
     'core',
     # 3rd party apps
     'rest_framework',
+    'rest_framework.authtoken',
     'rest_framework_simplejwt',
     'corsheaders',
     # Add allauth apps
@@ -141,7 +142,11 @@ REST_FRAMEWORK = {
 }
 
 # Tell dj-rest-auth to use JWT authentication
-REST_USE_JWT = True
+REST_AUTH = {
+    'USE_JWT': True,
+    'JWT_AUTH_HTTPONLY': False,
+    'SESSION_LOGIN': False,
+}
 
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:3000",
@@ -158,12 +163,14 @@ AUTHENTICATION_BACKENDS = [
 # Add the Site ID
 SITE_ID = 1
 
+# Custom allauth adapter
+SOCIALACCOUNT_ADAPTER = 'core.adapters.CustomSocialAccountAdapter'
+
 # Additional allauth settings
-ACCOUNT_EMAIL_VERIFICATION = 'none'  # We trust Google's email verification
-ACCOUNT_AUTHENTICATION_METHOD = 'email'
-ACCOUNT_EMAIL_REQUIRED = True
+ACCOUNT_EMAIL_VERIFICATION = 'none'
 ACCOUNT_UNIQUE_EMAIL = True
-ACCOUNT_USERNAME_REQUIRED = False  # We'll handle this automatically
+ACCOUNT_LOGIN_ON_EMAIL_CONFIRMATION = True
+SOCIALACCOUNT_AUTO_SIGNUP = True  # Automatically sign up the user
 
 # Provider specific settings
 SOCIALACCOUNT_PROVIDERS = {
