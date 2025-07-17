@@ -2,6 +2,7 @@
 
 import { useState, useContext } from "react";
 import AuthContext from "@/context/AuthContext";
+import { useGoogleLogin } from "@react-oauth/google";
 
 export default function LoginPage() {
   const [email, setEmail] = useState("");
@@ -11,12 +12,22 @@ export default function LoginPage() {
   if (!auth) {
     throw new Error("useAuth must be used within an AuthProvider");
   }
-  const { loginUser } = auth;
+  const { loginUser, googleLogin } = auth;
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     loginUser({ email, password });
   };
+
+  // Google Login handler
+  const handleGoogleLogin = useGoogleLogin({
+    onSuccess: (tokenResponse) => {
+      googleLogin(tokenResponse.access_token);
+    },
+    onError: () => {
+      console.log("Login Failed");
+    },
+  });
 
   return (
     <div>
@@ -38,6 +49,8 @@ export default function LoginPage() {
         />
         <button type="submit">Login</button>
       </form>
+      <hr />
+      <button onClick={() => handleGoogleLogin()}>Continue with Google</button>
     </div>
   );
 }

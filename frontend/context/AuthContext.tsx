@@ -17,6 +17,7 @@ interface AuthContextType {
   loginUser: (credentials: LoginCredentials) => Promise<void>;
   logoutUser: () => void;
   registerUser: (credentials: RegisterCredentials) => Promise<void>;
+  googleLogin: (accessToken: string) => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -85,6 +86,30 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
+  const googleLogin = async (accessToken: string) => {
+    try {
+      // Send the access_token from Google to our backend
+      const response = await api.post<AuthTokens>("/api/auth/google/", {
+        access_token: accessToken,
+      });
+
+      if (response.status === 200) {
+        // The backend returns our own app's access and refresh tokens
+        const data = response.data;
+        setTokens(data);
+        localStorage.setItem("authTokens", JSON.stringify(data));
+        router.push("/profile");
+      }
+    } catch (error) {
+      console.error("Google login failed", error);
+      if (isAxiosError(error)) {
+        alert("Google login failed: " + JSON.stringify(error.response?.data));
+      } else {
+        alert("An unexpected error occurred during Google login.");
+      }
+    }
+  };
+
   const logoutUser = () => {
     setTokens(null);
     setUser(null);
@@ -98,6 +123,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     loginUser,
     logoutUser,
     registerUser,
+    googleLogin,
   };
 
   return (
