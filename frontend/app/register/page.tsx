@@ -2,6 +2,7 @@
 
 import { useState, useContext } from "react";
 import AuthContext from "@/context/AuthContext";
+import { useGoogleLogin } from "@react-oauth/google";
 
 export default function RegisterPage() {
   const [email, setEmail] = useState("");
@@ -12,12 +13,21 @@ export default function RegisterPage() {
   if (!auth) {
     throw new Error("useAuth must be used within an AuthProvider");
   }
-  const { registerUser } = auth;
+  const { registerUser, googleLogin } = auth;
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     registerUser({ email, password, password2 });
   };
+
+  const handleGoogleLogin = useGoogleLogin({
+    onSuccess: (tokenResponse) => {
+      googleLogin(tokenResponse.access_token);
+    },
+    onError: () => {
+      console.log("Login Failed");
+    },
+  });
 
   return (
     <div>
@@ -44,8 +54,10 @@ export default function RegisterPage() {
           placeholder="Confirm Password"
           required
         />
-        <button type="submit">Register</button>
+        <button type="submit">Register with Email</button>
       </form>
+      <hr />
+      <button onClick={() => handleGoogleLogin()}>Continue with Google</button>
     </div>
   );
 }
