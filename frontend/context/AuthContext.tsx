@@ -6,6 +6,7 @@ import {
   useEffect,
   ReactNode,
   useContext,
+  useCallback,
 } from "react";
 import { isAxiosError } from "axios";
 import { useRouter } from "next/navigation";
@@ -15,7 +16,7 @@ import {
   AuthTokens,
   User,
 } from "@/types";
-import api from "@/utils/api"; // Import our new api utility
+import api from "@/utils/api";
 
 // Define the shape of the context
 interface AuthContextType {
@@ -35,27 +36,31 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [loading, setLoading] = useState(true);
   const router = useRouter();
 
-  // This function will fetch the user's profile
-  const fetchUserProfile = async () => {
+  const logoutUser = useCallback(() => {
+    setTokens(null);
+    setUser(null);
+    localStorage.removeItem("authTokens");
+    router.push("/login");
+  }, [router]);
+
+  const fetchUserProfile = useCallback(async () => {
     try {
       const response = await api.get<User>("/api/auth/profile/");
       setUser(response.data);
     } catch (error) {
       console.error("Failed to fetch user profile", error);
-      // If fetching fails, the token might be invalid, so log out
       logoutUser();
     }
-  };
+  }, [logoutUser]);
 
   useEffect(() => {
     const storedTokens = localStorage.getItem("authTokens");
     if (storedTokens) {
       setTokens(JSON.parse(storedTokens));
-      // If we have tokens, fetch the user profile
       fetchUserProfile();
     }
     setLoading(false);
-  }, []);
+  }, [fetchUserProfile]);
 
   const registerUser = async ({
     email,
@@ -91,7 +96,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         const data = response.data;
         setTokens(data);
         localStorage.setItem("authTokens", JSON.stringify(data));
-        await fetchUserProfile(); // Fetch profile after login
+        await fetchUserProfile();
         router.push("/profile");
       }
     } catch (error) {
@@ -106,16 +111,14 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   const googleLogin = async (accessToken: string) => {
     try {
-      // The response from dj-rest-auth should contain our app's JWTs
       const response = await api.post<AuthTokens>("/api/auth/google/", {
         access_token: accessToken,
       });
       if (response.status === 200) {
         const data = response.data;
-        // The response data should now correctly match the AuthTokens type
         setTokens(data);
         localStorage.setItem("authTokens", JSON.stringify(data));
-        await fetchUserProfile(); // Fetch profile after Google login
+        await fetchUserProfile();
         router.push("/profile");
       }
     } catch (error) {
@@ -126,13 +129,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         alert("An unexpected error occurred during Google login.");
       }
     }
-  };
-
-  const logoutUser = () => {
-    setTokens(null);
-    setUser(null);
-    localStorage.removeItem("authTokens");
-    router.push("/login");
   };
 
   const contextData: AuthContextType = {
