@@ -1,7 +1,7 @@
 from rest_framework import generics, status
 from rest_framework.response import Response
 from rest_framework.permissions import AllowAny, IsAuthenticated
-from .serializers import UserRegistrationSerializer, UserProfileSerializer
+from .serializers import UserRegistrationSerializer, UserProfileSerializer, UserProfileUpdateSerializer
 from .models import User
 from allauth.socialaccount.providers.google.views import GoogleOAuth2Adapter
 from allauth.socialaccount.providers.oauth2.client import OAuth2Client
@@ -40,13 +40,20 @@ class GoogleLogin(SocialLoginView):
     client_class = OAuth2Client
 
 
-class UserProfileView(generics.RetrieveAPIView):
+class UserProfileView(generics.RetrieveUpdateAPIView):
     """
-    API view to retrieve the profile of the currently authenticated user.
+    API view to retrieve or update the profile of the currently authenticated user.
     """
     queryset = User.objects.all()
-    serializer_class = UserProfileSerializer
-    permission_classes = [IsAuthenticated]  # <-- This ensures only logged-in users can access it
+    permission_classes = [IsAuthenticated]
+
+    def get_serializer_class(self):
+        """
+        Return the appropriate serializer class based on the request method.
+        """
+        if self.request.method in ['PUT', 'PATCH']:
+            return UserProfileUpdateSerializer
+        return UserProfileSerializer
 
     def get_object(self):
         """

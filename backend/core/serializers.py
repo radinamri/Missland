@@ -48,3 +48,13 @@ class UserProfileSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = ('id', 'email', 'username')
+
+
+class UserProfileUpdateSerializer(serializers.ModelSerializer):
+    """
+    Serializer for updating the user's username.
+    """
+
+    class Meta:
+        model = User
+        fields = ('username',)
