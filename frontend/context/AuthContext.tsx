@@ -1,7 +1,13 @@
 "use client";
 
-import { createContext, useState, useEffect, ReactNode } from "react";
-import axios, { isAxiosError } from "axios";
+import {
+  createContext,
+  useState,
+  useEffect,
+  ReactNode,
+  useContext,
+} from "react";
+import { isAxiosError } from "axios";
 import { useRouter } from "next/navigation";
 import {
   RegisterCredentials,
@@ -9,6 +15,7 @@ import {
   AuthTokens,
   User,
 } from "@/types";
+import api from "@/utils/api"; // Import our new api utility
 
 // Define the shape of the context
 interface AuthContextType {
@@ -28,14 +35,24 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [loading, setLoading] = useState(true);
   const router = useRouter();
 
-  const api = axios.create({
-    baseURL: process.env.NEXT_PUBLIC_API_URL,
-  });
+  // This function will fetch the user's profile
+  const fetchUserProfile = async () => {
+    try {
+      const response = await api.get<User>("/api/auth/profile/");
+      setUser(response.data);
+    } catch (error) {
+      console.error("Failed to fetch user profile", error);
+      // If fetching fails, the token might be invalid, so log out
+      logoutUser();
+    }
+  };
 
   useEffect(() => {
     const storedTokens = localStorage.getItem("authTokens");
     if (storedTokens) {
       setTokens(JSON.parse(storedTokens));
+      // If we have tokens, fetch the user profile
+      fetchUserProfile();
     }
     setLoading(false);
   }, []);
@@ -74,6 +91,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         const data = response.data;
         setTokens(data);
         localStorage.setItem("authTokens", JSON.stringify(data));
+        await fetchUserProfile(); // Fetch profile after login
         router.push("/profile");
       }
     } catch (error) {
@@ -88,16 +106,16 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   const googleLogin = async (accessToken: string) => {
     try {
-      // Send the access_token from Google to our backend
+      // The response from dj-rest-auth should contain our app's JWTs
       const response = await api.post<AuthTokens>("/api/auth/google/", {
         access_token: accessToken,
       });
-
       if (response.status === 200) {
-        // The backend returns our own app's access and refresh tokens
         const data = response.data;
+        // The response data should now correctly match the AuthTokens type
         setTokens(data);
         localStorage.setItem("authTokens", JSON.stringify(data));
+        await fetchUserProfile(); // Fetch profile after Google login
         router.push("/profile");
       }
     } catch (error) {
@@ -131,6 +149,15 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       {loading ? <p>Loading...</p> : children}
     </AuthContext.Provider>
   );
+};
+
+// Custom hook for easier context usage
+export const useAuth = () => {
+  const context = useContext(AuthContext);
+  if (context === undefined) {
+    throw new Error("useAuth must be used within an AuthProvider");
+  }
+  return context;
 };
 
 export default AuthContext;
