@@ -38,3 +38,13 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
         user.save()
 
         return user
+
+
+class UserProfileSerializer(serializers.ModelSerializer):
+    """
+    Serializer for the User model, exposing safe fields for profile display.
+    """
+
+    class Meta:
+        model = User
+        fields = ('id', 'email', 'username')
