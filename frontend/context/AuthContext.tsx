@@ -15,6 +15,7 @@ import {
   LoginCredentials,
   AuthTokens,
   User,
+  PasswordChangeCredentials,
 } from "@/types";
 import api from "@/utils/api";
 
@@ -26,6 +27,8 @@ interface AuthContextType {
   logoutUser: () => void;
   registerUser: (credentials: RegisterCredentials) => Promise<void>;
   googleLogin: (accessToken: string) => Promise<void>;
+  updateUsername: (newUsername: string) => Promise<void>;
+  changePassword: (credentials: PasswordChangeCredentials) => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -61,6 +64,38 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }
     setLoading(false);
   }, [fetchUserProfile]);
+
+  const updateUsername = async (newUsername: string) => {
+    try {
+      await api.patch("/api/auth/profile/", { username: newUsername });
+      // After updating, refetch the user profile to get the latest data
+      await fetchUserProfile();
+      alert("Username updated successfully!");
+    } catch (error) {
+      console.error("Failed to update username", error);
+      if (isAxiosError(error)) {
+        alert(
+          "Failed to update username: " + JSON.stringify(error.response?.data)
+        );
+      }
+    }
+  };
+
+  const changePassword = async (credentials: PasswordChangeCredentials) => {
+    try {
+      await api.post("/api/auth/password/change/", credentials);
+      alert("Password changed successfully! Please log in again.");
+      // After a successful password change, log the user out for security
+      logoutUser();
+    } catch (error) {
+      console.error("Failed to change password", error);
+      if (isAxiosError(error)) {
+        alert(
+          "Failed to change password: " + JSON.stringify(error.response?.data)
+        );
+      }
+    }
+  };
 
   const registerUser = async ({
     email,
@@ -138,6 +173,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     logoutUser,
     registerUser,
     googleLogin,
+    updateUsername,
+    changePassword,
   };
 
   return (

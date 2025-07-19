@@ -9,6 +9,12 @@ export interface LoginCredentials {
   password: string;
 }
 
+export interface PasswordChangeCredentials {
+  old_password: string;
+  new_password1: string;
+  new_password2: string;
+}
+
 export interface AuthTokens {
   access: string;
   refresh: string;
