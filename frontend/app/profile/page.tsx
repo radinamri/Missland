@@ -5,8 +5,14 @@ import { useAuth } from "@/context/AuthContext";
 import { useRouter } from "next/navigation";
 
 export default function ProfilePage() {
-  const { user, logoutUser, tokens, updateUsername, changePassword } =
-    useAuth();
+  const {
+    user,
+    logoutUser,
+    tokens,
+    updateUsername,
+    changePassword,
+    initiateEmailChange,
+  } = useAuth();
   const router = useRouter();
 
   // State for the edit forms
@@ -14,6 +20,7 @@ export default function ProfilePage() {
   const [oldPassword, setOldPassword] = useState("");
   const [newPassword1, setNewPassword1] = useState("");
   const [newPassword2, setNewPassword2] = useState("");
+  const [newEmail, setNewEmail] = useState("");
 
   // Update the newUsername state if the user object changes
   useEffect(() => {
@@ -43,6 +50,13 @@ export default function ProfilePage() {
       new_password1: newPassword1,
       new_password2: newPassword2,
     });
+  };
+
+  const handleEmailSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (newEmail) {
+      initiateEmailChange(newEmail);
+    }
   };
 
   if (!user) {
@@ -106,6 +120,23 @@ export default function ProfilePage() {
         />
         <button type="submit" style={{ padding: "10px" }}>
           Change Password
+        </button>
+      </form>
+
+      <hr style={{ margin: "20px 0" }} />
+
+      {/* Email Change Form */}
+      <h2>Change Email Address</h2>
+      <form onSubmit={handleEmailSubmit}>
+        <input
+          type="email"
+          value={newEmail}
+          onChange={(e) => setNewEmail(e.target.value)}
+          placeholder="New Email Address"
+          style={{ padding: "5px", width: "250px" }}
+        />
+        <button type="submit" style={{ marginLeft: "10px" }}>
+          Request Email Change
         </button>
       </form>
 

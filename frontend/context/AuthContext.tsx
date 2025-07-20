@@ -29,6 +29,7 @@ interface AuthContextType {
   googleLogin: (accessToken: string) => Promise<void>;
   updateUsername: (newUsername: string) => Promise<void>;
   changePassword: (credentials: PasswordChangeCredentials) => Promise<void>;
+  initiateEmailChange: (newEmail: string) => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -166,6 +167,25 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
+  const initiateEmailChange = async (newEmail: string) => {
+    try {
+      await api.post("/api/auth/email/change/initiate/", {
+        new_email: newEmail,
+      });
+      alert(
+        "Verification link sent! Please check your new email address to confirm the change."
+      );
+    } catch (error) {
+      console.error("Failed to initiate email change", error);
+      if (isAxiosError(error)) {
+        alert(
+          "Failed to initiate email change: " +
+            JSON.stringify(error.response?.data)
+        );
+      }
+    }
+  };
+
   const contextData: AuthContextType = {
     user,
     tokens,
@@ -175,6 +195,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     googleLogin,
     updateUsername,
     changePassword,
+    initiateEmailChange,
   };
 
   return (
