@@ -58,3 +58,18 @@ class UserProfileUpdateSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = ('username',)
+
+
+class EmailChangeInitiateSerializer(serializers.Serializer):
+    """
+    Serializer to validate the new email address for the change process.
+    """
+    new_email = serializers.EmailField(required=True)
+
+
+class EmailChangeConfirmSerializer(serializers.Serializer):
+    """
+    Serializer to validate the token and uid from the verification link.
+    """
+    uid = serializers.CharField(required=True)
+    token = serializers.CharField(required=True)

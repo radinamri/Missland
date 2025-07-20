@@ -1,11 +1,18 @@
 from rest_framework import generics, status
 from rest_framework.response import Response
 from rest_framework.permissions import AllowAny, IsAuthenticated
-from .serializers import UserRegistrationSerializer, UserProfileSerializer, UserProfileUpdateSerializer
+from .serializers import UserRegistrationSerializer, UserProfileSerializer, UserProfileUpdateSerializer, \
+    EmailChangeInitiateSerializer, EmailChangeConfirmSerializer
 from .models import User
 from allauth.socialaccount.providers.google.views import GoogleOAuth2Adapter
 from allauth.socialaccount.providers.oauth2.client import OAuth2Client
 from dj_rest_auth.registration.views import SocialLoginView
+from django.core.mail import send_mail
+from django.contrib.auth.tokens import default_token_generator
+from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
+from django.utils.encoding import force_bytes, force_str
+from django.conf import settings
+from rest_framework.views import APIView
 
 
 class UserRegistrationView(generics.CreateAPIView):
@@ -61,3 +68,68 @@ class UserProfileView(generics.RetrieveUpdateAPIView):
         user associated with the current request.
         """
         return self.request.user
+
+
+class EmailChangeInitiateView(APIView):
+    """
+    Initiates the email change process.
+    Receives a new email address, sends a verification link to it.
+    """
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request, *args, **kwargs):
+        serializer = EmailChangeInitiateSerializer(data=request.data)
+        if serializer.is_valid():
+            new_email = serializer.validated_data['new_email']
+            user = request.user
+
+            # Generate a token and a user ID encoded in base64
+            uid = urlsafe_base64_encode(force_bytes(user.pk))
+            token = default_token_generator.make_token(user)
+
+            # Create the verification link for the frontend
+            # The frontend will have a page at /verify-email-change to handle this
+            verification_link = f"{settings.CORS_ALLOWED_ORIGINS[0]}/verify-email-change?uid={uid}&token={token}&email={new_email}"
+
+            # Send the email
+            send_mail(
+                'Verify your new email address for NANA-AI',
+                f'Please click the link to confirm your new email address: {verification_link}',
+                'noreply@nana-ai.com',
+                [new_email],
+                fail_silently=False,
+            )
+
+            return Response({'detail': 'Verification link sent to your new email address.'}, status=status.HTTP_200_OK)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class EmailChangeConfirmView(APIView):
+    """
+    Confirms the email change using the token from the verification link.
+    """
+    permission_classes = [AllowAny]  # Anyone with the link can access this
+
+    def post(self, request, *args, **kwargs):
+        serializer = EmailChangeConfirmSerializer(data=request.data)
+        if serializer.is_valid():
+            uidb64 = serializer.validated_data['uid']
+            token = serializer.validated_data['token']
+            new_email = request.data.get('email')  # Get email from the request body
+
+            try:
+                uid = force_str(urlsafe_base64_decode(uidb64))
+                user = User.objects.get(pk=uid)
+            except (TypeError, ValueError, OverflowError, User.DoesNotExist):
+                user = None
+
+            if user is not None and default_token_generator.check_token(user, token):
+                # Token is valid, update the user's email
+                user.email = new_email
+                user.username = new_email  # Also update the username to match
+                user.save()
+                return Response({'detail': 'Email address successfully changed.'}, status=status.HTTP_200_OK)
+            else:
+                # Invalid token
+                return Response({'detail': 'Invalid verification link.'}, status=status.HTTP_400_BAD_REQUEST)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

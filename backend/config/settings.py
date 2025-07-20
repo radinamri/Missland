@@ -190,3 +190,6 @@ SOCIALACCOUNT_PROVIDERS = {
 # Replace with the keys you got from Google Cloud Console.
 os.environ['GOOGLE_CLIENT_ID'] = '665407123210-20j9tne8tqgfi5t7dn6jr6taj51o0elk.apps.googleusercontent.com'
 os.environ['GOOGLE_CLIENT_SECRET'] = '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'
+
+# For development, print emails to the console instead of sending them.
+EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
