@@ -37,8 +37,14 @@ export default function RootLayout({
           }
         >
           <AuthProvider>
-            <Header/>
-            {children}</AuthProvider>
+            <div className="flex flex-col min-h-screen">
+              <Header />
+              {children}
+              <div className="md:pb-0 pb-20">
+                <BottomNav />
+              </div>
+            </div>
+          </AuthProvider>
         </GoogleOAuthProvider>
       </body>
     </html>

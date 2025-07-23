@@ -138,24 +138,8 @@ export default function Header() {
         } transition-transform duration-300 ease-in-out md:hidden`}
       >
         <div className="flex flex-col items-center justify-center h-full space-y-8 pt-20">
-          {navLinks.map((link) => (
-            <Link
-              key={link.href}
-              href={link.href}
-              className="text-3xl font-bold text-gray-800 hover:text-pink-500 transition-colors"
-            >
-              {link.label}
-            </Link>
-          ))}
-          <div className="border-t w-1/2 my-4"></div>
           {user ? (
             <>
-              <Link
-                href="/profile"
-                className="text-3xl font-bold text-gray-800 hover:text-pink-500 transition-colors"
-              >
-                Profile
-              </Link>
               <button
                 onClick={logoutUser}
                 className="text-3xl font-bold text-red-500 hover:text-red-600 transition-colors"
