@@ -68,7 +68,7 @@ export default function Header() {
               {user ? (
                 <Link
                   href="/profile"
-                  className="bg-pink-500 text-white font-bold py-2.5 px-6 rounded-full hover:bg-pink-600 transition"
+                  className="bg-pink-500 text-white font-bold py-2.5 px-6 rounded-xl hover:bg-pink-600 transition"
                 >
                   Profile
                 </Link>
