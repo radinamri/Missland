@@ -181,7 +181,7 @@ export default function LoginPage() {
               type="submit"
               className="w-full bg-gray-800 text-white font-bold py-3 px-4 rounded-lg hover:bg-gray-900 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-800 transition"
             >
-              Log In
+              Login
             </button>
           </form>
 
