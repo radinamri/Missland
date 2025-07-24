@@ -23,6 +23,7 @@ import api from "@/utils/api";
 interface AuthContextType {
   user: User | null;
   tokens: AuthTokens | null;
+  isLoading: boolean;
   loginUser: (credentials: LoginCredentials) => Promise<void>;
   logoutUser: () => void;
   registerUser: (credentials: RegisterCredentials) => Promise<void>;
@@ -189,6 +190,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const contextData: AuthContextType = {
     user,
     tokens,
+    isLoading: loading,
     loginUser,
     logoutUser,
     registerUser,
