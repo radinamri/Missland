@@ -27,3 +27,12 @@ export interface User {
   email: string;
   username: string;
 }
+
+export interface Post {
+  id: number;
+  title: string;
+  image_url: string;
+  width: number;
+  height: number;
+  tags: string[]; // An array of strings for our searchable tags
+}
