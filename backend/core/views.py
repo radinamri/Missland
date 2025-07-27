@@ -139,3 +139,45 @@ class PostListView(generics.ListAPIView):
     queryset = Post.objects.all().order_by('-created_at')
     serializer_class = PostSerializer
     permission_classes = [AllowAny]
+
+
+class ToggleSavePostView(APIView):
+    """
+    Toggles the saved state of a post for the current user.
+    """
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request, post_id, *args, **kwargs):
+        try:
+            post = Post.objects.get(id=post_id)
+            user = request.user
+
+            if user in post.saved_by.all():
+                # User has already saved this post, so unsave it
+                post.saved_by.remove(user)
+                message = 'Post unsaved successfully.'
+            else:
+                # User has not saved this post, so save it
+                post.saved_by.add(user)
+                message = 'Post saved successfully.'
+
+            return Response({'detail': message}, status=status.HTTP_200_OK)
+
+        except Post.DoesNotExist:
+            return Response({'detail': 'Post not found.'}, status=status.HTTP_404_NOT_FOUND)
+
+
+class SavedPostsListView(generics.ListAPIView):
+    """
+    Returns a list of all posts saved by the currently authenticated user.
+    """
+    serializer_class = PostSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        """
+        This view should return a list of all the posts
+        that have been saved by the currently authenticated user.
+        """
+        user = self.request.user
+        return user.saved_posts.all().order_by('-created_at')

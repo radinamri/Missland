@@ -1,6 +1,6 @@
 from django.urls import path
 from .views import UserRegistrationView, GoogleLogin, UserProfileView, EmailChangeInitiateView, EmailChangeConfirmView, \
-    PostListView
+    PostListView, ToggleSavePostView, SavedPostsListView
 from dj_rest_auth.views import PasswordChangeView
 
 urlpatterns = [
@@ -11,4 +11,6 @@ urlpatterns = [
     path('email/change/initiate/', EmailChangeInitiateView.as_view(), name='email_change_initiate'),
     path('email/change/confirm/', EmailChangeConfirmView.as_view(), name='email_change_confirm'),
     path('posts/', PostListView.as_view(), name='post-list'),
+    path('posts/<int:post_id>/toggle-save/', ToggleSavePostView.as_view(), name='toggle-save-post'),
+    path('profile/saved-posts/', SavedPostsListView.as_view(), name='saved-posts-list'),
 ]
