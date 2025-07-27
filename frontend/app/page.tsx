@@ -4,11 +4,11 @@ import { useEffect, useState } from "react";
 import { Post } from "@/types";
 import api from "@/utils/api";
 import Image from "next/image";
-import { useAuth } from "@/context/AuthContext"; // Import useAuth
-import LoginModal from "@/components/LoginModal"; // Import LoginModal
-import Toast from "@/components/Toast"; // Import Toast
+import { useAuth } from "@/context/AuthContext";
+import LoginModal from "@/components/LoginModal";
+import Toast from "@/components/Toast";
 
-// Updated PostCard component that now accepts an onSaveClick handler
+// Updated PostCard component with responsive overlay
 const PostCard = ({
   post,
   onSaveClick,
@@ -25,7 +25,8 @@ const PostCard = ({
         height={post.height}
         className="w-full h-auto block"
       />
-      <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-40 transition-all duration-300 flex flex-col justify-between p-4 opacity-0 group-hover:opacity-100">
+      {/* This overlay is now transparent on mobile and gains a background on desktop hover */}
+      <div className="absolute inset-0 flex flex-col justify-between p-4 transition-opacity duration-300 md:bg-black/40 md:opacity-0 group-hover:opacity-100">
         <div>
           <p className="text-white text-sm font-semibold drop-shadow-md">
             {post.title}
@@ -35,7 +36,6 @@ const PostCard = ({
           <button className="bg-white text-gray-800 font-semibold py-2 px-4 rounded-full shadow-lg hover:bg-pink-100 transition-transform hover:scale-105">
             Try On
           </button>
-          {/* The onClick handler is now connected */}
           <button
             onClick={() => onSaveClick(post.id)}
             className="bg-pink-500 text-white w-10 h-10 rounded-full flex items-center justify-center shadow-lg hover:bg-pink-600 transition-transform hover:scale-105"
@@ -53,9 +53,8 @@ const PostCard = ({
 export default function ExplorePage() {
   const [posts, setPosts] = useState<Post[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const { user, toggleSavePost } = useAuth(); // Get user and the toggleSavePost function
+  const { user, toggleSavePost } = useAuth();
 
-  // State for our new UI components
   const [showLoginModal, setShowLoginModal] = useState(false);
   const [toastMessage, setToastMessage] = useState("");
   const [showToast, setShowToast] = useState(false);
@@ -75,26 +74,21 @@ export default function ExplorePage() {
     fetchPosts();
   }, []);
 
-  // This function handles the logic for the save button click
   const handleSaveClick = async (postId: number) => {
     if (!user) {
-      // If the user is not logged in, show the login modal
       setShowLoginModal(true);
     } else {
-      // If the user is logged in, call the API
       const message = await toggleSavePost(postId);
       if (message) {
-        // If the API call is successful, show the toast notification
         setToastMessage(message);
         setShowToast(true);
-        setTimeout(() => setShowToast(false), 3000); // Hide toast after 3 seconds
+        setTimeout(() => setShowToast(false), 3000);
       }
     }
   };
 
   return (
     <>
-      {/* Render the modal and toast components */}
       <LoginModal
         isOpen={showLoginModal}
         onClose={() => setShowLoginModal(false)}
@@ -151,7 +145,6 @@ export default function ExplorePage() {
         ) : (
           <div className="masonry-grid">
             {posts.map((post) => (
-              // Pass the handler function to each PostCard
               <PostCard
                 key={post.id}
                 post={post}
