@@ -1,0 +1,153 @@
+"use client";
+
+import { useEffect, useState } from "react";
+import { useAuth } from "@/context/AuthContext";
+import { useRouter } from "next/navigation";
+import Link from "next/link";
+import { Post } from "@/types";
+import api from "@/utils/api";
+import Image from "next/image";
+
+export default function SavedPostsPage() {
+  const { user, tokens, isLoading: isAuthLoading } = useAuth();
+  const router = useRouter();
+
+  const [savedPosts, setSavedPosts] = useState<Post[]>([]);
+  const [filteredPosts, setFilteredPosts] = useState<Post[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [searchTerm, setSearchTerm] = useState("");
+
+  // Protect the route
+  useEffect(() => {
+    if (!isAuthLoading && !tokens) {
+      router.push("/login");
+    }
+  }, [tokens, isAuthLoading, router]);
+
+  // Fetch saved posts
+  useEffect(() => {
+    if (user) {
+      setIsLoading(true);
+      api
+        .get<Post[]>("/api/auth/profile/saved-posts/")
+        .then((response) => {
+          setSavedPosts(response.data);
+          setFilteredPosts(response.data);
+        })
+        .catch((error) => console.error("Failed to fetch saved posts", error))
+        .finally(() => setIsLoading(false));
+    }
+  }, [user]);
+
+  // Handle search filtering
+  useEffect(() => {
+    const results = savedPosts.filter(
+      (post) =>
+        post.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        (post.tags &&
+          post.tags.some((tag) =>
+            tag.toLowerCase().includes(searchTerm.toLowerCase())
+          ))
+    );
+    setFilteredPosts(results);
+  }, [searchTerm, savedPosts]);
+
+  if (isAuthLoading || isLoading) {
+    return (
+      <div className="flex items-center justify-center h-[60vh]">
+        <p className="text-lg text-gray-500 animate-pulse">
+          Loading Saved Posts...
+        </p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="bg-white md:shadow-lg p-4 md:p-8 min-h-[80vh]">
+      <header className="mb-8">
+        <div className="flex justify-start mb-4">
+          <Link
+            href="/profile"
+            className="flex items-center text-gray-600 hover:text-gray-900 transition-colors"
+          >
+            <svg
+              className="w-5 h-5 mr-2"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth="2"
+                d="M15 19l-7-7 7-7"
+              ></path>
+            </svg>
+            Back to Profile
+          </Link>
+        </div>
+        <h1 className="text-3xl md:text-4xl font-bold text-gray-800">
+          My Saved Posts
+        </h1>
+      </header>
+
+      {/* Search Bar */}
+      <div className="relative mb-8">
+        <input
+          type="text"
+          placeholder="Search in your saved posts..."
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+          className="w-full bg-gray-100 border border-gray-300 rounded-full py-3 pl-12 pr-4 text-lg focus:outline-none focus:ring-2 focus:ring-pink-400 transition"
+        />
+        <svg
+          className="w-6 h-6 text-gray-400 absolute left-4 top-1/2 -translate-y-1/2"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth="2"
+            d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+          ></path>
+        </svg>
+      </div>
+
+      {filteredPosts.length > 0 ? (
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+          {filteredPosts.map((post) => (
+            <div
+              key={post.id}
+              className="rounded-lg overflow-hidden aspect-square group relative"
+            >
+              <Image
+                src={post.image_url}
+                alt={post.title}
+                width={post.width}
+                height={post.height}
+                className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+              <p className="absolute bottom-2 left-2 text-white text-sm font-semibold drop-shadow-md opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                {post.title}
+              </p>
+            </div>
+          ))}
+        </div>
+      ) : (
+        <div className="text-center py-12">
+          <h2 className="text-xl font-semibold text-gray-700 mb-2">
+            No Saved Posts Found
+          </h2>
+          <p className="text-gray-500">
+            {searchTerm
+              ? "Try a different search term."
+              : "Posts you save from the Explore page will appear here."}
+          </p>
+        </div>
+      )}
+    </div>
+  );
+}

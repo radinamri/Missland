@@ -31,6 +31,7 @@ interface AuthContextType {
   updateUsername: (newUsername: string) => Promise<void>;
   changePassword: (credentials: PasswordChangeCredentials) => Promise<void>;
   initiateEmailChange: (newEmail: string) => Promise<void>;
+  toggleSavePost: (postId: number) => Promise<string | null>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -187,6 +188,19 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
+  const toggleSavePost = async (postId: number): Promise<string | null> => {
+    try {
+      const response = await api.post(`/api/auth/posts/${postId}/toggle-save/`);
+      return response.data.detail; // e.g., "Post saved successfully."
+    } catch (error) {
+      console.error("Failed to save post", error);
+      if (isAxiosError(error)) {
+        alert("Error saving post: " + JSON.stringify(error.response?.data));
+      }
+      return null;
+    }
+  };
+
   const contextData: AuthContextType = {
     user,
     tokens,
@@ -198,6 +212,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     updateUsername,
     changePassword,
     initiateEmailChange,
+    toggleSavePost,
   };
 
   return (

@@ -4,9 +4,18 @@ import { useEffect, useState } from "react";
 import { Post } from "@/types";
 import api from "@/utils/api";
 import Image from "next/image";
+import { useAuth } from "@/context/AuthContext"; // Import useAuth
+import LoginModal from "@/components/LoginModal"; // Import LoginModal
+import Toast from "@/components/Toast"; // Import Toast
 
-// A reusable component for each post in the grid
-const PostCard = ({ post }: { post: Post }) => {
+// Updated PostCard component that now accepts an onSaveClick handler
+const PostCard = ({
+  post,
+  onSaveClick,
+}: {
+  post: Post;
+  onSaveClick: (postId: number) => void;
+}) => {
   return (
     <div className="masonry-item group relative rounded-2xl overflow-hidden shadow-lg hover:shadow-xl transition-shadow duration-300">
       <Image
@@ -26,7 +35,11 @@ const PostCard = ({ post }: { post: Post }) => {
           <button className="bg-white text-gray-800 font-semibold py-2 px-4 rounded-full shadow-lg hover:bg-pink-100 transition-transform hover:scale-105">
             Try On
           </button>
-          <button className="bg-pink-500 text-white w-10 h-10 rounded-full flex items-center justify-center shadow-lg hover:bg-pink-600 transition-transform hover:scale-105">
+          {/* The onClick handler is now connected */}
+          <button
+            onClick={() => onSaveClick(post.id)}
+            className="bg-pink-500 text-white w-10 h-10 rounded-full flex items-center justify-center shadow-lg hover:bg-pink-600 transition-transform hover:scale-105"
+          >
             <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
               <path d="M5 4a2 2 0 012-2h6a2 2 0 012 2v2a2 2 0 01-2 2H7a2 2 0 01-2-2V4zM5 9a2 2 0 00-2 2v4a2 2 0 002 2h10a2 2 0 002-2v-4a2 2 0 00-2-2H5z"></path>
             </svg>
@@ -40,6 +53,12 @@ const PostCard = ({ post }: { post: Post }) => {
 export default function ExplorePage() {
   const [posts, setPosts] = useState<Post[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const { user, toggleSavePost } = useAuth(); // Get user and the toggleSavePost function
+
+  // State for our new UI components
+  const [showLoginModal, setShowLoginModal] = useState(false);
+  const [toastMessage, setToastMessage] = useState("");
+  const [showToast, setShowToast] = useState(false);
 
   useEffect(() => {
     const fetchPosts = async () => {
@@ -56,61 +75,92 @@ export default function ExplorePage() {
     fetchPosts();
   }, []);
 
+  // This function handles the logic for the save button click
+  const handleSaveClick = async (postId: number) => {
+    if (!user) {
+      // If the user is not logged in, show the login modal
+      setShowLoginModal(true);
+    } else {
+      // If the user is logged in, call the API
+      const message = await toggleSavePost(postId);
+      if (message) {
+        // If the API call is successful, show the toast notification
+        setToastMessage(message);
+        setShowToast(true);
+        setTimeout(() => setShowToast(false), 3000); // Hide toast after 3 seconds
+      }
+    }
+  };
+
   return (
-    <div className="bg-white md:shadow-lg p-4 md:p-8">
-      <style jsx global>{`
-        .masonry-grid {
-          column-count: 2;
-          column-gap: 1rem;
-        }
-        @media (min-width: 768px) {
-          .masonry-grid {
-            column-count: 3;
-          }
-        }
-        @media (min-width: 1024px) {
-          .masonry-grid {
-            column-count: 4;
-          }
-        }
-        .masonry-item {
-          break-inside: avoid;
-          margin-bottom: 1rem;
-        }
-      `}</style>
+    <>
+      {/* Render the modal and toast components */}
+      <LoginModal
+        isOpen={showLoginModal}
+        onClose={() => setShowLoginModal(false)}
+      />
+      <Toast message={toastMessage} show={showToast} />
 
-      <header className="mb-8">
-        <div className="relative">
-          <input
-            type="text"
-            placeholder="Search nails, hair styles..."
-            className="w-full bg-gray-100 border border-gray-300 rounded-full py-3 px-6 text-lg focus:outline-none focus:ring-2 focus:ring-pink-400 transition"
-          />
-          <svg
-            className="w-6 h-6 text-gray-400 absolute right-5 top-1/2 -translate-y-1/2"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth="2"
-              d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
-            ></path>
-          </svg>
-        </div>
-      </header>
+      <div className="bg-white md:shadow-lg p-4 md:p-8">
+        <style jsx global>{`
+          .masonry-grid {
+            column-count: 2;
+            column-gap: 1rem;
+          }
+          @media (min-width: 768px) {
+            .masonry-grid {
+              column-count: 3;
+            }
+          }
+          @media (min-width: 1024px) {
+            .masonry-grid {
+              column-count: 4;
+            }
+          }
+          .masonry-item {
+            break-inside: avoid;
+            margin-bottom: 1rem;
+          }
+        `}</style>
 
-      {isLoading ? (
-        <p className="text-center text-gray-500">Loading styles...</p>
-      ) : (
-        <div className="masonry-grid">
-          {posts.map((post) => (
-            <PostCard key={post.id} post={post} />
-          ))}
-        </div>
-      )}
-    </div>
+        <header className="mb-8">
+          <div className="relative">
+            <input
+              type="text"
+              placeholder="Search nails, hair styles..."
+              className="w-full bg-gray-100 border border-gray-300 rounded-full py-3 px-6 text-lg focus:outline-none focus:ring-2 focus:ring-pink-400 transition"
+            />
+            <svg
+              className="w-6 h-6 text-gray-400 absolute right-5 top-1/2 -translate-y-1/2"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth="2"
+                d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+              ></path>
+            </svg>
+          </div>
+        </header>
+
+        {isLoading ? (
+          <p className="text-center text-gray-500">Loading styles...</p>
+        ) : (
+          <div className="masonry-grid">
+            {posts.map((post) => (
+              // Pass the handler function to each PostCard
+              <PostCard
+                key={post.id}
+                post={post}
+                onSaveClick={handleSaveClick}
+              />
+            ))}
+          </div>
+        )}
+      </div>
+    </>
   );
 }
