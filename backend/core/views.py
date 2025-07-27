@@ -2,8 +2,8 @@ from rest_framework import generics, status
 from rest_framework.response import Response
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from .serializers import UserRegistrationSerializer, UserProfileSerializer, UserProfileUpdateSerializer, \
-    EmailChangeInitiateSerializer, EmailChangeConfirmSerializer
-from .models import User
+    EmailChangeInitiateSerializer, EmailChangeConfirmSerializer, PostSerializer
+from .models import User, Post
 from allauth.socialaccount.providers.google.views import GoogleOAuth2Adapter
 from allauth.socialaccount.providers.oauth2.client import OAuth2Client
 from dj_rest_auth.registration.views import SocialLoginView
@@ -133,3 +133,9 @@ class EmailChangeConfirmView(APIView):
                 # Invalid token
                 return Response({'detail': 'Invalid verification link.'}, status=status.HTTP_400_BAD_REQUEST)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class PostListView(generics.ListAPIView):
+    queryset = Post.objects.all().order_by('-created_at')
+    serializer_class = PostSerializer
+    permission_classes = [AllowAny]

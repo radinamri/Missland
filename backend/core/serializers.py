@@ -1,6 +1,6 @@
 from django.contrib.auth.password_validation import validate_password
 from rest_framework import serializers
-from .models import User
+from .models import User, Post
 
 
 class UserRegistrationSerializer(serializers.ModelSerializer):
@@ -73,3 +73,9 @@ class EmailChangeConfirmSerializer(serializers.Serializer):
     """
     uid = serializers.CharField(required=True)
     token = serializers.CharField(required=True)
+
+
+class PostSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Post
+        fields = ('id', 'title', 'image_url', 'width', 'height', 'tags')

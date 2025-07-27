@@ -28,3 +28,24 @@ class User(AbstractUser):
 
     def __str__(self):
         return self.email
+
+
+class Post(models.Model):
+    """
+    Represents a single nail or hair style post with searchable tags.
+    """
+    title = models.CharField(max_length=200)
+    image_url = models.URLField(max_length=500)
+    width = models.IntegerField()
+    height = models.IntegerField()
+
+    # This JSONField is perfect for storing a list of searchable tags
+    tags = models.JSONField(default=list, blank=True, help_text="A list of tags like ['red', 'short', 'gel']")
+
+    # For tracking users who save this post
+    saved_by = models.ManyToManyField(User, related_name='saved_posts', blank=True)
+
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return self.title
