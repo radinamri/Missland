@@ -3,22 +3,18 @@
 import { useEffect, useState } from "react";
 import { Post } from "@/types";
 import api from "@/utils/api";
+import Image from "next/image";
 
 // A reusable component for each post in the grid
 const PostCard = ({ post }: { post: Post }) => {
   return (
     <div className="masonry-item group relative rounded-2xl overflow-hidden shadow-lg hover:shadow-xl transition-shadow duration-300">
-      <img
+      <Image
         src={post.image_url}
         alt={post.title}
         width={post.width}
         height={post.height}
         className="w-full h-auto block"
-        onError={(e) => {
-          const target = e.target as HTMLImageElement;
-          target.onerror = null;
-          target.src = `https://placehold.co/${post.width}x${post.height}/fecaca/991b1b?text=Error`;
-        }}
       />
       <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-40 transition-all duration-300 flex flex-col justify-between p-4 opacity-0 group-hover:opacity-100">
         <div>
