@@ -135,7 +135,7 @@ export default function SavedPostsPage() {
   return (
     <>
       <Toast message={toastMessage} show={showToast} />
-      <div className="bg-white md:shadow-lg p-4 md:p-8 min-h-[80vh]">
+      <div className="bg-white md:shadow-lg p-4 md:p-8 min-h-screen">
         <header className="mb-8">
           <div className="flex justify-start mb-4">
             <Link
