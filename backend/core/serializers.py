@@ -1,6 +1,6 @@
 from django.contrib.auth.password_validation import validate_password
 from rest_framework import serializers
-from .models import User, Post
+from .models import User, Post, Article
 
 
 class UserRegistrationSerializer(serializers.ModelSerializer):
@@ -79,3 +79,19 @@ class PostSerializer(serializers.ModelSerializer):
     class Meta:
         model = Post
         fields = ('id', 'title', 'image_url', 'width', 'height', 'tags')
+
+
+class ArticleListSerializer(serializers.ModelSerializer):
+    """Serializer for listing articles with minimal info."""
+
+    class Meta:
+        model = Article
+        fields = ('id', 'title', 'slug', 'thumbnail_url')
+
+
+class ArticleDetailSerializer(serializers.ModelSerializer):
+    """Serializer for a single, detailed article view."""
+
+    class Meta:
+        model = Article
+        fields = ('id', 'title', 'slug', 'content', 'thumbnail_url', 'published_date')

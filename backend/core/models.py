@@ -49,3 +49,18 @@ class Post(models.Model):
 
     def __str__(self):
         return self.title
+
+
+class Article(models.Model):
+    title = models.CharField(max_length=200)
+    slug = models.SlugField(max_length=200, unique=True, help_text="A URL-friendly version of the title.")
+    content = models.TextField()
+    thumbnail_url = models.URLField(max_length=500)
+    author = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True)
+    published_date = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-published_date']
+
+    def __str__(self):
+        return self.title

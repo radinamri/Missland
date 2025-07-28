@@ -2,8 +2,9 @@ from rest_framework import generics, status
 from rest_framework.response import Response
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from .serializers import UserRegistrationSerializer, UserProfileSerializer, UserProfileUpdateSerializer, \
-    EmailChangeInitiateSerializer, EmailChangeConfirmSerializer, PostSerializer
-from .models import User, Post
+    EmailChangeInitiateSerializer, EmailChangeConfirmSerializer, PostSerializer, ArticleListSerializer, \
+    ArticleDetailSerializer
+from .models import User, Post, Article
 from allauth.socialaccount.providers.google.views import GoogleOAuth2Adapter
 from allauth.socialaccount.providers.oauth2.client import OAuth2Client
 from dj_rest_auth.registration.views import SocialLoginView
@@ -181,3 +182,16 @@ class SavedPostsListView(generics.ListAPIView):
         """
         user = self.request.user
         return user.saved_posts.all().order_by('-created_at')
+
+
+class ArticleListView(generics.ListAPIView):
+    queryset = Article.objects.all()
+    serializer_class = ArticleListSerializer
+    permission_classes = [AllowAny]
+
+
+class ArticleDetailView(generics.RetrieveAPIView):
+    queryset = Article.objects.all()
+    serializer_class = ArticleDetailSerializer
+    permission_classes = [AllowAny]
+    lookup_field = 'slug'  # Use the slug to find the article
