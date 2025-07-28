@@ -1,5 +1,3 @@
-// src/app/profile/saved/page.tsx
-
 "use client";
 
 import { useEffect, useState } from "react";
@@ -9,9 +7,8 @@ import Link from "next/link";
 import { Post } from "@/types";
 import api from "@/utils/api";
 import Image from "next/image";
-import Toast from "@/components/Toast"; // Import the Toast component
+import Toast from "@/components/Toast";
 
-// --- A new, dedicated card component for this page ---
 const SavedPostCard = ({
   post,
   onRemove,
@@ -20,16 +17,15 @@ const SavedPostCard = ({
   onRemove: (postId: number) => void;
 }) => {
   return (
-    <div className="rounded-lg overflow-hidden aspect-square group relative">
+    <div className="masonry-item rounded-2xl overflow-hidden shadow-lg group relative">
       <Image
         src={post.image_url}
         alt={post.title}
         width={post.width}
         height={post.height}
-        className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+        className="w-full h-auto block transition-transform duration-300 group-hover:scale-105"
       />
-      {/* This overlay is now always visible on mobile, and appears on hover on desktop */}
-      <div className="absolute inset-0 flex flex-col justify-between p-2 transition-opacity duration-300 md:bg-gradient-to-t from-black/60 to-transparent md:opacity-0 group-hover:opacity-100">
+      <div className="absolute inset-0 flex flex-col justify-between p-2 transition-opacity duration-300 md:bg-black/40 md:opacity-0 group-hover:opacity-100">
         <p className="text-white text-xs font-semibold drop-shadow-md">
           {post.title}
         </p>
@@ -38,7 +34,6 @@ const SavedPostCard = ({
           className="self-end bg-white/80 text-red-600 w-8 h-8 rounded-full flex items-center justify-center shadow-lg hover:bg-white transition-transform hover:scale-110"
           aria-label="Remove post"
         >
-          {/* Remove Icon (Trash Can) */}
           <svg
             className="w-5 h-5"
             fill="none"
@@ -66,8 +61,6 @@ export default function SavedPostsPage() {
   const [filteredPosts, setFilteredPosts] = useState<Post[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
-
-  // State for the toast notification
   const [toastMessage, setToastMessage] = useState("");
   const [showToast, setShowToast] = useState(false);
 
@@ -106,16 +99,12 @@ export default function SavedPostsPage() {
     setFilteredPosts(results);
   }, [searchTerm, savedPosts]);
 
-  // --- Handler for removing a post ---
   const handleRemovePost = async (postId: number) => {
     const message = await toggleSavePost(postId);
     if (message) {
-      // Update state to remove the post from the UI instantly
       const updatedPosts = savedPosts.filter((p) => p.id !== postId);
       setSavedPosts(updatedPosts);
       setFilteredPosts(updatedPosts);
-
-      // Show confirmation toast
       setToastMessage("Post removed from your collection.");
       setShowToast(true);
       setTimeout(() => setShowToast(false), 3000);
@@ -135,7 +124,28 @@ export default function SavedPostsPage() {
   return (
     <>
       <Toast message={toastMessage} show={showToast} />
-      <div className="bg-white md:shadow-lg p-4 md:p-8 min-h-screen">
+      <div className="bg-white md:shadow-lg p-4 md:p-8 min-h-[80vh]">
+        <style jsx global>{`
+          .masonry-grid {
+            column-count: 2;
+            column-gap: 1rem;
+          }
+          @media (min-width: 768px) {
+            .masonry-grid {
+              column-count: 3;
+            }
+          }
+          @media (min-width: 1024px) {
+            .masonry-grid {
+              column-count: 4;
+            }
+          }
+          .masonry-item {
+            break-inside: avoid;
+            margin-bottom: 1rem;
+          }
+        `}</style>
+
         <header className="mb-8">
           <div className="flex justify-start mb-4">
             <Link
@@ -172,7 +182,6 @@ export default function SavedPostsPage() {
             onChange={(e) => setSearchTerm(e.target.value)}
             className="w-full bg-gray-100 border border-gray-300 rounded-full py-3 pl-12 pr-4 text-lg focus:outline-none focus:ring-2 focus:ring-pink-400 transition"
           />
-          {/* --- Corrected the typo in the className here --- */}
           <svg
             className="w-6 h-6 text-gray-400 absolute left-4 top-1/2 -translate-y-1/2"
             fill="none"
@@ -189,7 +198,7 @@ export default function SavedPostsPage() {
         </div>
 
         {filteredPosts.length > 0 ? (
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+          <div className="masonry-grid">
             {filteredPosts.map((post) => (
               <SavedPostCard
                 key={post.id}
