@@ -1,5 +1,3 @@
-// src/app/page.tsx
-
 "use client";
 
 import { useEffect, useState } from "react";
@@ -8,7 +6,8 @@ import api from "@/utils/api";
 import { useAuth } from "@/context/AuthContext";
 import LoginModal from "@/components/LoginModal";
 import Toast from "@/components/Toast";
-import PostGrid from "@/components/PostGrid"; // Import the reusable PostGrid component
+import PostGrid from "@/components/PostGrid";
+import SearchInput from "@/components/SearchInput";
 
 export default function ExplorePage() {
   const [posts, setPosts] = useState<Post[]>([]);
@@ -20,6 +19,14 @@ export default function ExplorePage() {
   const [showLoginModal, setShowLoginModal] = useState(false);
   const [toastMessage, setToastMessage] = useState("");
   const [showToast, setShowToast] = useState(false);
+
+  // Add state to manage the search input's value
+  const [searchTerm, setSearchTerm] = useState("");
+
+  // Filter the posts based on the search term
+  const filteredPosts = posts.filter((post) =>
+    post.title.toLowerCase().includes(searchTerm.toLowerCase())
+  );
 
   useEffect(() => {
     const fetchPosts = async () => {
@@ -60,33 +67,20 @@ export default function ExplorePage() {
       <Toast message={toastMessage} show={showToast} />
 
       <div className="bg-white md:shadow-lg p-4 md:p-8">
-        <header className="mb-8">
-          <div className="relative">
-            <input
-              type="text"
-              placeholder="Search nails, hair styles..."
-              className="w-full bg-gray-100 border border-gray-300 rounded-full py-3 px-6 text-lg focus:outline-none focus:ring-2 focus:ring-pink-400 transition"
-            />
-            <svg
-              className="w-6 h-6 text-gray-400 absolute right-5 top-1/2 -translate-y-1/2"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth="2"
-                d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
-              ></path>
-            </svg>
-          </div>
-        </header>
+        <SearchInput
+          placeholder="Search nails, hair styles..."
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+        />
 
         {isLoading ? (
           <p className="text-center text-gray-500">Loading styles...</p>
         ) : (
-          <PostGrid posts={posts} variant="explore" onSave={handleSaveClick} />
+          <PostGrid
+            posts={filteredPosts}
+            variant="explore"
+            onSave={handleSaveClick}
+          />
         )}
       </div>
     </>

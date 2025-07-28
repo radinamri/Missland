@@ -7,7 +7,8 @@ import Link from "next/link";
 import { Post } from "@/types";
 import api from "@/utils/api";
 import Toast from "@/components/Toast";
-import PostGrid from "@/components/PostGrid"; // Import the reusable PostGrid component
+import PostGrid from "@/components/PostGrid";
+import SearchInput from "@/components/SearchInput";
 
 export default function SavedPostsPage() {
   const { user, tokens, isLoading: isAuthLoading, toggleSavePost } = useAuth();
@@ -109,27 +110,12 @@ export default function SavedPostsPage() {
         </header>
 
         {/* Search Bar */}
-        <div className="relative mb-8">
-          <input
-            type="text"
-            placeholder="Search in your saved posts..."
+        <div className="mb-8">
+          <SearchInput
+            placeholder="Search nails, hair styles..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full bg-gray-100 border border-gray-300 rounded-full py-3 pl-12 pr-4 text-lg focus:outline-none focus:ring-2 focus:ring-pink-400 transition"
           />
-          <svg
-            className="w-6 h-6 text-gray-400 absolute left-4 top-1/2 -translate-y-1/2"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth="2"
-              d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
-            ></path>
-          </svg>
         </div>
 
         {filteredPosts.length > 0 ? (
