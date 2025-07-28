@@ -5,10 +5,17 @@ import PostCard from "./PostCard";
 
 interface PostGridProps {
   posts: Post[];
-  onSaveClick: (postId: number) => void;
+  variant: "explore" | "saved";
+  onSave?: (postId: number) => void;
+  onRemove?: (postId: number) => void;
 }
 
-export default function PostGrid({ posts, onSaveClick }: PostGridProps) {
+export default function PostGrid({
+  posts,
+  variant,
+  onSave,
+  onRemove,
+}: PostGridProps) {
   return (
     <>
       <style jsx global>{`
@@ -33,7 +40,13 @@ export default function PostGrid({ posts, onSaveClick }: PostGridProps) {
       `}</style>
       <div className="masonry-grid">
         {posts.map((post) => (
-          <PostCard key={post.id} post={post} onSaveClick={onSaveClick} />
+          <PostCard
+            key={post.id}
+            post={post}
+            variant={variant}
+            onSave={onSave}
+            onRemove={onRemove}
+          />
         ))}
       </div>
     </>

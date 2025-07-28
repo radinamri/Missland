@@ -1,3 +1,5 @@
+// src/app/page.tsx
+
 "use client";
 
 import { useEffect, useState } from "react";
@@ -6,13 +8,15 @@ import api from "@/utils/api";
 import { useAuth } from "@/context/AuthContext";
 import LoginModal from "@/components/LoginModal";
 import Toast from "@/components/Toast";
-import PostGrid from "@/components/PostGrid"; // Import the new PostGrid component
+import PostGrid from "@/components/PostGrid"; // Import the reusable PostGrid component
 
 export default function ExplorePage() {
   const [posts, setPosts] = useState<Post[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  // Reverted to the simpler useAuth destructuring
   const { user, toggleSavePost } = useAuth();
 
+  // Restored local state for the modal and toast
   const [showLoginModal, setShowLoginModal] = useState(false);
   const [toastMessage, setToastMessage] = useState("");
   const [showToast, setShowToast] = useState(false);
@@ -32,6 +36,7 @@ export default function ExplorePage() {
     fetchPosts();
   }, []);
 
+  // Reverted to the simpler handleSaveClick logic
   const handleSaveClick = async (postId: number) => {
     if (!user) {
       setShowLoginModal(true);
@@ -51,6 +56,7 @@ export default function ExplorePage() {
         isOpen={showLoginModal}
         onClose={() => setShowLoginModal(false)}
       />
+      {/* Restored the local Toast component */}
       <Toast message={toastMessage} show={showToast} />
 
       <div className="bg-white md:shadow-lg p-4 md:p-8">
@@ -80,7 +86,7 @@ export default function ExplorePage() {
         {isLoading ? (
           <p className="text-center text-gray-500">Loading styles...</p>
         ) : (
-          <PostGrid posts={posts} onSaveClick={handleSaveClick} />
+          <PostGrid posts={posts} variant="explore" onSave={handleSaveClick} />
         )}
       </div>
     </>

@@ -6,52 +6,8 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Post } from "@/types";
 import api from "@/utils/api";
-import Image from "next/image";
 import Toast from "@/components/Toast";
-
-const SavedPostCard = ({
-  post,
-  onRemove,
-}: {
-  post: Post;
-  onRemove: (postId: number) => void;
-}) => {
-  return (
-    <div className="masonry-item rounded-2xl overflow-hidden shadow-lg group relative">
-      <Image
-        src={post.image_url}
-        alt={post.title}
-        width={post.width}
-        height={post.height}
-        className="w-full h-auto block transition-transform duration-300 group-hover:scale-105"
-      />
-      <div className="absolute inset-0 flex flex-col justify-between p-2 transition-opacity duration-300 md:bg-black/40 md:opacity-0 group-hover:opacity-100">
-        <p className="text-white text-xs font-semibold drop-shadow-md">
-          {post.title}
-        </p>
-        <button
-          onClick={() => onRemove(post.id)}
-          className="self-end bg-white/80 text-red-600 w-8 h-8 rounded-full flex items-center justify-center shadow-lg hover:bg-white transition-transform hover:scale-110"
-          aria-label="Remove post"
-        >
-          <svg
-            className="w-5 h-5"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth="2"
-              d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
-            ></path>
-          </svg>
-        </button>
-      </div>
-    </div>
-  );
-};
+import PostGrid from "@/components/PostGrid"; // Import the reusable PostGrid component
 
 export default function SavedPostsPage() {
   const { user, tokens, isLoading: isAuthLoading, toggleSavePost } = useAuth();
@@ -125,27 +81,6 @@ export default function SavedPostsPage() {
     <>
       <Toast message={toastMessage} show={showToast} />
       <div className="bg-white md:shadow-lg p-4 md:p-8 min-h-[80vh]">
-        <style jsx global>{`
-          .masonry-grid {
-            column-count: 2;
-            column-gap: 1rem;
-          }
-          @media (min-width: 768px) {
-            .masonry-grid {
-              column-count: 3;
-            }
-          }
-          @media (min-width: 1024px) {
-            .masonry-grid {
-              column-count: 4;
-            }
-          }
-          .masonry-item {
-            break-inside: avoid;
-            margin-bottom: 1rem;
-          }
-        `}</style>
-
         <header className="mb-8">
           <div className="flex justify-start mb-4">
             <Link
@@ -198,15 +133,12 @@ export default function SavedPostsPage() {
         </div>
 
         {filteredPosts.length > 0 ? (
-          <div className="masonry-grid">
-            {filteredPosts.map((post) => (
-              <SavedPostCard
-                key={post.id}
-                post={post}
-                onRemove={handleRemovePost}
-              />
-            ))}
-          </div>
+          // Replaced the duplicated grid with the reusable PostGrid component
+          <PostGrid
+            posts={filteredPosts}
+            variant="saved"
+            onRemove={handleRemovePost}
+          />
         ) : (
           <div className="text-center py-12">
             <h2 className="text-xl font-semibold text-gray-700 mb-2">
