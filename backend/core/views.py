@@ -195,3 +195,13 @@ class ArticleDetailView(generics.RetrieveAPIView):
     serializer_class = ArticleDetailSerializer
     permission_classes = [AllowAny]
     lookup_field = 'slug'  # Use the slug to find the article
+
+
+class PostDetailView(generics.RetrieveAPIView):
+    """
+    API view to retrieve a single post by its ID.
+    """
+    queryset = Post.objects.all()
+    serializer_class = PostSerializer
+    permission_classes = [AllowAny]
+    # The lookup field 'pk' (primary key) is used by default, which matches <int:pk> in the URL
