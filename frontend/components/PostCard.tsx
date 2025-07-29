@@ -2,6 +2,7 @@
 
 import { Post } from "@/types";
 import Image from "next/image";
+import Link from "next/link";
 
 interface PostCardProps {
   post: Post;
@@ -49,9 +50,12 @@ export default function PostCard({
           {/* Conditionally render buttons based on the variant */}
           {variant === "explore" && onSave && (
             <>
-              <button className="bg-white text-gray-800 font-semibold py-2 px-4 rounded-full shadow-lg hover:bg-pink-100 transition-transform hover:scale-105">
+              <Link
+                href={`/try-on/${post.id}`}
+                className="bg-white text-gray-800 font-semibold py-2 px-4 rounded-full shadow-lg hover:bg-pink-100 transition-transform hover:scale-105"
+              >
                 Try On
-              </button>
+              </Link>
               <button
                 onClick={() => onSave(post.id)}
                 className="bg-pink-500 text-white w-10 h-10 rounded-full flex items-center justify-center shadow-lg hover:bg-pink-600 transition-transform hover:scale-105"
