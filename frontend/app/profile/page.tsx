@@ -307,7 +307,7 @@ export default function ProfilePage() {
                   }
                 />
                 <SettingsListItem
-                  href="/profile/support"
+                  href="/support"
                   title="Technical Support"
                   icon={
                     <svg
