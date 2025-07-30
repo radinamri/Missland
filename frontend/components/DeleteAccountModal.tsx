@@ -52,7 +52,7 @@ export default function DeleteAccountModal({
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="w-full px-4 py-2 bg-gray-100 border-transparent rounded-md focus:ring-2 focus:ring-red-500 focus:border-transparent transition mb-4"
+              className="w-full px-4 py-2 placeholder:text-gray-400 text-gray-500 bg-gray-100 border-transparent rounded-md focus:ring-2 focus:ring-red-500 focus:border-transparent transition mb-4"
               placeholder="Your Password"
               required
             />

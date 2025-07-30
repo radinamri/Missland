@@ -141,7 +141,7 @@ export default function ProfilePage() {
         <label className="block text-sm font-medium text-gray-700 mb-1">
           Username
         </label>
-        <div className="flex items-center space-x-2">
+        <div className="flex items-center space-x-2 text-gray-500">
           <FormInput
             type="text"
             value={newUsername}
@@ -160,7 +160,7 @@ export default function ProfilePage() {
         <label className="block text-sm font-medium text-gray-700 mb-1">
           Change Email
         </label>
-        <div className="flex items-center space-x-2">
+        <div className="flex items-center space-x-2 text-gray-500">
           <FormInput
             type="email"
             value={newEmail}
@@ -180,24 +180,26 @@ export default function ProfilePage() {
         <label className="block text-sm font-medium text-gray-700">
           Change Password
         </label>
-        <FormInput
-          type="password"
-          value={oldPassword}
-          onChange={(e) => setOldPassword(e.target.value)}
-          placeholder="Current Password"
-        />
-        <FormInput
-          type="password"
-          value={newPassword1}
-          onChange={(e) => setNewPassword1(e.target.value)}
-          placeholder="New Password"
-        />
-        <FormInput
-          type="password"
-          value={newPassword2}
-          onChange={(e) => setNewPassword2(e.target.value)}
-          placeholder="Confirm New Password"
-        />
+        <div className="space-y-3 text-gray-500">
+          <FormInput
+            type="password"
+            value={oldPassword}
+            onChange={(e) => setOldPassword(e.target.value)}
+            placeholder="Current Password"
+          />
+          <FormInput
+            type="password"
+            value={newPassword1}
+            onChange={(e) => setNewPassword1(e.target.value)}
+            placeholder="New Password"
+          />
+          <FormInput
+            type="password"
+            value={newPassword2}
+            onChange={(e) => setNewPassword2(e.target.value)}
+            placeholder="Confirm New Password"
+          />
+        </div>
         <button
           type="submit"
           className="bg-pink-500 text-white font-semibold py-2 px-4 rounded-md hover:bg-pink-600 transition"
