@@ -3,7 +3,8 @@
 import { useEffect, useState, ReactNode } from "react";
 import { useAuth } from "@/context/AuthContext";
 import { useRouter } from "next/navigation";
-import Link from "next/link"; // Import Link
+import Link from "next/link";
+import DeleteAccountModal from "@/components/DeleteAccountModal";
 
 // --- Reusable Components for the design ---
 
@@ -82,7 +83,7 @@ export default function ProfilePage() {
   const [newEmail, setNewEmail] = useState("");
   const [isEditing, setIsEditing] = useState(false);
 
-  // Removed state for saved posts as it's now on a separate page
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
 
   useEffect(() => {
     if (user) {
@@ -323,6 +324,29 @@ export default function ProfilePage() {
                   }
                 />
                 <button
+                  onClick={() => setShowDeleteModal(true)}
+                  className="w-full flex items-center text-left p-3 rounded-lg text-red-600 hover:bg-red-50 transition-colors"
+                >
+                  <div className="w-8 h-8 flex items-center justify-center mr-4">
+                    <svg
+                      className="w-6 h-6"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth="2"
+                        d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+                      ></path>
+                    </svg>
+                  </div>
+                  <span className="flex-grow font-semibold">
+                    Delete Account
+                  </span>
+                </button>
+                <button
                   onClick={logoutUser}
                   className="w-full flex items-center text-left p-3 rounded-lg text-red-600 hover:bg-red-50 transition-colors"
                 >
@@ -348,6 +372,10 @@ export default function ProfilePage() {
           </div>
         </div>
       </div>
+      <DeleteAccountModal
+        isOpen={showDeleteModal}
+        onClose={() => setShowDeleteModal(false)}
+      />
     </div>
   );
 }

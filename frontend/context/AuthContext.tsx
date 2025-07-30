@@ -32,6 +32,10 @@ interface AuthContextType {
   changePassword: (credentials: PasswordChangeCredentials) => Promise<void>;
   initiateEmailChange: (newEmail: string) => Promise<void>;
   toggleSavePost: (postId: number) => Promise<string | null>;
+  deleteAccount: (verification: {
+    password?: string;
+    access_token?: string;
+  }) => Promise<boolean>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -201,6 +205,30 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
+  const deleteAccount = async (verification: {
+    password?: string;
+    access_token?: string;
+  }): Promise<boolean> => {
+    try {
+      await api.delete("/api/auth/profile/delete/", { data: verification });
+      alert("Your account has been successfully deleted.");
+      // Log the user out completely
+      setTokens(null);
+      setUser(null);
+      localStorage.clear();
+      router.push("/"); // Redirect to homepage
+      return true;
+    } catch (error) {
+      console.error("Failed to delete account", error);
+      if (isAxiosError(error)) {
+        alert(
+          "Failed to delete account: " + JSON.stringify(error.response?.data)
+        );
+      }
+      return false;
+    }
+  };
+
   const contextData: AuthContextType = {
     user,
     tokens,
@@ -213,6 +241,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     changePassword,
     initiateEmailChange,
     toggleSavePost,
+    deleteAccount,
   };
 
   return (
