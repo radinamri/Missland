@@ -3,7 +3,7 @@ from rest_framework.response import Response
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from .serializers import UserRegistrationSerializer, UserProfileSerializer, UserProfileUpdateSerializer, \
     EmailChangeInitiateSerializer, EmailChangeConfirmSerializer, PostSerializer, ArticleListSerializer, \
-    ArticleDetailSerializer
+    ArticleDetailSerializer, UserDeleteSerializer
 from .models import User, Post, Article
 from allauth.socialaccount.providers.google.views import GoogleOAuth2Adapter
 from allauth.socialaccount.providers.oauth2.client import OAuth2Client
@@ -205,3 +205,21 @@ class PostDetailView(generics.RetrieveAPIView):
     serializer_class = PostSerializer
     permission_classes = [AllowAny]
     # The lookup field 'pk' (primary key) is used by default, which matches <int:pk> in the URL
+
+
+class UserDeleteView(generics.GenericAPIView):
+    """
+    Handles the deletion of the currently authenticated user's account.
+    Requires re-authentication via password or Google token.
+    """
+    serializer_class = UserDeleteSerializer
+    permission_classes = [IsAuthenticated]
+
+    def delete(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        user = request.user
+        user.delete()
+
+        return Response({"detail": "Account deleted successfully."}, status=status.HTTP_204_NO_CONTENT)

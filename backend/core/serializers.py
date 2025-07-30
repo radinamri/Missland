@@ -1,3 +1,4 @@
+import requests
 from django.contrib.auth.password_validation import validate_password
 from rest_framework import serializers
 from .models import User, Post, Article
@@ -42,12 +43,17 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
 
 class UserProfileSerializer(serializers.ModelSerializer):
     """
-    Serializer for the User model, exposing safe fields for profile display.
+    Serializer for the User model, exposing safe fields for profile display
+    and indicating whether the user has a password set.
     """
+    has_password = serializers.SerializerMethodField()
 
     class Meta:
         model = User
-        fields = ('id', 'email', 'username')
+        fields = ('id', 'email', 'username', 'has_password')
+
+    def get_has_password(self, obj):
+        return obj.has_usable_password()
 
 
 class UserProfileUpdateSerializer(serializers.ModelSerializer):
@@ -95,3 +101,42 @@ class ArticleDetailSerializer(serializers.ModelSerializer):
     class Meta:
         model = Article
         fields = ('id', 'title', 'slug', 'content', 'thumbnail_url', 'published_date')
+
+
+class UserDeleteSerializer(serializers.Serializer):
+    """
+    Serializer to confirm user identity before account deletion.
+    Accepts either a password or a Google access_token.
+    """
+    password = serializers.CharField(required=False, allow_blank=True)
+    access_token = serializers.CharField(required=False, allow_blank=True,
+                                         help_text="A Google access token for re-authentication.")
+
+    def validate(self, data):
+        user = self.context['request'].user
+        password = data.get('password')
+        access_token = data.get('access_token')
+
+        # Check if the user has a usable password (i.e., didn't sign up with Google)
+        if user.has_usable_password():
+            if not password or not user.check_password(password):
+                raise serializers.ValidationError('Incorrect password. Please try again.')
+        # If the user signed up with Google, they must provide a Google access token
+        else:
+            if not access_token:
+                raise serializers.ValidationError('Google re-authentication is required to delete this account.')
+
+            # Verify the Google access token
+            try:
+                response = requests.get(f'https://www.googleapis.com/oauth2/v3/tokeninfo?access_token={access_token}')
+                response.raise_for_status()
+                google_data = response.json()
+
+                # Check if the email from Google matches the user's email
+                if google_data.get('email') != user.email:
+                    raise serializers.ValidationError('Google token is invalid or does not match the current user.')
+
+            except requests.exceptions.RequestException:
+                raise serializers.ValidationError('Failed to verify Google token. Please try again.')
+
+        return data

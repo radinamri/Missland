@@ -1,6 +1,7 @@
 from django.urls import path
 from .views import UserRegistrationView, GoogleLogin, UserProfileView, EmailChangeInitiateView, EmailChangeConfirmView, \
-    PostListView, ToggleSavePostView, SavedPostsListView, ArticleListView, ArticleDetailView, PostDetailView
+    PostListView, ToggleSavePostView, SavedPostsListView, ArticleListView, ArticleDetailView, PostDetailView, \
+    UserDeleteView
 from dj_rest_auth.views import PasswordChangeView
 
 urlpatterns = [
@@ -16,4 +17,5 @@ urlpatterns = [
     path('articles/', ArticleListView.as_view(), name='article-list'),
     path('articles/<slug:slug>/', ArticleDetailView.as_view(), name='article-detail'),
     path('posts/<int:pk>/', PostDetailView.as_view(), name='post-detail'),
+    path('profile/delete/', UserDeleteView.as_view(), name='user-delete'),
 ]
