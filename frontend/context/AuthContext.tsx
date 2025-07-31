@@ -24,6 +24,9 @@ interface AuthContextType {
   user: User | null;
   tokens: AuthTokens | null;
   isLoading: boolean;
+  toastMessage: string;
+  showToast: boolean;
+  showToastWithMessage: (message: string) => void;
   loginUser: (credentials: LoginCredentials) => Promise<void>;
   logoutUser: () => void;
   registerUser: (credentials: RegisterCredentials) => Promise<void>;
@@ -45,6 +48,16 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [tokens, setTokens] = useState<AuthTokens | null>(null);
   const [loading, setLoading] = useState(true);
   const router = useRouter();
+
+  // State and function for global toast notifications
+  const [toastMessage, setToastMessage] = useState("");
+  const [showToast, setShowToast] = useState(false);
+
+  const showToastWithMessage = (message: string) => {
+    setToastMessage(message);
+    setShowToast(true);
+    setTimeout(() => setShowToast(false), 3000);
+  };
 
   const logoutUser = useCallback(() => {
     setTokens(null);
@@ -233,6 +246,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     user,
     tokens,
     isLoading: loading,
+    toastMessage,
+    showToast,
+    showToastWithMessage,
     loginUser,
     logoutUser,
     registerUser,

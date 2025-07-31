@@ -5,6 +5,7 @@ import { AuthProvider } from "@/context/AuthContext";
 import { GoogleOAuthProvider } from "@react-oauth/google";
 import Header from "@/components/Header";
 import BottomNav from "@/components/BottomNav";
+import ClientLayout from "@/components/ClientLayout";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -23,8 +24,10 @@ export const metadata: Metadata = {
 
 export default function RootLayout({
   children,
+  modal,
 }: Readonly<{
   children: React.ReactNode;
+  modal: React.ReactNode;
 }>) {
   return (
     <html lang="en">
@@ -39,7 +42,7 @@ export default function RootLayout({
           <AuthProvider>
             <div className="flex flex-col min-h-screen">
               <Header />
-              {children}
+              <ClientLayout modal={modal}>{children}</ClientLayout>
               <div className="md:pb-0 pb-20">
                 <BottomNav />
               </div>

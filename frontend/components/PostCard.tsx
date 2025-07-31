@@ -3,10 +3,11 @@
 import { Post } from "@/types";
 import Image from "next/image";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 
 interface PostCardProps {
   post: Post;
-  variant: "explore" | "saved"; // Determines which buttons to show
+  variant: "explore" | "saved";
   onSave?: (postId: number) => void;
   onRemove?: (postId: number) => void;
 }
@@ -17,8 +18,39 @@ export default function PostCard({
   onSave,
   onRemove,
 }: PostCardProps) {
+  const router = useRouter();
+
+  // Handler for the Try On button
+  const handleTryOnClick = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    router.push(`/try-on/${post.id}`);
+  };
+
+  // Handler for the Save button
+  const handleSaveClick = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (onSave) {
+      onSave(post.id);
+    }
+  };
+
+  // Handler for the Remove button
+  const handleRemoveClick = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (onRemove) {
+      onRemove(post.id);
+    }
+  };
+
   return (
-    <div className="masonry-item group relative rounded-2xl overflow-hidden shadow-lg hover:shadow-xl transition-shadow duration-300">
+    // The entire card is a link to the post detail page
+    <Link
+      href={`/post/${post.id}`}
+      className="masonry-item group relative rounded-2xl overflow-hidden shadow-lg hover:shadow-xl transition-shadow duration-300 block"
+    >
       <Image
         src={post.image_url}
         alt={post.title}
@@ -33,12 +65,12 @@ export default function PostCard({
         ${
           variant === "explore"
             ? "md:bg-black/40 md:opacity-0 group-hover:opacity-100"
-            : ""
+            : "" // For mobile explore, gradient is visible. For desktop, it appears on hover.
         }
         ${
           variant === "saved"
             ? "md:bg-black/40 md:opacity-0 group-hover:opacity-100"
-            : ""
+            : "" // For mobile saved, gradient is visible. For desktop, it appears on hover.
         }
       `}
       >
@@ -48,16 +80,16 @@ export default function PostCard({
 
         <div className="flex items-center justify-between">
           {/* Conditionally render buttons based on the variant */}
-          {variant === "explore" && onSave && (
+          {variant === "explore" && (
             <>
-              <Link
-                href={`/try-on/${post.id}`}
+              <button
+                onClick={handleTryOnClick}
                 className="bg-white text-gray-800 font-semibold py-2 px-4 rounded-xl shadow-lg hover:bg-pink-100 transition-transform hover:scale-105"
               >
                 Try On
-              </Link>
+              </button>
               <button
-                onClick={() => onSave(post.id)}
+                onClick={handleSaveClick}
                 className="bg-pink-500 text-white w-10 h-10 rounded-full flex items-center justify-center shadow-lg hover:bg-pink-600 transition-transform hover:scale-105"
               >
                 <svg
@@ -77,12 +109,12 @@ export default function PostCard({
             </>
           )}
 
-          {variant === "saved" && onRemove && (
+          {variant === "saved" && (
             <>
               <div></div>{" "}
               {/* Empty div to push the remove button to the right */}
               <button
-                onClick={() => onRemove(post.id)}
+                onClick={handleRemoveClick}
                 className="self-end bg-white/80 text-red-600 w-8 h-8 rounded-full flex items-center justify-center shadow-lg hover:bg-white transition-transform hover:scale-110"
                 aria-label="Remove post"
               >
@@ -104,6 +136,6 @@ export default function PostCard({
           )}
         </div>
       </div>
-    </div>
+    </Link>
   );
 }

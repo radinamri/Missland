@@ -1,3 +1,4 @@
+import random
 from rest_framework import generics, status
 from rest_framework.response import Response
 from rest_framework.permissions import AllowAny, IsAuthenticated
@@ -223,3 +224,24 @@ class UserDeleteView(generics.GenericAPIView):
         user.delete()
 
         return Response({"detail": "Account deleted successfully."}, status=status.HTTP_204_NO_CONTENT)
+
+
+class MorePostsView(generics.ListAPIView):
+    """
+    Returns a random selection of posts, excluding a specified post ID.
+    """
+    serializer_class = PostSerializer
+    permission_classes = [AllowAny]
+
+    def get_queryset(self):
+        # Get the post ID to exclude from the URL
+        exclude_id = self.kwargs.get('post_id')
+        # Get all post IDs, excluding the current one
+        all_other_post_ids = list(Post.objects.exclude(id=exclude_id).values_list('id', flat=True))
+
+        # Get a random sample of 20 IDs (or fewer if not enough posts exist)
+        sample_size = min(len(all_other_post_ids), 20)
+        random_ids = random.sample(all_other_post_ids, sample_size)
+
+        # Return the queryset for the randomly selected posts
+        return Post.objects.filter(id__in=random_ids)
