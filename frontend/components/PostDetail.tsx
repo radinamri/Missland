@@ -21,21 +21,26 @@ export default function PostDetail({ postId }: PostDetailProps) {
   useEffect(() => {
     if (postId) {
       setIsLoading(true);
-      // Fetch the main post
-      api
-        .get<Post>(`/api/auth/posts/${postId}/`)
-        .then((res) => setPost(res.data));
-      // Fetch other posts to explore
-      api
-        .get<Post[]>(`/api/auth/posts/${postId}/more/`)
-        .then((res) => setMorePosts(res.data));
-      setIsLoading(false);
+      // Fetch the main post and "more posts" in parallel for faster loading
+      Promise.all([
+        api.get<Post>(`/api/auth/posts/${postId}/`),
+        api.get<Post[]>(`/api/auth/posts/${postId}/more/`),
+      ])
+        .then(([postResponse, morePostsResponse]) => {
+          setPost(postResponse.data);
+          setMorePosts(morePostsResponse.data);
+        })
+        .catch((error) => {
+          console.error("Failed to fetch post details", error);
+        })
+        .finally(() => {
+          setIsLoading(false);
+        });
     }
   }, [postId]);
 
   const handleSaveClick = async (id: number) => {
     if (!user) {
-      // This could be replaced with a login modal trigger in the future
       alert("Please log in to save posts.");
       return;
     }
@@ -55,24 +60,26 @@ export default function PostDetail({ postId }: PostDetailProps) {
 
   return (
     <div className="bg-white overflow-y-auto max-h-[90vh]">
-      <div className="p-4 md:p-6 lg:p-8">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 md:gap-8">
-          {/* Left: Image */}
-          <div className="overflow-hidden">
+      <div className="p-4 md:p-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto rounded-4xl shadow-lg p-4 md:p-8">
+          {/* Left Column: Image */}
+          <div className="w-full">
             <Image
               src={post.image_url}
               alt={post.title}
               width={post.width}
               height={post.height}
-              className="w-full h-auto rounded-2xl md:max-w-sm"
+              className="w-full h-auto rounded-2xl"
+              priority
             />
           </div>
-          {/* Right: Details */}
+          {/* Right Column: Details */}
           <div className="flex flex-col">
-            <div className="flex items-center justify-end mb-4 space-x-2">
+            {/* Action Bar */}
+            <div className="flex items-center justify-end mb-6 space-x-3">
               <Link
                 href={`/try-on/${post.id}`}
-                className="bg-gray-200 text-gray-800 font-bold py-3 px-6 rounded-2xl hover:bg-gray-300 transition"
+                className="bg-gray-100 text-gray-800 font-bold py-3 px-6 rounded-2xl hover:bg-gray-200 transition"
               >
                 Try On
               </Link>
@@ -83,16 +90,39 @@ export default function PostDetail({ postId }: PostDetailProps) {
                 Save
               </button>
             </div>
-            <h1 className="text-2xl md:text-3xl font-bold text-gray-900">
-              {post.title}
-            </h1>
-            <p className="text-gray-500 mt-2">Style by NANA-AI</p>
+
+            {/* Title and Info */}
+            <div className="space-y-4">
+              <h1 className="text-4xl font-bold text-gray-900 leading-tight">
+                {post.title}
+              </h1>
+              <div className="flex items-center space-x-3">
+                <div className="w-10 h-10 bg-pink-100 rounded-full flex items-center justify-center text-pink-600 font-bold">
+                  N
+                </div>
+                <div>
+                  <p className="font-semibold text-gray-800">NANA-AI</p>
+                  <p className="text-sm text-gray-500">Curated Style</p>
+                </div>
+              </div>
+              <div className="flex flex-wrap gap-2 pt-2">
+                {post.tags &&
+                  Object.values(post.tags).map((tag) => (
+                    <span
+                      key={tag}
+                      className="bg-gray-100 text-gray-600 text-sm font-medium px-3 py-1 rounded-lg"
+                    >
+                      {tag}
+                    </span>
+                  ))}
+              </div>
+            </div>
           </div>
         </div>
       </div>
 
-      <div className="px-4 md:px-6 lg:px-8 py-8 border-t">
-        <h2 className="text-xl font-bold text-gray-800 mb-6 text-center">
+      <div className="px-4 md:px-8 py-8">
+        <h2 className="text-2xl font-bold text-gray-800 mb-6 text-center">
           More to explore
         </h2>
         <PostGrid
