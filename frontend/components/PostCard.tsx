@@ -52,7 +52,7 @@ export default function PostCard({
             <>
               <Link
                 href={`/try-on/${post.id}`}
-                className="bg-white text-gray-800 font-semibold py-2 px-4 rounded-full shadow-lg hover:bg-pink-100 transition-transform hover:scale-105"
+                className="bg-white text-gray-800 font-semibold py-2 px-4 rounded-xl shadow-lg hover:bg-pink-100 transition-transform hover:scale-105"
               >
                 Try On
               </Link>
