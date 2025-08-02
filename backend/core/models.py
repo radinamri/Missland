@@ -1,6 +1,7 @@
 from django.contrib.auth.models import AbstractUser
 from django.db import models
 from django.utils.translation import gettext_lazy as _
+from django.conf import settings
 
 
 class User(AbstractUser):
@@ -64,3 +65,18 @@ class Article(models.Model):
 
     def __str__(self):
         return self.title
+
+
+class InterestProfile(models.Model):
+    """
+    Stores a user's calculated interests based on their activity.
+    """
+    user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='interest_profile')
+
+    # This will store scores for each tag, e.g., {"red": 5, "almond": 3, "blue": 1}
+    tag_scores = models.JSONField(default=dict)
+
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return f"{self.user.email}'s Interest Profile"

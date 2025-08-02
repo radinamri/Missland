@@ -5,12 +5,13 @@ from rest_framework.permissions import AllowAny, IsAuthenticated
 from .serializers import UserRegistrationSerializer, UserProfileSerializer, UserProfileUpdateSerializer, \
     EmailChangeInitiateSerializer, EmailChangeConfirmSerializer, PostSerializer, ArticleListSerializer, \
     ArticleDetailSerializer, UserDeleteSerializer
-from .models import User, Post, Article
+from .models import User, Post, Article, InterestProfile
 from allauth.socialaccount.providers.google.views import GoogleOAuth2Adapter
 from allauth.socialaccount.providers.oauth2.client import OAuth2Client
 from dj_rest_auth.registration.views import SocialLoginView
 from django.core.mail import send_mail
 from django.contrib.auth.tokens import default_token_generator
+from django.db.models import Q, Case, When, IntegerField
 from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
 from django.utils.encoding import force_bytes, force_str
 from django.conf import settings
@@ -145,7 +146,8 @@ class PostListView(generics.ListAPIView):
 
 class ToggleSavePostView(APIView):
     """
-    Toggles the saved state of a post for the current user.
+    Toggles the saved state of a post for the current user and updates
+    their interest profile based on the post's tags.
     """
     permission_classes = [IsAuthenticated]
 
@@ -154,14 +156,37 @@ class ToggleSavePostView(APIView):
             post = Post.objects.get(id=post_id)
             user = request.user
 
+            # Get or create the user's interest profile
+            # The signal handles creation, but 'get_or_create' is a safe fallback.
+            profile, created = InterestProfile.objects.get_or_create(user=user)
+
+            # The amount to change the score by
+            score_change = 0
+
             if user in post.saved_by.all():
-                # User has already saved this post, so unsave it
+                # User is UNSAVING the post
                 post.saved_by.remove(user)
+                score_change = -1  # Decrease score
                 message = 'Post unsaved successfully.'
             else:
-                # User has not saved this post, so save it
+                # User is SAVING the post
                 post.saved_by.add(user)
+                score_change = 1  # Increase score
                 message = 'Post saved successfully.'
+
+            # --- This is the new logic to update the interest profile ---
+            if post.tags and isinstance(post.tags, dict):
+                for category, tag_value in post.tags.items():
+                    if tag_value:  # Ensure the tag value is not empty
+                        # Get the current score for this tag, default to 0 if it doesn't exist
+                        current_score = profile.tag_scores.get(tag_value, 0)
+                        # Calculate the new score, ensuring it doesn't go below zero
+                        new_score = max(0, current_score + score_change)
+                        # Update the score in the dictionary
+                        profile.tag_scores[tag_value] = new_score
+
+                # Save the updated profile
+                profile.save()
 
             return Response({'detail': message}, status=status.HTTP_200_OK)
 
@@ -245,3 +270,64 @@ class MorePostsView(generics.ListAPIView):
 
         # Return the queryset for the randomly selected posts
         return Post.objects.filter(id__in=random_ids)
+
+
+class ForYouPostListView(generics.ListAPIView):
+    """
+    Generates a personalized "For You" feed for authenticated users,
+    or a generic feed for guests.
+    """
+    serializer_class = PostSerializer
+    permission_classes = [AllowAny]  # Allow guests to see a generic feed
+
+    def get_queryset(self):
+        user = self.request.user
+
+        # If the user is a guest, return the latest posts
+        if not user.is_authenticated:
+            return Post.objects.all().order_by('-created_at')[:40]  # Limit to 40 recent posts
+
+        try:
+            profile = user.interest_profile
+            tag_scores = profile.tag_scores
+
+            if not tag_scores:
+                # If the user has no scores yet, return the latest posts
+                return Post.objects.all().order_by('-created_at')[:40]
+
+            # Find the user's top 5 favorite tags
+            top_tags = sorted(tag_scores, key=tag_scores.get, reverse=True)[:5]
+
+            # --- This is the core recommendation logic ---
+
+            # 1. Build a query to find all posts that match at least one of the top tags
+            tag_queries = Q()
+            for tag in top_tags:
+                # Dynamically create Q objects for each tag category
+                tag_queries |= Q(tags__color=tag) | Q(tags__style=tag) | Q(tags__type=tag)
+
+            # 2. Prioritize the posts
+            # We create a 'relevance' score. Posts matching more of the user's
+            # top tags will be ranked higher.
+            relevance_ordering = Case(
+                *[When(tags__icontains=tag, then=score) for tag, score in tag_scores.items()],
+                default=0,
+                output_field=IntegerField()
+            )
+
+            # 3. Get the personalized queryset
+            # We get posts matching the tags, annotate them with our relevance score,
+            # and order them by that score. We also add some randomness by ordering
+            # by created_at as a secondary factor.
+            queryset = Post.objects.filter(tag_queries).annotate(
+                relevance=relevance_ordering
+            ).order_by('-relevance', '-created_at')
+
+            # To keep the feed fresh, we can mix in some random popular posts later.
+            # For now, this provides a solid, personalized feed.
+
+            return queryset[:40]  # Limit the feed size
+
+        except InterestProfile.DoesNotExist:
+            # Fallback for the rare case a profile doesn't exist
+            return Post.objects.all().order_by('-created_at')[:40]
