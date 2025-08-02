@@ -331,3 +331,74 @@ class ForYouPostListView(generics.ListAPIView):
         except InterestProfile.DoesNotExist:
             # Fallback for the rare case a profile doesn't exist
             return Post.objects.all().order_by('-created_at')[:40]
+
+
+class TrackPostClickView(APIView):
+    """
+    Tracks when a user clicks on a post to view its details.
+    This is an implicit signal of interest.
+    """
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request, *args, **kwargs):
+        post_id = request.data.get('post_id')
+        if not post_id:
+            return Response({'detail': 'Post ID is required.'}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            post = Post.objects.get(id=post_id)
+            user = request.user
+            profile, created = InterestProfile.objects.get_or_create(user=user)
+
+            # A click is a weaker signal than a save, so we increment by a smaller amount.
+            score_change = 0.1
+
+            if post.tags and isinstance(post.tags, list):
+                for tag in post.tags:
+                    if tag:
+                        current_score = profile.tag_scores.get(tag, 0)
+                        profile.tag_scores[tag] = current_score + score_change
+
+                profile.save()
+
+            # Return 204 No Content as the frontend doesn't need a response body.
+            return Response(status=status.HTTP_204_NO_CONTENT)
+
+        except Post.DoesNotExist:
+            return Response({'detail': 'Post not found.'}, status=status.HTTP_404_NOT_FOUND)
+
+
+class TrackSearchQueryView(APIView):
+    """
+    Tracks the search terms a user enters.
+    This is a strong signal of interest.
+    """
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request, *args, **kwargs):
+        query = request.data.get('query')
+        if not query:
+            return Response({'detail': 'Query is required.'}, status=status.HTTP_400_BAD_REQUEST)
+
+        user = request.user
+        profile, created = InterestProfile.objects.get_or_create(user=user)
+
+        # A search is a strong signal, so we increment by a larger amount.
+        score_change = 0.5
+
+        # Simple tokenization: split the query into words
+        search_terms = query.lower().split()
+
+        # For each word in the search, if it's a known tag, increase its score
+        # In a more advanced system, you'd check against a predefined dictionary of all possible tags.
+        for term in search_terms:
+            # This is a simple check. A real system would be more sophisticated.
+            if term in profile.tag_scores:
+                profile.tag_scores[term] += score_change
+            else:
+                # We can also add new tags found via search, with an initial score
+                profile.tag_scores[term] = score_change
+
+        profile.save()
+
+        return Response(status=status.HTTP_204_NO_CONTENT)
