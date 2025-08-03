@@ -11,11 +11,11 @@ from allauth.socialaccount.providers.oauth2.client import OAuth2Client
 from dj_rest_auth.registration.views import SocialLoginView
 from django.core.mail import send_mail
 from django.contrib.auth.tokens import default_token_generator
-from django.db.models import Q, Case, When, IntegerField
 from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
 from django.utils.encoding import force_bytes, force_str
 from django.conf import settings
 from rest_framework.views import APIView
+from itertools import chain
 
 
 class UserRegistrationView(generics.CreateAPIView):
@@ -205,8 +205,11 @@ class SavedPostsListView(generics.ListAPIView):
         """
         This view should return a list of all the posts
         that have been saved by the currently authenticated user.
+
+        We explicitly fetch the user from the database to ensure we have the
+        most up-to-date version of their saved posts relationship.
         """
-        user = self.request.user
+        user = User.objects.get(pk=self.request.user.pk)
         return user.saved_posts.all().order_by('-created_at')
 
 
@@ -278,59 +281,58 @@ class ForYouPostListView(generics.ListAPIView):
     or a generic feed for guests.
     """
     serializer_class = PostSerializer
-    permission_classes = [AllowAny]  # Allow guests to see a generic feed
+    permission_classes = [AllowAny]
 
     def get_queryset(self):
         user = self.request.user
+        feed_size = 40
 
-        # If the user is a guest, return the latest posts
-        if not user.is_authenticated:
-            return Post.objects.all().order_by('-created_at')[:40]  # Limit to 40 recent posts
+        # --- Fallback Logic: For guests or users with no interactions ---
+        if not user.is_authenticated or not hasattr(user, 'interest_profile') or not user.interest_profile.tag_scores:
+            return Post.objects.all().order_by('-created_at')[:feed_size]
 
+        # --- Personalization Logic: For users with interactions ---
         try:
             profile = user.interest_profile
             tag_scores = profile.tag_scores
 
             if not tag_scores:
-                # If the user has no scores yet, return the latest posts
-                return Post.objects.all().order_by('-created_at')[:40]
+                return Post.objects.all().order_by('-created_at')[:feed_size]
 
-            # Find the user's top 5 favorite tags
-            top_tags = sorted(tag_scores, key=tag_scores.get, reverse=True)[:5]
+            # --- This is the corrected part that works with SQLite ---
+            # We fetch all posts and then score and sort them in Python.
+            all_posts = list(Post.objects.all())
 
-            # --- This is the core recommendation logic ---
+            scored_posts = []
+            for post in all_posts:
+                relevance_score = 0
+                if isinstance(post.tags, list):
+                    for tag in post.tags:
+                        # Add the score for each matching tag
+                        relevance_score += tag_scores.get(tag, 0)
 
-            # 1. Build a query to find all posts that match at least one of the top tags
-            tag_queries = Q()
-            for tag in top_tags:
-                # Dynamically create Q objects for each tag category
-                tag_queries |= Q(tags__color=tag) | Q(tags__style=tag) | Q(tags__type=tag)
+                if relevance_score > 0:
+                    scored_posts.append({'post': post, 'score': relevance_score})
 
-            # 2. Prioritize the posts
-            # We create a 'relevance' score. Posts matching more of the user's
-            # top tags will be ranked higher.
-            relevance_ordering = Case(
-                *[When(tags__icontains=tag, then=score) for tag, score in tag_scores.items()],
-                default=0,
-                output_field=IntegerField()
-            )
+            # Sort the posts by their calculated relevance score, highest first
+            scored_posts.sort(key=lambda x: x['score'], reverse=True)
 
-            # 3. Get the personalized queryset
-            # We get posts matching the tags, annotate them with our relevance score,
-            # and order them by that score. We also add some randomness by ordering
-            # by created_at as a secondary factor.
-            queryset = Post.objects.filter(tag_queries).annotate(
-                relevance=relevance_ordering
-            ).order_by('-relevance', '-created_at')
+            # Extract the sorted Post objects
+            personalized_posts = [item['post'] for item in scored_posts]
 
-            # To keep the feed fresh, we can mix in some random popular posts later.
-            # For now, this provides a solid, personalized feed.
+            # --- Content Blending: Ensure the feed is always full ---
+            if len(personalized_posts) < feed_size:
+                existing_ids = [p.id for p in personalized_posts]
+                recent_posts = Post.objects.exclude(id__in=existing_ids).order_by('-created_at')
 
-            return queryset[:40]  # Limit the feed size
+                # Combine the two lists
+                combined_posts = list(chain(personalized_posts, recent_posts))
+                return combined_posts[:feed_size]
+
+            return personalized_posts[:feed_size]
 
         except InterestProfile.DoesNotExist:
-            # Fallback for the rare case a profile doesn't exist
-            return Post.objects.all().order_by('-created_at')[:40]
+            return Post.objects.all().order_by('-created_at')[:feed_size]
 
 
 class TrackPostClickView(APIView):
