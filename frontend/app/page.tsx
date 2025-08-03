@@ -5,16 +5,23 @@ import { Post } from "@/types";
 import api from "@/utils/api";
 import { useAuth } from "@/context/AuthContext";
 import LoginModal from "@/components/LoginModal";
-import Toast from "@/components/Toast";
 import PostGrid from "@/components/PostGrid";
 import SearchInput from "@/components/SearchInput";
 import CategoryFilters from "@/components/CategoryFilters";
 import SignUpPopup from "@/components/SignUpPopup";
+import Toast from "@/components/Toast";
 
 export default function ExplorePage() {
   const [allPosts, setAllPosts] = useState<Post[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const { user, toggleSavePost } = useAuth();
+  // Get all the necessary functions and state from the AuthContext
+  const {
+    user,
+    toggleSavePost,
+    trackPostClick,
+    trackSearchQuery,
+    interactionCount,
+  } = useAuth();
 
   const [showLoginModal, setShowLoginModal] = useState(false);
   const [toastMessage, setToastMessage] = useState("");
@@ -24,11 +31,20 @@ export default function ExplorePage() {
   const [searchTerm, setSearchTerm] = useState("");
   const [activeCategory, setActiveCategory] = useState<string | null>(null);
 
-  // Fetch all posts once on component mount
+  // This is the core logic update.
+  // This useEffect now fetches the personalized "For You" feed for logged-in users
+  // and re-fetches when the user's login status or interaction count changes.
   useEffect(() => {
     const fetchPosts = async () => {
+      setIsLoading(true);
       try {
-        const response = await api.get<Post[]>("/api/auth/posts/");
+        // A logged-in user will only see the "For You" feed AFTER their first interaction.
+        const endpoint =
+          user && interactionCount > 0
+            ? "/api/auth/posts/for-you/"
+            : "/api/auth/posts/";
+
+        const response = await api.get<Post[]>(endpoint);
         setAllPosts(response.data);
       } catch (error) {
         console.error("Failed to fetch posts:", error);
@@ -38,17 +54,15 @@ export default function ExplorePage() {
     };
 
     fetchPosts();
-  }, []);
+  }, [user, interactionCount]); // Re-fetches when user logs in/out or interacts
 
-  // --- Logic for Filtering ---
+  // --- Logic for Filtering (remains client-side for simplicity) ---
 
-  // 1. Get a unique list of all categories from the posts
   const allCategories = useMemo(() => {
     const tags = new Set(allPosts.flatMap((post) => post.tags));
     return Array.from(tags);
   }, [allPosts]);
 
-  // 2. Filter posts based on both search term and active category
   const filteredPosts = useMemo(() => {
     return allPosts.filter((post) => {
       const matchesCategory = activeCategory
@@ -69,14 +83,10 @@ export default function ExplorePage() {
         window.removeEventListener("scroll", handleScroll);
       }
     };
-
     if (!user) {
       window.addEventListener("scroll", handleScroll);
     }
-
-    return () => {
-      window.removeEventListener("scroll", handleScroll);
-    };
+    return () => window.removeEventListener("scroll", handleScroll);
   }, [user]);
 
   const handleSaveClick = async (postId: number) => {
@@ -113,6 +123,7 @@ export default function ExplorePage() {
           placeholder="Search nails, hair styles..."
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
+          onSearchSubmit={trackSearchQuery} // Connects search tracking
         />
 
         <CategoryFilters
@@ -122,12 +133,13 @@ export default function ExplorePage() {
         />
 
         {isLoading ? (
-          <p className="text-center text-gray-500">Loading styles...</p>
+          <p className="text-center text-gray-500 py-10">Loading styles...</p>
         ) : (
           <PostGrid
             posts={filteredPosts}
             variant="explore"
             onSave={handleSaveClick}
+            onPostClick={trackPostClick} // Connects click tracking
           />
         )}
       </div>

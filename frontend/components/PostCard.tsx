@@ -10,6 +10,7 @@ interface PostCardProps {
   variant: "explore" | "saved";
   onSave?: (postId: number) => void;
   onRemove?: (postId: number) => void;
+  onPostClick?: (postId: number) => void;
 }
 
 export default function PostCard({
@@ -17,8 +18,16 @@ export default function PostCard({
   variant,
   onSave,
   onRemove,
+  onPostClick,
 }: PostCardProps) {
   const router = useRouter();
+
+  const handleCardClick = () => {
+    // When the card is clicked, track the interaction
+    if (onPostClick) {
+      onPostClick(post.id);
+    }
+  };
 
   // Handler for the Try On button
   const handleTryOnClick = (e: React.MouseEvent) => {
@@ -49,6 +58,7 @@ export default function PostCard({
     // The entire card is a link to the post detail page
     <Link
       href={`/post/${post.id}`}
+      onClick={handleCardClick}
       className="masonry-item group relative rounded-2xl overflow-hidden shadow-lg hover:shadow-xl transition-shadow duration-300 block"
     >
       <Image

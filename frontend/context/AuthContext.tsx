@@ -24,6 +24,7 @@ interface AuthContextType {
   user: User | null;
   tokens: AuthTokens | null;
   isLoading: boolean;
+  interactionCount: number;
   toastMessage: string;
   showToast: boolean;
   showToastWithMessage: (message: string) => void;
@@ -39,6 +40,8 @@ interface AuthContextType {
     password?: string;
     access_token?: string;
   }) => Promise<boolean>;
+  trackPostClick: (postId: number) => void;
+  trackSearchQuery: (query: string) => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -48,6 +51,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [tokens, setTokens] = useState<AuthTokens | null>(null);
   const [loading, setLoading] = useState(true);
   const router = useRouter();
+  const [interactionCount, setInteractionCount] = useState(0);
+
+  const incrementInteraction = () => setInteractionCount((prev) => prev + 1);
 
   // State and function for global toast notifications
   const [toastMessage, setToastMessage] = useState("");
@@ -57,6 +63,30 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     setToastMessage(message);
     setShowToast(true);
     setTimeout(() => setShowToast(false), 3000);
+  };
+
+  const trackPostClick = async (postId: number) => {
+    // This is a "fire and forget" request. We don't need to wait for a response.
+    // It silently tells the backend that the user showed interest in a post.
+    try {
+      await api
+        .post("/api/auth/track/click/", { post_id: postId })
+        .then(() => incrementInteraction());
+    } catch (error) {
+      // We don't alert the user for tracking errors, just log them.
+      console.error("Failed to track post click:", error);
+    }
+  };
+
+  const trackSearchQuery = async (query: string) => {
+    // Silently tells the backend what the user searched for.
+    try {
+      await api
+        .post("/api/auth/track/search/", { query })
+        .then(() => incrementInteraction());
+    } catch (error) {
+      console.error("Failed to track search query:", error);
+    }
   };
 
   const logoutUser = useCallback(() => {
@@ -208,7 +238,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const toggleSavePost = async (postId: number): Promise<string | null> => {
     try {
       const response = await api.post(`/api/auth/posts/${postId}/toggle-save/`);
-      return response.data.detail; // e.g., "Post saved successfully."
+      incrementInteraction(); // Call this after the await is successful
+      return response.data.detail;
     } catch (error) {
       console.error("Failed to save post", error);
       if (isAxiosError(error)) {
@@ -246,6 +277,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     user,
     tokens,
     isLoading: loading,
+    interactionCount,
     toastMessage,
     showToast,
     showToastWithMessage,
@@ -258,6 +290,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     initiateEmailChange,
     toggleSavePost,
     deleteAccount,
+    trackPostClick,
+    trackSearchQuery,
   };
 
   return (

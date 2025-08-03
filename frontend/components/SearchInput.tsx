@@ -3,14 +3,23 @@
 interface SearchInputProps {
   value: string;
   onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  onSearchSubmit: (query: string) => void;
   placeholder: string;
 }
 
 export default function SearchInput({
   value,
   onChange,
+  onSearchSubmit,
   placeholder,
 }: SearchInputProps) {
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    // When the user presses "Enter", trigger the search submit function
+    if (e.key === "Enter") {
+      onSearchSubmit(value);
+    }
+  };
+
   return (
     <header className="mb-8">
       <div className="relative">
@@ -19,6 +28,7 @@ export default function SearchInput({
           placeholder={placeholder}
           value={value}
           onChange={onChange}
+          onKeyDown={handleKeyDown}
           className="w-full placeholder:text-gray-400 text-gray-500 bg-gray-100 border border-gray-300 rounded-2xl py-3 pl-12 pr-4 text-lg focus:outline-none focus:ring-2 focus:ring-pink-400 transition"
         />
         <svg

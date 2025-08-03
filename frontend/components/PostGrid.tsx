@@ -8,6 +8,7 @@ interface PostGridProps {
   variant: "explore" | "saved";
   onSave?: (postId: number) => void;
   onRemove?: (postId: number) => void;
+  onPostClick?: (postId: number) => void;
 }
 
 export default function PostGrid({
@@ -15,6 +16,7 @@ export default function PostGrid({
   variant,
   onSave,
   onRemove,
+  onPostClick,
 }: PostGridProps) {
   return (
     <>
@@ -46,6 +48,7 @@ export default function PostGrid({
             variant={variant}
             onSave={onSave}
             onRemove={onRemove}
+            onPostClick={onPostClick}
           />
         ))}
       </div>
