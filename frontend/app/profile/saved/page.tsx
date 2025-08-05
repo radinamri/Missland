@@ -11,7 +11,13 @@ import PostGrid from "@/components/PostGrid";
 import SearchInput from "@/components/SearchInput";
 
 export default function SavedPostsPage() {
-  const { user, tokens, isLoading: isAuthLoading, toggleSavePost } = useAuth();
+  const {
+    user,
+    tokens,
+    isLoading: isAuthLoading,
+    toggleSavePost,
+    trackSearchQuery,
+  } = useAuth();
   const router = useRouter();
 
   const [savedPosts, setSavedPosts] = useState<Post[]>([]);
@@ -115,6 +121,7 @@ export default function SavedPostsPage() {
             placeholder="Search nails, hair styles..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
+            onSearchSubmit={trackSearchQuery}
           />
         </div>
 
