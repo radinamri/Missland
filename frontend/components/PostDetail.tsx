@@ -16,7 +16,8 @@ export default function PostDetail({ postId }: PostDetailProps) {
   const [post, setPost] = useState<Post | null>(null);
   const [morePosts, setMorePosts] = useState<Post[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const { user, toggleSavePost, showToastWithMessage } = useAuth();
+  const { user, toggleSavePost, showToastWithMessage, trackPostClick } =
+    useAuth();
 
   useEffect(() => {
     if (postId) {
@@ -129,6 +130,7 @@ export default function PostDetail({ postId }: PostDetailProps) {
           posts={morePosts}
           variant="explore"
           onSave={handleSaveClick}
+          onPostClick={trackPostClick}
         />
       </div>
     </div>

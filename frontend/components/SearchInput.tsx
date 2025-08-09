@@ -21,7 +21,7 @@ export default function SearchInput({
   };
 
   return (
-    <header className="mb-8">
+    <header>
       <div className="relative">
         <input
           type="text"

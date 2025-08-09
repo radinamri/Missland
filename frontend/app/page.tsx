@@ -4,6 +4,7 @@ import { useEffect, useState, useMemo } from "react";
 import { Post } from "@/types";
 import api from "@/utils/api";
 import { useAuth } from "@/context/AuthContext";
+import { useSearch } from "@/context/SearchContext"; // 1. Import useSearch
 import LoginModal from "@/components/LoginModal";
 import PostGrid from "@/components/PostGrid";
 import SearchInput from "@/components/SearchInput";
@@ -14,36 +15,21 @@ import Toast from "@/components/Toast";
 export default function ExplorePage() {
   const [allPosts, setAllPosts] = useState<Post[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  // Get all the necessary functions and state from the AuthContext
-  const {
-    user,
-    toggleSavePost,
-    trackPostClick,
-    trackSearchQuery,
-    interactionCount,
-  } = useAuth();
+  const { user, toggleSavePost, trackPostClick, trackSearchQuery } = useAuth();
+  const { searchTerm, setSearchTerm } = useSearch(); // 2. Get search state from context
 
   const [showLoginModal, setShowLoginModal] = useState(false);
   const [toastMessage, setToastMessage] = useState("");
   const [showToast, setShowToast] = useState(false);
   const [showSignUpPopup, setShowSignUpPopup] = useState(false);
 
-  const [searchTerm, setSearchTerm] = useState("");
   const [activeCategory, setActiveCategory] = useState<string | null>(null);
 
-  // This is the core logic update.
-  // This useEffect now fetches the personalized "For You" feed for logged-in users
-  // and re-fetches when the user's login status or interaction count changes.
   useEffect(() => {
     const fetchPosts = async () => {
       setIsLoading(true);
       try {
-        // A logged-in user will only see the "For You" feed AFTER their first interaction.
-        const endpoint =
-          user && interactionCount > 0
-            ? "/api/auth/posts/for-you/"
-            : "/api/auth/posts/";
-
+        const endpoint = user ? "/api/auth/posts/for-you/" : "/api/auth/posts/";
         const response = await api.get<Post[]>(endpoint);
         setAllPosts(response.data);
       } catch (error) {
@@ -52,11 +38,8 @@ export default function ExplorePage() {
         setIsLoading(false);
       }
     };
-
     fetchPosts();
-  }, [user, interactionCount]); // Re-fetches when user logs in/out or interacts
-
-  // --- Logic for Filtering (remains client-side for simplicity) ---
+  }, [user]);
 
   const allCategories = useMemo(() => {
     const tags = new Set(allPosts.flatMap((post) => post.tags));
@@ -75,7 +58,6 @@ export default function ExplorePage() {
     });
   }, [allPosts, activeCategory, searchTerm]);
 
-  // useEffect to handle showing the pop-up on scroll
   useEffect(() => {
     const handleScroll = () => {
       if (!user && window.scrollY > 400) {
@@ -119,12 +101,15 @@ export default function ExplorePage() {
       />
 
       <div className="bg-white md:shadow-lg p-4 md:p-8">
-        <SearchInput
-          placeholder="Search nails, hair styles..."
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-          onSearchSubmit={trackSearchQuery} // Connects search tracking
-        />
+        {/* Search Input is now only shown on mobile screens */}
+        <div className="block md:hidden mb-4">
+          <SearchInput
+            placeholder="Search nails, hair styles..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            onSearchSubmit={trackSearchQuery}
+          />
+        </div>
 
         <CategoryFilters
           categories={allCategories}
@@ -139,7 +124,7 @@ export default function ExplorePage() {
             posts={filteredPosts}
             variant="explore"
             onSave={handleSaveClick}
-            onPostClick={trackPostClick} // Connects click tracking
+            onPostClick={trackPostClick}
           />
         )}
       </div>
