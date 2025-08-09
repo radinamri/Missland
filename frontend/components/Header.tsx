@@ -80,7 +80,7 @@ export default function Header() {
 
           {/* Desktop Navigation (Right Side Group) */}
           <div className="hidden md:flex items-center space-x-8">
-            <div className="flex items-center space-x-4">
+            <div className="flex items-center space-x-8">
               {user ? (
                 <Link
                   href="/profile"
