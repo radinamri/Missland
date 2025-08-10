@@ -1,36 +1,56 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# NANA-AI: Frontend
+
+This directory contains the Next.js frontend for the NANA-AI application. It provides a modern, responsive user interface for exploring styles, managing a user profile, and interacting with the backend API.
+
+## Prerequisites
+Before you begin, ensure you have the following installed on your system:
+
+`Node.js (v18 or later)`
+
+`Git`
 
 ## Getting Started
+Follow these steps to get the frontend development environment set up and running.
 
-First, run the development server:
+### 1. Navigate to the Frontend Directory
+From the root of the project, navigate into this frontend directory:
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+`cd frontend`
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+### 2. Install Dependencies
+Install all the required Node.js packages using npm. This will create a node_modules folder with all the necessary libraries.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+`npm install`
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+### 3. Configure Environment Variables
+The frontend requires environment variables to connect to the backend API and Google's authentication service.
 
-## Learn More
+In the frontend directory, create a new file named .env.local and add the following lines. Remember to replace the placeholder values with your actual keys.
 
-To learn more about Next.js, take a look at the following resources:
+The full URL of your running Django backend
+`NEXT_PUBLIC_API_URL=http://127.0.0.1:8000`
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+Your OAuth Client ID from the Google Cloud Console
+`NEXT_PUBLIC_GOOGLE_CLIENT_ID=YOUR_GOOGLE_CLIENT_ID_HERE`
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Running the Development Server
+Once the setup is complete, you can start the Next.js development server.
 
-## Deploy on Vercel
+`npm run dev`
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+The application will now be available in your browser at http://localhost:3000. The page will automatically update as you edit the code.
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Note: For the application to function correctly, the Django backend server must also be running.
+
+## Key Technologies
+`Next.js: The core React framework.`
+
+`TypeScript: For type safety and a better development experience.`
+
+`Tailwind CSS: For styling the user interface.`
+
+`Axios: For making requests to the backend API.`
+
+`React Context API: For managing global state like authentication and search.`
+
+`@react-oauth/google: For handling the Google login flow on the client side.`
