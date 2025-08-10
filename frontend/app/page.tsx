@@ -4,7 +4,7 @@ import { useEffect, useState, useMemo } from "react";
 import { Post } from "@/types";
 import api from "@/utils/api";
 import { useAuth } from "@/context/AuthContext";
-import { useSearch } from "@/context/SearchContext"; // 1. Import useSearch
+import { useSearch } from "@/context/SearchContext";
 import LoginModal from "@/components/LoginModal";
 import PostGrid from "@/components/PostGrid";
 import SearchInput from "@/components/SearchInput";
@@ -16,7 +16,7 @@ export default function ExplorePage() {
   const [allPosts, setAllPosts] = useState<Post[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const { user, toggleSavePost, trackPostClick, trackSearchQuery } = useAuth();
-  const { searchTerm, setSearchTerm } = useSearch(); // 2. Get search state from context
+  const { searchTerm, setSearchTerm, setAllCategories } = useSearch();
 
   const [showLoginModal, setShowLoginModal] = useState(false);
   const [toastMessage, setToastMessage] = useState("");
@@ -32,6 +32,8 @@ export default function ExplorePage() {
         const endpoint = user ? "/api/auth/posts/for-you/" : "/api/auth/posts/";
         const response = await api.get<Post[]>(endpoint);
         setAllPosts(response.data);
+        const tags = new Set(response.data.flatMap((post) => post.tags));
+        setAllCategories(Array.from(tags));
       } catch (error) {
         console.error("Failed to fetch posts:", error);
       } finally {
@@ -39,7 +41,7 @@ export default function ExplorePage() {
       }
     };
     fetchPosts();
-  }, [user]);
+  }, [user, setAllCategories]);
 
   const allCategories = useMemo(() => {
     const tags = new Set(allPosts.flatMap((post) => post.tags));
@@ -88,6 +90,13 @@ export default function ExplorePage() {
     setActiveCategory(category);
   };
 
+  const handleSuggestionClick = (category: string) => {
+      // When a user clicks a suggestion, we can set it as the active filter
+      setActiveCategory(category);
+      // And also update the search term for a seamless experience
+      setSearchTerm(category);
+  };
+
   return (
     <>
       <LoginModal
@@ -108,6 +117,8 @@ export default function ExplorePage() {
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             onSearchSubmit={trackSearchQuery}
+            categories={allCategories}
+            onCategoryClick={handleSuggestionClick}
           />
         </div>
 

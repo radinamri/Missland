@@ -9,7 +9,8 @@ import { useSearch } from "@/context/SearchContext";
 
 export default function Header() {
   const { user, logoutUser, trackSearchQuery } = useAuth();
-  const { searchTerm, setSearchTerm } = useSearch();
+  const { searchTerm, setSearchTerm, allCategories } =
+    useSearch();
   const pathname = usePathname();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
@@ -20,14 +21,20 @@ export default function Header() {
 
   const navLinks = [{ href: "/articles", label: "Articles" }];
 
+  // Handler for when a user clicks a category in the search suggestions
+  const handleSuggestionClick = (category: string) => {
+    setSearchTerm(category);
+    // In a future step, you could also trigger a filter action here
+  };
+
   return (
     <>
-      <header className="bg-white shadow-md sticky top-0 z-50">
+      <header className="bg-white shadow-md sticky top-0 z-0">
         {/* Corrected padding to p-4 for mobile to allow justify-between to work correctly */}
         <div className="container mx-auto flex items-center justify-between p-4 md:py-5">
           {/* Left Side: Logo and Name */}
           <div className="md:flex items-center space-x-8">
-            <Link href="/" className="flex items-center space-x-3 z-50">
+            <Link href="/" className="flex items-center space-x-3 z-0">
               <svg
                 className="w-9 h-9 text-pink-500"
                 viewBox="0 0 24 24"
@@ -74,6 +81,8 @@ export default function Header() {
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 onSearchSubmit={trackSearchQuery}
+                categories={allCategories}
+                onCategoryClick={handleSuggestionClick}
               />
             </div>
           )}
