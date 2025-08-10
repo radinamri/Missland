@@ -29,7 +29,7 @@ export default function Header() {
 
   return (
     <>
-      <header className="bg-white shadow-md sticky top-0 z-0">
+      <header className="bg-white shadow-md sticky top-0 z-30">
         {/* Corrected padding to p-4 for mobile to allow justify-between to work correctly */}
         <div className="container mx-auto flex items-center justify-between p-4 md:py-5">
           {/* Left Side: Logo and Name */}
