@@ -8,7 +8,6 @@ import { useSearch } from "@/context/SearchContext";
 import LoginModal from "@/components/LoginModal";
 import PostGrid from "@/components/PostGrid";
 import SearchInput from "@/components/SearchInput";
-import CategoryFilters from "@/components/CategoryFilters";
 import SignUpPopup from "@/components/SignUpPopup";
 import Toast from "@/components/Toast";
 
@@ -86,15 +85,11 @@ export default function ExplorePage() {
     }
   };
 
-  const handleSelectCategory = (category: string | null) => {
-    setActiveCategory(category);
-  };
-
   const handleSuggestionClick = (category: string) => {
-      // When a user clicks a suggestion, we can set it as the active filter
-      setActiveCategory(category);
-      // And also update the search term for a seamless experience
-      setSearchTerm(category);
+    // When a user clicks a suggestion, we can set it as the active filter
+    setActiveCategory(category);
+    // And also update the search term for a seamless experience
+    setSearchTerm(category);
   };
 
   return (
@@ -121,12 +116,6 @@ export default function ExplorePage() {
             onCategoryClick={handleSuggestionClick}
           />
         </div>
-
-        <CategoryFilters
-          categories={allCategories}
-          activeCategory={activeCategory}
-          onSelectCategory={handleSelectCategory}
-        />
 
         {isLoading ? (
           <p className="text-center text-gray-500 py-10">Loading styles...</p>
