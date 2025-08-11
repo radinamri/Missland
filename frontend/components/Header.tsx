@@ -9,8 +9,7 @@ import { useSearch } from "@/context/SearchContext";
 
 export default function Header() {
   const { user, logoutUser, trackSearchQuery } = useAuth();
-  const { searchTerm, setSearchTerm, allCategories } =
-    useSearch();
+  const { searchTerm, setSearchTerm, allCategories } = useSearch();
   const pathname = usePathname();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
@@ -34,7 +33,7 @@ export default function Header() {
         <div className="container mx-auto flex items-center justify-between p-4 md:py-5">
           {/* Left Side: Logo and Name */}
           <div className="md:flex items-center space-x-8">
-            <Link href="/" className="flex items-center space-x-3 z-0">
+            <Link href="/" className="flex items-center space-x-2 z-0">
               <svg
                 className="w-9 h-9 text-pink-500"
                 viewBox="0 0 24 24"
@@ -75,7 +74,7 @@ export default function Header() {
 
           {/* Centered Search Input for Desktop Explore Page */}
           {pathname === "/" && (
-            <div className="hidden md:block flex-grow mx-8">
+            <div className="hidden md:block flex-grow mx-4">
               <SearchInput
                 placeholder="Search nails, hair styles..."
                 value={searchTerm}
@@ -89,11 +88,11 @@ export default function Header() {
 
           {/* Desktop Navigation (Right Side Group) */}
           <div className="hidden md:flex items-center space-x-8">
-            <div className="flex items-center space-x-8">
+            <div className="flex items-center space-x-2">
               {user ? (
                 <Link
                   href="/profile"
-                  className="bg-pink-500 text-white font-bold py-2.5 px-6 rounded-xl hover:bg-pink-600 transition"
+                  className="bg-pink-500 text-white font-bold py-4 px-6 rounded-2xl hover:bg-pink-600 transition"
                 >
                   Profile
                 </Link>
@@ -101,13 +100,13 @@ export default function Header() {
                 <>
                   <Link
                     href="/login"
-                    className="font-medium text-gray-600 hover:text-pink-500 transition"
+                    className="bg-gray-100 rounded-2xl py-4 px-6 font-bold text-gray-600 hover:bg-gray-200 transition"
                   >
                     Login
                   </Link>
                   <Link
                     href="/register"
-                    className="bg-gray-800 text-white font-bold py-2.5 px-6 rounded-xl hover:bg-gray-900 transition"
+                    className="bg-gray-800 text-white font-bold py-4 px-6 rounded-2xl hover:bg-gray-900 transition"
                   >
                     Sign Up
                   </Link>
