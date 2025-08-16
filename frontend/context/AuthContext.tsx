@@ -40,8 +40,8 @@ interface AuthContextType {
     password?: string;
     access_token?: string;
   }) => Promise<boolean>;
-  trackPostClick: (postId: number) => void;
-  trackSearchQuery: (query: string) => void;
+  trackPostClick: (postId: number) => Promise<void>;
+  trackSearchQuery: (query: string) => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -55,7 +55,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   const incrementInteraction = () => setInteractionCount((prev) => prev + 1);
 
-  // State and function for global toast notifications
   const [toastMessage, setToastMessage] = useState("");
   const [showToast, setShowToast] = useState(false);
 
@@ -66,24 +65,20 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   };
 
   const trackPostClick = async (postId: number) => {
-    // This is a "fire and forget" request. We don't need to wait for a response.
-    // It silently tells the backend that the user showed interest in a post.
+    if (!user) return;
     try {
-      await api
-        .post("/api/auth/track/click/", { post_id: postId })
-        .then(() => incrementInteraction());
+      await api.post("/api/auth/track/click/", { post_id: postId });
+      incrementInteraction();
     } catch (error) {
-      // We don't alert the user for tracking errors, just log them.
       console.error("Failed to track post click:", error);
     }
   };
 
   const trackSearchQuery = async (query: string) => {
-    // Silently tells the backend what the user searched for.
+    if (!user || !query.trim()) return;
     try {
-      await api
-        .post("/api/auth/track/search/", { query })
-        .then(() => incrementInteraction());
+      await api.post("/api/auth/track/search/", { query });
+      incrementInteraction();
     } catch (error) {
       console.error("Failed to track search query:", error);
     }
@@ -118,9 +113,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const updateUsername = async (newUsername: string) => {
     try {
       await api.patch("/api/auth/profile/", { username: newUsername });
-      // After updating, refetch the user profile to get the latest data
       await fetchUserProfile();
-      alert("Username updated successfully!");
+      showToastWithMessage("Username updated successfully!");
     } catch (error) {
       console.error("Failed to update username", error);
       if (isAxiosError(error)) {
@@ -135,7 +129,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     try {
       await api.post("/api/auth/password/change/", credentials);
       alert("Password changed successfully! Please log in again.");
-      // After a successful password change, log the user out for security
       logoutUser();
     } catch (error) {
       console.error("Failed to change password", error);
@@ -147,40 +140,29 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
-  const registerUser = async ({
-    email,
-    password,
-    password2,
-  }: RegisterCredentials) => {
+  const registerUser = async (credentials: RegisterCredentials) => {
     try {
-      const response = await api.post("/api/auth/register/", {
-        email,
-        password,
-        password2,
-      });
+      const response = await api.post("/api/auth/register/", credentials);
       if (response.status === 201) {
-        await loginUser({ email, password });
+        await loginUser({
+          email: credentials.email,
+          password: credentials.password,
+        });
       }
     } catch (error) {
       console.error("Registration failed", error);
       if (isAxiosError(error)) {
         alert("Registration failed: " + JSON.stringify(error.response?.data));
-      } else {
-        alert("An unexpected error occurred during registration.");
       }
     }
   };
 
-  const loginUser = async ({ email, password }: LoginCredentials) => {
+  const loginUser = async (credentials: LoginCredentials) => {
     try {
-      const response = await api.post<AuthTokens>("/api/token/", {
-        email,
-        password,
-      });
+      const response = await api.post<AuthTokens>("/api/token/", credentials);
       if (response.status === 200) {
-        const data = response.data;
-        setTokens(data);
-        localStorage.setItem("authTokens", JSON.stringify(data));
+        setTokens(response.data);
+        localStorage.setItem("authTokens", JSON.stringify(response.data));
         await fetchUserProfile();
         router.push("/profile");
       }
@@ -188,8 +170,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       console.error("Login failed", error);
       if (isAxiosError(error)) {
         alert("Login failed: " + JSON.stringify(error.response?.data));
-      } else {
-        alert("An unexpected error occurred during login.");
       }
     }
   };
@@ -200,9 +180,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         access_token: accessToken,
       });
       if (response.status === 200) {
-        const data = response.data;
-        setTokens(data);
-        localStorage.setItem("authTokens", JSON.stringify(data));
+        setTokens(response.data);
+        localStorage.setItem("authTokens", JSON.stringify(response.data));
         await fetchUserProfile();
         router.push("/profile");
       }
@@ -210,8 +189,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       console.error("Google login failed", error);
       if (isAxiosError(error)) {
         alert("Google login failed: " + JSON.stringify(error.response?.data));
-      } else {
-        alert("An unexpected error occurred during Google login.");
       }
     }
   };
@@ -221,9 +198,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       await api.post("/api/auth/email/change/initiate/", {
         new_email: newEmail,
       });
-      alert(
-        "Verification link sent! Please check your new email address to confirm the change."
-      );
+      alert("Verification link sent! Please check your new email address.");
     } catch (error) {
       console.error("Failed to initiate email change", error);
       if (isAxiosError(error)) {
@@ -238,7 +213,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const toggleSavePost = async (postId: number): Promise<string | null> => {
     try {
       const response = await api.post(`/api/auth/posts/${postId}/toggle-save/`);
-      incrementInteraction(); // Call this after the await is successful
+      incrementInteraction();
       return response.data.detail;
     } catch (error) {
       console.error("Failed to save post", error);
@@ -256,11 +231,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     try {
       await api.delete("/api/auth/profile/delete/", { data: verification });
       alert("Your account has been successfully deleted.");
-      // Log the user out completely
       setTokens(null);
       setUser(null);
       localStorage.clear();
-      router.push("/"); // Redirect to homepage
+      router.push("/");
       return true;
     } catch (error) {
       console.error("Failed to delete account", error);
@@ -295,13 +269,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   };
 
   return (
-    <AuthContext.Provider value={contextData}>
-      {loading ? <p>Loading...</p> : children}
-    </AuthContext.Provider>
+    <AuthContext.Provider value={contextData}>{children}</AuthContext.Provider>
   );
 };
 
-// Custom hook for easier context usage
 export const useAuth = () => {
   const context = useContext(AuthContext);
   if (context === undefined) {

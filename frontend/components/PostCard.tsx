@@ -2,15 +2,14 @@
 
 import { Post } from "@/types";
 import Image from "next/image";
-import Link from "next/link";
 import { useRouter } from "next/navigation";
 
 interface PostCardProps {
   post: Post;
   variant: "explore" | "saved";
-  onSave?: (postId: number) => void;
+  onSave?: (postId: number) => Promise<void>;
   onRemove?: (postId: number) => void;
-  onPostClick?: (postId: number) => void;
+  onPostClick?: (postId: number) => Promise<void>;
 }
 
 export default function PostCard({
@@ -22,32 +21,30 @@ export default function PostCard({
 }: PostCardProps) {
   const router = useRouter();
 
-  const handleCardClick = () => {
-    // When the card is clicked, track the interaction
+  const handleCardClick = async () => {
+    // Await the tracking call before navigating to prevent race conditions
     if (onPostClick) {
-      onPostClick(post.id);
+      await onPostClick(post.id);
     }
+    router.push(`/post/${post.id}`);
   };
 
   // Handler for the Try On button
   const handleTryOnClick = (e: React.MouseEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
+    e.stopPropagation(); // Prevent the main card link from firing
     router.push(`/try-on/${post.id}`);
   };
 
   // Handler for the Save button
-  const handleSaveClick = (e: React.MouseEvent) => {
-    e.preventDefault();
+  const handleSaveClick = async (e: React.MouseEvent) => {
     e.stopPropagation();
     if (onSave) {
-      onSave(post.id);
+      await onSave(post.id);
     }
   };
 
   // Handler for the Remove button
   const handleRemoveClick = (e: React.MouseEvent) => {
-    e.preventDefault();
     e.stopPropagation();
     if (onRemove) {
       onRemove(post.id);
@@ -56,8 +53,7 @@ export default function PostCard({
 
   return (
     // The entire card is a link to the post detail page
-    <Link
-      href={`/post/${post.id}`}
+    <div
       onClick={handleCardClick}
       className="masonry-item group relative rounded-2xl overflow-hidden shadow-lg hover:shadow-xl transition-shadow duration-300 block"
     >
@@ -121,11 +117,10 @@ export default function PostCard({
 
           {variant === "saved" && (
             <>
-              <div></div>{" "}
-              {/* Empty div to push the remove button to the right */}
+              <div></div>
               <button
                 onClick={handleRemoveClick}
-                className="self-end bg-white/80 text-red-600 w-8 h-8 rounded-full flex items-center justify-center shadow-lg hover:bg-white transition-transform hover:scale-110"
+                className="self-end bg-white/80 text-red-600 w-8 h-8 rounded-full flex items-center justify-center shadow-lg"
                 aria-label="Remove post"
               >
                 <svg
@@ -146,6 +141,6 @@ export default function PostCard({
           )}
         </div>
       </div>
-    </Link>
+    </div>
   );
 }

@@ -14,13 +14,7 @@ import Toast from "@/components/Toast";
 export default function ExplorePage() {
   const [allPosts, setAllPosts] = useState<Post[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const {
-    user,
-    toggleSavePost,
-    trackPostClick,
-    trackSearchQuery,
-    interactionCount,
-  } = useAuth();
+  const { user, toggleSavePost, trackPostClick, trackSearchQuery } = useAuth();
   const { searchTerm, setSearchTerm, setAllCategories } = useSearch();
 
   const [showLoginModal, setShowLoginModal] = useState(false);
@@ -29,44 +23,6 @@ export default function ExplorePage() {
   const [showSignUpPopup, setShowSignUpPopup] = useState(false);
 
   const [activeCategory, setActiveCategory] = useState<string | null>(null);
-
-  useEffect(() => {
-    const fetchInitialPosts = async () => {
-      setIsLoading(true);
-      try {
-        const response = await api.get<Post[]>("/api/auth/posts/");
-        setAllPosts(response.data);
-      } catch (error) {
-        console.error("Failed to fetch initial posts:", error);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    fetchInitialPosts();
-  }, []);
-
-  useEffect(() => {
-    const fetchForYouPosts = async () => {
-      // Only run if the user is logged in and has interacted.
-      if (user && interactionCount > 0) {
-        setIsLoading(true);
-        try {
-          const response = await api.get<Post[]>("/api/auth/posts/for-you/");
-          setAllPosts(response.data); // Replace the generic feed with the personalized one
-        } catch (error) {
-          console.error("Failed to fetch for-you posts:", error);
-        } finally {
-          setIsLoading(false);
-        }
-      }
-    };
-
-    // We don't run this on the very first render, only on subsequent interactions.
-    if (interactionCount > 0) {
-      fetchForYouPosts();
-    }
-  }, [user, interactionCount]);
 
   useEffect(() => {
     const fetchPosts = async () => {
@@ -162,7 +118,9 @@ export default function ExplorePage() {
         </div>
 
         {isLoading ? (
-          <p className="text-center text-gray-500 py-10">Loading styles...</p>
+          <p className="min-h-screen text-5xl font-bold text-center text-gray-500 py-10">
+            Loading...
+          </p>
         ) : (
           <PostGrid
             posts={filteredPosts}

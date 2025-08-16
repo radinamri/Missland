@@ -6,9 +6,9 @@ import PostCard from "./PostCard";
 interface PostGridProps {
   posts: Post[];
   variant: "explore" | "saved";
-  onSave?: (postId: number) => void;
+  onSave?: (postId: number) => Promise<void>;
   onRemove?: (postId: number) => void;
-  onPostClick?: (postId: number) => void;
+  onPostClick?: (postId: number) => Promise<void>;
 }
 
 export default function PostGrid({
