@@ -9,7 +9,7 @@ interface PostCardProps {
   variant: "explore" | "saved";
   onSave?: (postId: number) => Promise<void>;
   onRemove?: (postId: number) => void;
-  onPostClick?: (postId: number) => Promise<void>;
+  onPostClick?: (post: Post) => Promise<void>;
 }
 
 export default function PostCard({
@@ -24,7 +24,7 @@ export default function PostCard({
   const handleCardClick = async () => {
     // Await the tracking call before navigating to prevent race conditions
     if (onPostClick) {
-      await onPostClick(post.id);
+      await onPostClick(post);
     }
     router.push(`/post/${post.id}`);
   };

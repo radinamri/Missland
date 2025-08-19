@@ -113,6 +113,7 @@ export default function SupportPage() {
         placeholder="Search for answers..."
         value={searchTerm}
         onChange={(e) => setSearchTerm(e.target.value)}
+        onSearchSubmit={() => {}}
       />
 
       {/* FAQ Section */}

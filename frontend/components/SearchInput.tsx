@@ -8,8 +8,9 @@ interface SearchInputProps {
   onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
   onSearchSubmit: (query: string) => void;
   placeholder: string;
-  categories: string[];
-  onCategoryClick: (category: string) => void;
+  categories?: string[];
+  onCategoryClick?: (category: string | null) => void;
+  activeCategory?: string | null;
 }
 
 export default function SearchInput({
@@ -19,6 +20,7 @@ export default function SearchInput({
   placeholder,
   categories,
   onCategoryClick,
+  activeCategory,
 }: SearchInputProps) {
   const [isFocused, setIsFocused] = useState(false);
   const searchRef = useRef<HTMLDivElement>(null);
@@ -33,7 +35,6 @@ export default function SearchInput({
     }
   };
 
-  // Effect to close suggestions when clicking outside
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
       if (
@@ -47,14 +48,16 @@ export default function SearchInput({
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, [searchRef]);
 
-  const handleSuggestionClick = (category: string) => {
-    onCategoryClick(category);
-    setIsFocused(false); // Close suggestions after click
+  const handleSuggestionClick = (category: string | null) => {
+    // Check if the handler exists before calling it
+    if (onCategoryClick) {
+      onCategoryClick(category);
+    }
+    setIsFocused(false);
   };
 
   return (
     <>
-      {/* Background Overlay */}
       {isFocused && (
         <div
           className="fixed inset-0 bg-black/30 backdrop-blur-sm z-10"
@@ -87,7 +90,6 @@ export default function SearchInput({
             ></path>
           </svg>
 
-          {/* Close Button */}
           {isFocused && (
             <button
               onClick={() => setIsFocused(false)}
@@ -110,10 +112,11 @@ export default function SearchInput({
           )}
         </div>
 
-        {isFocused && (
+        {isFocused && categories && onCategoryClick && (
           <SearchSuggestions
             categories={categories}
             onCategoryClick={handleSuggestionClick}
+            activeCategory={activeCategory ?? null}
           />
         )}
       </div>

@@ -7,6 +7,8 @@ interface SearchContextType {
   setSearchTerm: (term: string) => void;
   allCategories: string[];
   setAllCategories: (categories: string[]) => void;
+  activeCategory: string | null;
+  setActiveCategory: (category: string | null) => void;
 }
 
 const SearchContext = createContext<SearchContextType | undefined>(undefined);
@@ -14,10 +16,18 @@ const SearchContext = createContext<SearchContextType | undefined>(undefined);
 export const SearchProvider = ({ children }: { children: ReactNode }) => {
   const [searchTerm, setSearchTerm] = useState("");
   const [allCategories, setAllCategories] = useState<string[]>([]);
+  const [activeCategory, setActiveCategory] = useState<string | null>(null);
 
   return (
     <SearchContext.Provider
-      value={{ searchTerm, setSearchTerm, allCategories, setAllCategories }}
+      value={{
+        searchTerm,
+        setSearchTerm,
+        allCategories,
+        setAllCategories,
+        activeCategory,
+        setActiveCategory,
+      }}
     >
       {children}
     </SearchContext.Provider>

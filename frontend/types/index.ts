@@ -37,3 +37,19 @@ export interface Post {
   height: number;
   tags: string[]; // An array of strings for our searchable tags
 }
+
+export interface PaginatedPostResponse {
+  seed: number;
+  results: Post[];
+}
+
+export type NavigationState = {
+  // 'explore' for the main feed, 'detail' for a post view
+  type: "explore" | "detail";
+  // The posts to display in the grid (either the main feed or "more to explore")
+  posts: Post[];
+  // The seed used to generate this list of posts
+  seed: number;
+  // The parent post if we are in a detail view
+  parentPost?: Post;
+};

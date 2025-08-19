@@ -8,7 +8,7 @@ interface PostGridProps {
   variant: "explore" | "saved";
   onSave?: (postId: number) => Promise<void>;
   onRemove?: (postId: number) => void;
-  onPostClick?: (postId: number) => Promise<void>;
+  onPostClick?: (post: Post) => Promise<void>;
 }
 
 export default function PostGrid({

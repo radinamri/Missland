@@ -6,6 +6,7 @@ import { Post } from "@/types";
 import api from "@/utils/api";
 import { QRCodeSVG } from "qrcode.react";
 import Image from "next/image";
+import { useAuth } from "@/context/AuthContext";
 
 export default function TryOnPage() {
   const params = useParams();
@@ -13,9 +14,12 @@ export default function TryOnPage() {
   const [post, setPost] = useState<Post | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [qrCodeValue, setQrCodeValue] = useState("");
+  const { trackTryOn } = useAuth();
 
   useEffect(() => {
     if (postId) {
+      // Track the interaction when the component loads
+      trackTryOn(Number(postId));
       // Fetch the specific post details
       api
         .get<Post>(`/api/auth/posts/${postId}/`)
@@ -27,7 +31,7 @@ export default function TryOnPage() {
         .catch((error) => console.error("Failed to fetch post", error))
         .finally(() => setIsLoading(false));
     }
-  }, [postId]);
+  }, [postId, trackTryOn]);
 
   if (isLoading) {
     return (

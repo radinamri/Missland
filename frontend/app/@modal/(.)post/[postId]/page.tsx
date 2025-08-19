@@ -1,22 +1,29 @@
 "use client";
 
-import { useRouter, useParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { useEffect, useRef } from "react";
 import PostDetail from "@/components/PostDetail";
+import { useNavigation } from "@/context/NavigationContext";
 
 export default function PostModal() {
   const router = useRouter();
-  const params = useParams();
-  const postId = params.postId as string;
   const dialogRef = useRef<HTMLDialogElement>(null);
+  const { currentView, handleGoBack, handlePostClick } = useNavigation();
 
   useEffect(() => {
     dialogRef.current?.showModal();
   }, []);
 
-  const handleClose = () => {
+  function handleClose() {
+    handleGoBack(); // 3. Pop from our navigation stack
     router.back();
-  };
+  }
+
+  // 4. Check if the current view is a detail view
+  if (currentView?.type !== "detail" || !currentView.parentPost) {
+    // This can happen briefly during transitions, render nothing or a loader
+    return null;
+  }
 
   return (
     <dialog
@@ -45,7 +52,11 @@ export default function PostModal() {
             ></path>
           </svg>
         </button>
-        <PostDetail postId={postId} />
+        <PostDetail
+          post={currentView.parentPost}
+          morePosts={currentView.posts}
+          onMorePostClick={handlePostClick}
+        />
       </div>
     </dialog>
   );

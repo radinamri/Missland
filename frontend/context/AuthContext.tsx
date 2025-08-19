@@ -42,6 +42,7 @@ interface AuthContextType {
   }) => Promise<boolean>;
   trackPostClick: (postId: number) => Promise<void>;
   trackSearchQuery: (query: string) => Promise<void>;
+  trackTryOn: (postId: number) => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -81,6 +82,16 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       incrementInteraction();
     } catch (error) {
       console.error("Failed to track search query:", error);
+    }
+  };
+
+  const trackTryOn = async (postId: number) => {
+    if (!user) return;
+    try {
+      await api.post("/api/auth/track/try-on/", { post_id: postId });
+      incrementInteraction();
+    } catch (error) {
+      console.error("Failed to track post try-on:", error);
     }
   };
 
@@ -266,6 +277,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     deleteAccount,
     trackPostClick,
     trackSearchQuery,
+    trackTryOn,
   };
 
   return (

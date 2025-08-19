@@ -9,7 +9,13 @@ import { useSearch } from "@/context/SearchContext";
 
 export default function Header() {
   const { user, logoutUser, trackSearchQuery } = useAuth();
-  const { searchTerm, setSearchTerm, allCategories } = useSearch();
+  const {
+    searchTerm,
+    setSearchTerm,
+    allCategories,
+    activeCategory,
+    setActiveCategory,
+  } = useSearch();
   const pathname = usePathname();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
@@ -21,8 +27,9 @@ export default function Header() {
   const navLinks = [{ href: "/articles", label: "Articles" }];
 
   // Handler for when a user clicks a category in the search suggestions
-  const handleSuggestionClick = (category: string) => {
-    setSearchTerm(category);
+  const handleSuggestionClick = (category: string | null) => {
+    setActiveCategory(category);
+    setSearchTerm("");
     // In a future step, you could also trigger a filter action here
   };
 
@@ -76,12 +83,13 @@ export default function Header() {
           {pathname === "/" && (
             <div className="hidden md:block flex-grow mx-4">
               <SearchInput
-                placeholder="Search nails, hair styles..."
+                placeholder="Search nails, styles, colors..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 onSearchSubmit={trackSearchQuery}
                 categories={allCategories}
                 onCategoryClick={handleSuggestionClick}
+                activeCategory={activeCategory}
               />
             </div>
           )}

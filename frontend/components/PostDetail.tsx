@@ -1,44 +1,29 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import { Post } from "@/types";
-import api from "@/utils/api";
 import Image from "next/image";
 import PostGrid from "./PostGrid";
 import { useAuth } from "@/context/AuthContext";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 
+// The props it accepts have been updated.
 interface PostDetailProps {
-  postId: string;
+  post: Post;
+  morePosts: Post[];
+  onMorePostClick: (post: Post) => void;
 }
 
-export default function PostDetail({ postId }: PostDetailProps) {
-  const [post, setPost] = useState<Post | null>(null);
-  const [morePosts, setMorePosts] = useState<Post[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+export default function PostDetail({
+  post,
+  morePosts,
+  onMorePostClick,
+}: PostDetailProps) {
   const { user, toggleSavePost, showToastWithMessage, trackPostClick } =
     useAuth();
+  const router = useRouter();
 
-  useEffect(() => {
-    if (postId) {
-      setIsLoading(true);
-      // Fetch the main post and "more posts" in parallel for faster loading
-      Promise.all([
-        api.get<Post>(`/api/auth/posts/${postId}/`),
-        api.get<Post[]>(`/api/auth/posts/${postId}/more/`),
-      ])
-        .then(([postResponse, morePostsResponse]) => {
-          setPost(postResponse.data);
-          setMorePosts(morePostsResponse.data);
-        })
-        .catch((error) => {
-          console.error("Failed to fetch post details", error);
-        })
-        .finally(() => {
-          setIsLoading(false);
-        });
-    }
-  }, [postId]);
+  // The component no longer needs its own useEffect or state for posts.
 
   const handleSaveClick = async (id: number) => {
     if (!user) {
@@ -51,7 +36,21 @@ export default function PostDetail({ postId }: PostDetailProps) {
     }
   };
 
-  if (isLoading || !post) {
+  // This new function handles clicks from the "More to explore" grid.
+  // It tracks the click, tells the navigation context to update its state,
+  // and then navigates to the new post's URL to open a new modal.
+  const handlePostClick = async (clickedPost: Post) => {
+    // Await the tracking call to complete
+    await trackPostClick(clickedPost.id);
+
+    // Then, update the navigation state
+    onMorePostClick(clickedPost);
+
+    // And finally, trigger the new modal
+    router.push(`/post/${clickedPost.id}`, { scroll: false });
+  };
+
+  if (!post) {
     return (
       <div className="text-center py-20">
         <p className="text-lg text-gray-500 animate-pulse">Loading Post...</p>
@@ -126,11 +125,12 @@ export default function PostDetail({ postId }: PostDetailProps) {
         <h2 className="text-2xl font-bold text-gray-800 mb-6 text-center">
           More to explore
         </h2>
+        {/* The onPostClick handler is now wired to our new function */}
         <PostGrid
           posts={morePosts}
           variant="explore"
           onSave={handleSaveClick}
-          onPostClick={trackPostClick}
+          onPostClick={handlePostClick}
         />
       </div>
     </div>
