@@ -98,9 +98,34 @@ class EmailChangeConfirmView(APIView):
 
 
 class PostListView(generics.ListAPIView):
-    queryset = Post.objects.all().order_by('-created_at')
     serializer_class = PostSerializer
     permission_classes = [AllowAny]
+
+    def list(self, request, *args, **kwargs):
+        # 1. Get seed from query params, or generate a new one
+        seed_param = request.query_params.get('seed')
+        if seed_param:
+            seed = int(seed_param)
+        else:
+            seed = int(time.time())
+
+        # 2. Seed the random number generator to make the shuffle repeatable
+        random.seed(seed)
+
+        # 3. Get all posts and shuffle them
+        all_posts = list(Post.objects.all())
+        random.shuffle(all_posts)
+
+        # 4. Take a slice for the feed size
+        feed_size = 40
+        paginated_posts = all_posts[:feed_size]
+        serializer = self.get_serializer(paginated_posts, many=True)
+
+        # 5. Return the posts in the new format that the frontend expects
+        return Response({
+            'seed': seed,
+            'results': serializer.data
+        })
 
 
 class ToggleSavePostView(APIView):
@@ -233,16 +258,32 @@ class ForYouPostListView(generics.ListAPIView):
     serializer_class = PostSerializer
     permission_classes = [AllowAny]
 
-    def get_queryset(self):
+    # We now override the list method instead of get_queryset
+    def list(self, request, *args, **kwargs):
         user = self.request.user
         feed_size = 40
+
+        # Although the primary sorting isn't random, a seed is good for consistency
+        seed = int(time.time())
+
+        # Logic from your old get_queryset is moved here
         if not user.is_authenticated or not hasattr(user, 'interest_profile') or not user.interest_profile.tag_scores:
-            return Post.objects.all().order_by('-created_at')[:feed_size]
+            # Fallback for users without a profile
+            posts = list(Post.objects.all().order_by('-created_at')[:feed_size])
+            random.shuffle(posts)  # Shuffle to provide variety
+
+            serializer = self.get_serializer(posts, many=True)
+            return Response({
+                'seed': seed,
+                'results': serializer.data
+            })
+
         try:
             profile = user.interest_profile
             tag_scores = profile.tag_scores
             if not tag_scores:
-                return Post.objects.all().order_by('-created_at')[:feed_size]
+                raise InterestProfile.DoesNotExist  # Treat empty scores as no profile
+
             all_posts = list(Post.objects.all())
             scored_posts = []
             for post in all_posts:
@@ -252,16 +293,35 @@ class ForYouPostListView(generics.ListAPIView):
                         relevance_score += tag_scores.get(tag, 0)
                 if relevance_score > 0:
                     scored_posts.append({'post': post, 'score': relevance_score})
+
             scored_posts.sort(key=lambda x: x['score'], reverse=True)
             personalized_posts = [item['post'] for item in scored_posts]
+
             if len(personalized_posts) < feed_size:
                 existing_ids = [p.id for p in personalized_posts]
                 recent_posts = Post.objects.exclude(id__in=existing_ids).order_by('-created_at')
+                # Chain combines the personalized list with the recent ones
                 combined_posts = list(chain(personalized_posts, recent_posts))
-                return combined_posts[:feed_size]
-            return personalized_posts[:feed_size]
+                final_posts = combined_posts[:feed_size]
+            else:
+                final_posts = personalized_posts[:feed_size]
+
+            serializer = self.get_serializer(final_posts, many=True)
+            # Return the data in the correct format
+            return Response({
+                'seed': seed,
+                'results': serializer.data
+            })
+
         except InterestProfile.DoesNotExist:
-            return Post.objects.all().order_by('-created_at')[:feed_size]
+            # Fallback for users with no interest profile yet
+            posts = list(Post.objects.all().order_by('-created_at')[:feed_size])
+            random.shuffle(posts)
+            serializer = self.get_serializer(posts, many=True)
+            return Response({
+                'seed': seed,
+                'results': serializer.data
+            })
 
 
 class TrackPostClickView(APIView):
