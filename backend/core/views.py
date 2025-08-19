@@ -1,4 +1,5 @@
 import random
+import time
 from itertools import chain
 from django.conf import settings
 from django.contrib.auth.tokens import default_token_generator
@@ -177,26 +178,55 @@ class MorePostsView(generics.ListAPIView):
     serializer_class = PostSerializer
     permission_classes = [AllowAny]
 
-    def get_queryset(self):
+    def list(self, request, *args, **kwargs):
         exclude_id = self.kwargs.get('post_id')
         feed_size = 20
+
+        # 1. Get seed from query params, or generate a new one if it's the first visit
+        seed_param = request.query_params.get('seed')
+        if seed_param:
+            seed = int(seed_param)
+        else:
+            # Use the current timestamp for a reasonably unique new seed
+            seed = int(time.time())
+
+        # 2. Seed the random number generator. This is the crucial step.
+        random.seed(seed)
+
+        # 3. Your existing logic for finding relevant posts
         try:
             current_post = Post.objects.get(id=exclude_id)
             tags = current_post.tags
             if tags and isinstance(tags, list):
-                relevant_posts = []
                 all_other_posts = Post.objects.exclude(id=exclude_id)
-                for post in all_other_posts:
-                    if any(tag in post.tags for tag in tags):
-                        relevant_posts.append(post)
+                relevant_posts = [post for post in all_other_posts if any(tag in post.tags for tag in tags)]
+
                 if len(relevant_posts) > 0:
-                    return random.sample(relevant_posts, min(len(relevant_posts), feed_size))
+                    # This random sample is now DETERMINISTIC because of random.seed()
+                    queryset = random.sample(relevant_posts, min(len(relevant_posts), feed_size))
+                else:
+                    # Fallback if no relevant posts are found
+                    all_other_post_ids = list(Post.objects.exclude(id=exclude_id).values_list('id', flat=True))
+                    sample_size = min(len(all_other_post_ids), feed_size)
+                    random_ids = random.sample(all_other_post_ids, sample_size)
+                    queryset = Post.objects.filter(id__in=random_ids)
+            else:
+                raise Post.DoesNotExist
+
         except Post.DoesNotExist:
-            pass
-        all_other_post_ids = list(Post.objects.exclude(id=exclude_id).values_list('id', flat=True))
-        sample_size = min(len(all_other_post_ids), feed_size)
-        random_ids = random.sample(all_other_post_ids, sample_size)
-        return Post.objects.filter(id__in=random_ids)
+            # Fallback if the post somehow has no tags or doesn't exist
+            all_other_post_ids = list(Post.objects.exclude(id=exclude_id).values_list('id', flat=True))
+            sample_size = min(len(all_other_post_ids), feed_size)
+            random_ids = random.sample(all_other_post_ids, sample_size)
+            queryset = Post.objects.filter(id__in=random_ids)
+
+        serializer = self.get_serializer(queryset, many=True)
+
+        # 4. Return the posts AND the seed that was used to generate them
+        return Response({
+            'seed': seed,
+            'results': serializer.data
+        })
 
 
 class ForYouPostListView(generics.ListAPIView):
@@ -275,3 +305,29 @@ class TrackSearchQueryView(APIView):
                 profile.tag_scores[term] = score_change
         profile.save()
         return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+class TrackTryOnView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request, *args, **kwargs):
+        post_id = request.data.get('post_id')
+        if not post_id:
+            return Response({'detail': 'Post ID is required.'}, status=status.HTTP_400_BAD_REQUEST)
+        try:
+            post = Post.objects.get(id=post_id)
+            user = request.user
+            profile, created = InterestProfile.objects.get_or_create(user=user)
+
+            # A "Try On" is a strong signal, so we give it a higher score change
+            score_change = 1.5
+
+            if post.tags and isinstance(post.tags, list):
+                for tag in post.tags:
+                    if tag:
+                        current_score = profile.tag_scores.get(tag, 0)
+                        profile.tag_scores[tag] = current_score + score_change
+                profile.save()
+            return Response(status=status.HTTP_204_NO_CONTENT)
+        except Post.DoesNotExist:
+            return Response({'detail': 'Post not found.'}, status=status.HTTP_404_NOT_FOUND)

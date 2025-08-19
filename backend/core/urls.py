@@ -1,7 +1,7 @@
 from django.urls import path
 from .views import UserRegistrationView, GoogleLogin, UserProfileView, EmailChangeInitiateView, EmailChangeConfirmView, \
     PostListView, ToggleSavePostView, SavedPostsListView, ArticleListView, ArticleDetailView, PostDetailView, \
-    UserDeleteView, MorePostsView, ForYouPostListView, TrackPostClickView, TrackSearchQueryView
+    UserDeleteView, MorePostsView, ForYouPostListView, TrackPostClickView, TrackSearchQueryView, TrackTryOnView
 from dj_rest_auth.views import PasswordChangeView
 
 urlpatterns = [
@@ -21,5 +21,7 @@ urlpatterns = [
     path('posts/<int:post_id>/more/', MorePostsView.as_view(), name='more-posts'),
     path('posts/for-you/', ForYouPostListView.as_view(), name='for-you-post-list'),
     path('track/click/', TrackPostClickView.as_view(), name='track-post-click'),
+    path('track/search/', TrackSearchQueryView.as_view(), name='track-search-query'),
+    path('track/try-on/', TrackTryOnView.as_view(), name='track-post-try-on'),
     path('track/search/', TrackSearchQueryView.as_view(), name='track-search-query'),
 ]
