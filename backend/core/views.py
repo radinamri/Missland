@@ -383,6 +383,16 @@ class CollectionDetailView(generics.RetrieveUpdateDestroyAPIView):
         # Otherwise, use the default detailed serializer
         return CollectionDetailSerializer
 
+    def destroy(self, request, *args, **kwargs):
+        instance = self.get_object()
+        if instance.name == "All Posts":
+            return Response(
+                {"detail": "The default 'All Posts' collection cannot be deleted."},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        # If it's not the default collection, proceed with normal deletion
+        return super().destroy(request, *args, **kwargs)
+
 
 class ManagePostInCollectionView(APIView):
     permission_classes = [IsAuthenticated]
