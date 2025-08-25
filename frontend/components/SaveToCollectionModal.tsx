@@ -15,26 +15,23 @@ export default function SaveToCollectionModal({
   postToSave: Post | null;
 }) {
   const {
-    user,
     collections,
-    fetchCollections,
     createCollection,
     managePostInCollection,
     showToastWithMessage,
   } = useAuth();
+
+  // The local isLoading state is no longer needed
   const [isCreating, setIsCreating] = useState(false);
   const [newCollectionName, setNewCollectionName] = useState("");
 
+  // The useEffect to fetch collections is no longer needed here
   useEffect(() => {
-    if (isOpen && user) {
-      fetchCollections();
-    }
-    // Reset create form when modal is closed
     if (!isOpen) {
       setIsCreating(false);
       setNewCollectionName("");
     }
-  }, [isOpen, user, fetchCollections]);
+  }, [isOpen]);
 
   if (!isOpen || !postToSave) return null;
 
@@ -45,8 +42,6 @@ export default function SaveToCollectionModal({
       if (newCollection) {
         await handleSave(newCollection.id);
       }
-      setNewCollectionName("");
-      setIsCreating(false);
     }
   };
 
@@ -65,7 +60,8 @@ export default function SaveToCollectionModal({
           <h2 className="text-xl font-bold text-gray-800">Save to...</h2>
         </div>
 
-        <div className="p-2 max-h-64 overflow-y-auto">
+        {/* The list now renders instantly without a loading state */}
+        <div className="p-2 min-h-[8rem] max-h-64 overflow-y-auto">
           {collections.map((collection) => (
             <button
               key={collection.id}
@@ -93,6 +89,7 @@ export default function SaveToCollectionModal({
           ))}
         </div>
 
+        {/* ... (The rest of the component remains the same) ... */}
         {isCreating ? (
           <form onSubmit={handleCreateCollection} className="p-4 border-t">
             <input
@@ -138,38 +135,17 @@ export default function SaveToCollectionModal({
             </button>
           </div>
         )}
-
-        {/* --- ADDED THIS SECTION --- */}
         {!isCreating && (
           <div className="p-4 border-t text-center bg-gray-50 rounded-b-2xl">
             <button
               onClick={onClose}
               className="text-sm font-semibold text-gray-700 px-6 py-2 rounded-lg hover:bg-gray-200 transition-colors"
             >
-              Cancel
+              Done
             </button>
           </div>
         )}
-        {/* --- END ADDED SECTION --- */}
       </div>
-      <button
-        onClick={onClose}
-        className="absolute top-4 right-4 text-white/80 hover:text-white"
-      >
-        <svg
-          className="w-8 h-8"
-          fill="none"
-          stroke="currentColor"
-          viewBox="0 0 24 24"
-        >
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth="2"
-            d="M6 18L18 6M6 6l12 12"
-          />
-        </svg>
-      </button>
     </div>
   );
 }

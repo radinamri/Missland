@@ -75,15 +75,14 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [collections, setCollections] = useState<Collection[]>([]);
 
   // Function to fetch user's collections
-  const fetchCollections = async () => {
-    if (!user) return;
+  const fetchCollections = useCallback(async () => {
     try {
       const response = await api.get<Collection[]>("/api/auth/collections/");
       setCollections(response.data);
     } catch (error) {
       console.error("Failed to fetch collections:", error);
     }
-  };
+  }, []);
 
   // Function to create a new collection
   const createCollection = async (name: string): Promise<Collection | null> => {
@@ -205,15 +204,18 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       const storedTokens = localStorage.getItem("authTokens");
       if (storedTokens) {
         setTokens(JSON.parse(storedTokens));
-        // We now wait for the profile to be fetched
         await fetchUserProfile();
       }
-      // This now correctly waits until all auth steps are done
       setLoading(false);
     };
-
     initializeAuth();
   }, [fetchUserProfile]);
+
+  useEffect(() => {
+    if (user) {
+      fetchCollections();
+    }
+  }, [user, fetchCollections]);
 
   const updateUsername = async (newUsername: string) => {
     try {
