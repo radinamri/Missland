@@ -51,6 +51,11 @@ interface AuthContextType {
     collectionId: number,
     postId: number
   ) => Promise<string | null>;
+  updateCollection: (
+    collectionId: number,
+    name: string
+  ) => Promise<Collection | null>;
+  deleteCollection: (collectionId: number) => Promise<boolean>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -68,7 +73,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [showToast, setShowToast] = useState(false);
 
   const [collections, setCollections] = useState<Collection[]>([]);
-  
 
   // Function to fetch user's collections
   const fetchCollections = async () => {
@@ -93,6 +97,35 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     } catch (error) {
       console.error("Failed to create collection:", error);
       return null;
+    }
+  };
+
+  const updateCollection = async (
+    collectionId: number,
+    name: string
+  ): Promise<Collection | null> => {
+    try {
+      const response = await api.patch<Collection>(
+        `/api/auth/collections/${collectionId}/`,
+        { name }
+      );
+      await fetchCollections(); // Refresh the list after updating
+      return response.data;
+    } catch (error) {
+      console.error("Failed to update collection", error);
+      // You can add more specific error handling here
+      return null;
+    }
+  };
+
+  const deleteCollection = async (collectionId: number): Promise<boolean> => {
+    try {
+      await api.delete(`/api/auth/collections/${collectionId}/`);
+      await fetchCollections(); // Refresh the list after deleting
+      return true;
+    } catch (error) {
+      console.error("Failed to delete collection", error);
+      return false;
     }
   };
 
@@ -343,6 +376,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     fetchCollections,
     createCollection,
     managePostInCollection,
+    updateCollection,
+    deleteCollection,
   };
 
   return (

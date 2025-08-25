@@ -100,7 +100,7 @@ export default function SaveToCollectionModal({
               value={newCollectionName}
               onChange={(e) => setNewCollectionName(e.target.value)}
               placeholder="Collection name"
-              className="w-full px-4 py-2 bg-gray-100 border-transparent rounded-md focus:ring-2 focus:ring-pink-500"
+              className="w-full px-4 py-2 bg-gray-100 border-transparent rounded-md focus:ring-2 focus:ring-pink-500 text-gray-500"
               autoFocus
             />
             <div className="flex items-center justify-end space-x-2 mt-3">
