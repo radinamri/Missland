@@ -1,7 +1,7 @@
 import requests
 from django.contrib.auth.password_validation import validate_password
 from rest_framework import serializers
-from .models import User, Post, Article
+from .models import User, Post, Article, Collection
 
 
 class UserRegistrationSerializer(serializers.ModelSerializer):
@@ -140,3 +140,43 @@ class UserDeleteSerializer(serializers.Serializer):
                 raise serializers.ValidationError('Failed to verify Google token. Please try again.')
 
         return data
+
+
+class CollectionCreateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Collection
+        fields = ['id', 'name']
+        read_only_fields = ['id']
+
+
+class CollectionListSerializer(serializers.ModelSerializer):
+    # Get the first post's image as a thumbnail for the collection
+    thumbnail_url = serializers.SerializerMethodField()
+    post_count = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Collection
+        fields = ['id', 'name', 'thumbnail_url', 'post_count']
+
+    def get_thumbnail_url(self, obj):
+        first_post = obj.posts.order_by('-id').first()
+        return first_post.image_url if first_post else None
+
+    def get_post_count(self, obj):
+        return obj.posts.count()
+
+
+class CollectionDetailSerializer(serializers.ModelSerializer):
+    # We will use a SerializerMethodField for more explicit control
+    posts = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Collection
+        fields = ['id', 'name', 'posts']
+
+    def get_posts(self, obj):
+        # 'obj' is the Collection instance.
+        # We get all posts related to it, ordered by most recent.
+        posts_queryset = obj.posts.all().order_by('-id')
+        # We manually serialize that list of posts using the PostSerializer.
+        return PostSerializer(posts_queryset, many=True).data

@@ -14,11 +14,12 @@ from rest_framework.views import APIView
 from allauth.socialaccount.providers.google.views import GoogleOAuth2Adapter
 from allauth.socialaccount.providers.oauth2.client import OAuth2Client
 from dj_rest_auth.registration.views import SocialLoginView
-from .models import User, Post, Article, InterestProfile
+from .models import User, Post, Article, InterestProfile, Collection
 from .serializers import (
     UserRegistrationSerializer, UserProfileSerializer, UserProfileUpdateSerializer,
     EmailChangeInitiateSerializer, EmailChangeConfirmSerializer, PostSerializer,
-    ArticleListSerializer, ArticleDetailSerializer, UserDeleteSerializer
+    ArticleListSerializer, ArticleDetailSerializer, UserDeleteSerializer, CollectionDetailSerializer,
+    CollectionCreateSerializer, CollectionListSerializer
 )
 
 
@@ -126,46 +127,6 @@ class PostListView(generics.ListAPIView):
             'seed': seed,
             'results': serializer.data
         })
-
-
-class ToggleSavePostView(APIView):
-    permission_classes = [IsAuthenticated]
-
-    def post(self, request, post_id, *args, **kwargs):
-        try:
-            post = Post.objects.get(id=post_id)
-            user = request.user
-            profile, created = InterestProfile.objects.get_or_create(user=user)
-            score_change = 0
-            if user in post.saved_by.all():
-                post.saved_by.remove(user)
-                score_change = -1
-                message = 'Post unsaved successfully.'
-            else:
-                post.saved_by.add(user)
-                score_change = 1
-                message = 'Post saved successfully.'
-
-            # --- This is the corrected line ---
-            if post.tags and isinstance(post.tags, list):
-                for tag in post.tags:
-                    if tag:
-                        current_score = profile.tag_scores.get(tag, 0)
-                        new_score = max(0, current_score + score_change)
-                        profile.tag_scores[tag] = new_score
-                profile.save()
-            return Response({'detail': message}, status=status.HTTP_200_OK)
-        except Post.DoesNotExist:
-            return Response({'detail': 'Post not found.'}, status=status.HTTP_404_NOT_FOUND)
-
-
-class SavedPostsListView(generics.ListAPIView):
-    serializer_class = PostSerializer
-    permission_classes = [IsAuthenticated]
-
-    def get_queryset(self):
-        user = User.objects.get(pk=self.request.user.pk)
-        return user.saved_posts.all().order_by('-created_at')
 
 
 class ArticleListView(generics.ListAPIView):
@@ -389,5 +350,53 @@ class TrackTryOnView(APIView):
                         profile.tag_scores[tag] = current_score + score_change
                 profile.save()
             return Response(status=status.HTTP_204_NO_CONTENT)
+        except Post.DoesNotExist:
+            return Response({'detail': 'Post not found.'}, status=status.HTTP_404_NOT_FOUND)
+
+
+class CollectionListView(generics.ListCreateAPIView):
+    permission_classes = [IsAuthenticated]
+
+    def get_serializer_class(self):
+        if self.request.method == 'POST':
+            return CollectionCreateSerializer
+        return CollectionListSerializer
+
+    def get_queryset(self):
+        return self.request.user.collections.all().order_by('-created_at')
+
+    def perform_create(self, serializer):
+        serializer.save(user=self.request.user)
+
+
+class CollectionDetailView(generics.RetrieveAPIView):
+    permission_classes = [IsAuthenticated]
+    serializer_class = CollectionDetailSerializer
+
+    def get_queryset(self):
+        return self.request.user.collections.all()
+
+
+class ManagePostInCollectionView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request, collection_id, post_id, *args, **kwargs):
+        try:
+            collection = request.user.collections.get(id=collection_id)
+            post = Post.objects.get(id=post_id)
+            if post in collection.posts.all():
+                collection.posts.remove(post)
+                message = f'Post removed from {collection.name}.'
+            else:
+                collection.posts.add(post)
+                message = f'Post saved to {collection.name}.'
+            # Also manage the post in the user's default "All Posts" collection
+            default_collection, _ = request.user.collections.get_or_create(name="All Posts")
+            if default_collection.id != collection.id and post not in default_collection.posts.all():
+                default_collection.posts.add(post)
+
+            return Response({'detail': message}, status=status.HTTP_200_OK)
+        except Collection.DoesNotExist:
+            return Response({'detail': 'Collection not found.'}, status=status.HTTP_404_NOT_FOUND)
         except Post.DoesNotExist:
             return Response({'detail': 'Post not found.'}, status=status.HTTP_404_NOT_FOUND)
