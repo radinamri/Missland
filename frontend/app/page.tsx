@@ -131,7 +131,7 @@ export default function ExplorePage() {
         onClose={() => setShowSignUpPopup(false)}
       />
 
-      <main className="container mx-auto p-4 md:p-8">
+      <main className="bg-white p-4 md:p-8">
         <div className="mb-8">
           <div className="md:hidden">
             <SearchInput
