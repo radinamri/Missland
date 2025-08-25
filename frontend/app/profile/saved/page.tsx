@@ -63,76 +63,78 @@ function CollectionCard({
       </Link>
 
       {/* --- Mobile & Desktop Actions --- */}
-      <div ref={menuRef} className="absolute top-2 right-2 z-10">
-        {/* Mobile: Always-visible kebab menu */}
-        <button
-          onClick={() => setIsMenuOpen(!isMenuOpen)}
-          className="md:hidden w-8 h-8 flex items-center justify-center bg-white/80 rounded-lg shadow"
-        >
-          <svg
-            className="w-5 h-5 text-gray-700"
-            fill="currentColor"
-            viewBox="0 0 20 20"
-          >
-            <path d="M10 6a2 2 0 110-4 2 2 0 010 4zM10 12a2 2 0 110-4 2 2 0 010 4zM10 18a2 2 0 110-4 2 2 0 010 4z" />
-          </svg>
-        </button>
-
-        {/* Desktop: Buttons appear on hover */}
-        <div className="hidden md:flex items-center space-x-2 opacity-0 group-hover:opacity-100 transition-opacity">
+      {collection.name !== "All Posts" && (
+        <div ref={menuRef} className="absolute top-2 right-2 z-10">
+          {/* Mobile: Always-visible kebab menu */}
           <button
-            onClick={onEdit}
-            className="w-8 h-8 flex items-center justify-center bg-white/80 rounded-lg shadow hover:bg-white"
+            onClick={() => setIsMenuOpen(!isMenuOpen)}
+            className="md:hidden w-8 h-8 flex items-center justify-center bg-white/80 rounded-lg shadow"
           >
             <svg
-              className="w-4 h-4 text-gray-700"
+              className="w-5 h-5 text-gray-700"
               fill="currentColor"
               viewBox="0 0 20 20"
             >
-              <path d="M17.414 2.586a2 2 0 00-2.828 0L7 10.172V13h2.828l7.586-7.586a2 2 0 000-2.828z"></path>
-              <path
-                fillRule="evenodd"
-                d="M2 6a2 2 0 012-2h4a1 1 0 010 2H4v10h10v-4a1 1 0 112 0v4a2 2 0 01-2 2H4a2 2 0 01-2-2V6z"
-                clipRule="evenodd"
-              ></path>
+              <path d="M10 6a2 2 0 110-4 2 2 0 010 4zM10 12a2 2 0 110-4 2 2 0 010 4zM10 18a2 2 0 110-4 2 2 0 010 4z" />
             </svg>
           </button>
-          <button
-            onClick={onDelete}
-            className="w-8 h-8 flex items-center justify-center bg-white/80 rounded-lg shadow hover:bg-white"
-          >
-            <svg
-              className="w-4 h-4 text-red-600"
-              fill="currentColor"
-              viewBox="0 0 20 20"
-            >
-              <path
-                fillRule="evenodd"
-                d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm4 0a1 1 0 012 0v6a1 1 0 11-2 0V8z"
-                clipRule="evenodd"
-              ></path>
-            </svg>
-          </button>
-        </div>
 
-        {/* Mobile Menu Dropdown */}
-        {isMenuOpen && (
-          <div className="md:hidden absolute top-10 right-0 bg-white rounded-lg shadow-xl py-1 w-32">
+          {/* Desktop: Buttons appear on hover */}
+          <div className="hidden md:flex items-center space-x-2 opacity-0 group-hover:opacity-100 transition-opacity">
             <button
               onClick={onEdit}
-              className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+              className="w-8 h-8 flex items-center justify-center bg-white/80 rounded-lg shadow hover:bg-white"
             >
-              Edit
+              <svg
+                className="w-4 h-4 text-gray-700"
+                fill="currentColor"
+                viewBox="0 0 20 20"
+              >
+                <path d="M17.414 2.586a2 2 0 00-2.828 0L7 10.172V13h2.828l7.586-7.586a2 2 0 000-2.828z"></path>
+                <path
+                  fillRule="evenodd"
+                  d="M2 6a2 2 0 012-2h4a1 1 0 010 2H4v10h10v-4a1 1 0 112 0v4a2 2 0 01-2 2H4a2 2 0 01-2-2V6z"
+                  clipRule="evenodd"
+                ></path>
+              </svg>
             </button>
             <button
               onClick={onDelete}
-              className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-gray-100"
+              className="w-8 h-8 flex items-center justify-center bg-white/80 rounded-lg shadow hover:bg-white"
             >
-              Delete
+              <svg
+                className="w-4 h-4 text-red-600"
+                fill="currentColor"
+                viewBox="0 0 20 20"
+              >
+                <path
+                  fillRule="evenodd"
+                  d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm4 0a1 1 0 012 0v6a1 1 0 11-2 0V8z"
+                  clipRule="evenodd"
+                ></path>
+              </svg>
             </button>
           </div>
-        )}
-      </div>
+
+          {/* Mobile Menu Dropdown */}
+          {isMenuOpen && (
+            <div className="md:hidden absolute top-10 right-0 bg-white rounded-lg shadow-xl py-1 w-32">
+              <button
+                onClick={onEdit}
+                className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+              >
+                Edit
+              </button>
+              <button
+                onClick={onDelete}
+                className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-gray-100"
+              >
+                Delete
+              </button>
+            </div>
+          )}
+        </div>
+      )}
     </div>
   );
 }
