@@ -53,3 +53,16 @@ export type NavigationState = {
   // The parent post if we are in a detail view
   parentPost?: Post;
 };
+
+export interface Collection {
+  id: number;
+  name: string;
+  thumbnail_url: string | null;
+  post_count: number;
+}
+
+export interface CollectionDetail {
+  id: number;
+  name: string;
+  posts: Post[];
+}

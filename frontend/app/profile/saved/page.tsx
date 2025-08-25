@@ -1,150 +1,86 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { useAuth } from "@/context/AuthContext";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { Post } from "@/types";
-import api from "@/utils/api";
-import Toast from "@/components/Toast";
-import PostGrid from "@/components/PostGrid";
-import SearchInput from "@/components/SearchInput";
+import Image from "next/image";
 
 export default function SavedPostsPage() {
   const {
     user,
     tokens,
     isLoading: isAuthLoading,
-    toggleSavePost,
-    trackSearchQuery,
+    collections,
+    fetchCollections,
   } = useAuth();
   const router = useRouter();
 
-  const [savedPosts, setSavedPosts] = useState<Post[]>([]);
-  const [filteredPosts, setFilteredPosts] = useState<Post[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [searchTerm, setSearchTerm] = useState("");
-  const [toastMessage, setToastMessage] = useState("");
-  const [showToast, setShowToast] = useState(false);
-
-  // Protect the route
   useEffect(() => {
     if (!isAuthLoading && !tokens) {
       router.push("/login");
     }
   }, [tokens, isAuthLoading, router]);
 
-  // Fetch saved posts
   useEffect(() => {
     if (user) {
-      setIsLoading(true);
-      api
-        .get<Post[]>("/api/auth/profile/saved-posts/")
-        .then((response) => {
-          setSavedPosts(response.data);
-          setFilteredPosts(response.data);
-        })
-        .catch((error) => console.error("Failed to fetch saved posts", error))
-        .finally(() => setIsLoading(false));
+      // Fetch collections when the user is available
+      fetchCollections();
     }
-  }, [user]);
+  }, [user, fetchCollections]);
 
-  // Handle search filtering
-  useEffect(() => {
-    const results = savedPosts.filter(
-      (post) =>
-        post.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        (post.tags &&
-          post.tags.some((tag) =>
-            tag.toLowerCase().includes(searchTerm.toLowerCase())
-          ))
-    );
-    setFilteredPosts(results);
-  }, [searchTerm, savedPosts]);
-
-  const handleRemovePost = async (postId: number) => {
-    const message = await toggleSavePost(postId);
-    if (message) {
-      const updatedPosts = savedPosts.filter((p) => p.id !== postId);
-      setSavedPosts(updatedPosts);
-      setFilteredPosts(updatedPosts);
-      setToastMessage("Post removed from your collection.");
-      setShowToast(true);
-      setTimeout(() => setShowToast(false), 3000);
-    }
-  };
-
-  if (isAuthLoading || isLoading) {
+  if (isAuthLoading) {
     return (
-      <div className="flex items-center justify-center h-[60vh]">
-        <p className="text-lg text-gray-500 animate-pulse">
-          Loading Saved Posts...
-        </p>
+      <div className="text-center py-20">
+        <p className="text-lg text-gray-500">Loading...</p>
       </div>
     );
   }
 
   return (
-    <>
-      <Toast message={toastMessage} show={showToast} />
-      <div className="bg-white md:shadow-lg p-4 md:p-8 min-h-screen">
-        <header className="mb-8">
-          <div className="flex justify-start mb-4">
+    <div className="bg-white md:shadow-lg p-4 md:p-8 min-h-screen">
+      <header className="flex items-center justify-between mb-8">
+        <h1 className="text-3xl md:text-4xl font-bold text-gray-800">
+          My Collections
+        </h1>
+      </header>
+
+      {collections.length > 0 ? (
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+          {collections.map((collection) => (
             <Link
-              href="/profile"
-              className="flex items-center text-gray-600 hover:text-gray-900 transition-colors"
+              href={`/profile/saved/${collection.id}`}
+              key={collection.id}
+              className="group aspect-square block bg-gray-100 rounded-xl shadow-sm hover:shadow-lg transition-shadow duration-300 overflow-hidden relative"
             >
-              <svg
-                className="w-5 h-5 mr-2"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth="2"
-                  d="M15 19l-7-7 7-7"
-                ></path>
-              </svg>
-              Back to Profile
+              {collection.thumbnail_url && (
+                <Image
+                  src={collection.thumbnail_url}
+                  alt={collection.name}
+                  fill
+                  style={{ objectFit: "cover" }}
+                  className="transition-transform duration-300 group-hover:scale-105"
+                  sizes="(max-width: 768px) 50vw, (max-width: 1024px) 33vw, 25vw"
+                />
+              )}
+              <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
+              <div className="absolute bottom-0 left-0 p-4 text-white">
+                <h2 className="font-bold text-lg">{collection.name}</h2>
+                <p className="text-sm">{collection.post_count} posts</p>
+              </div>
             </Link>
-          </div>
-          <h1 className="text-3xl md:text-4xl font-bold text-gray-800">
-            My Saved Posts
-          </h1>
-        </header>
-
-        {/* Search Bar */}
-        <div className="mb-8">
-          <SearchInput
-            placeholder="Search nails, hair styles..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            onSearchSubmit={trackSearchQuery}
-          />
+          ))}
         </div>
-
-        {filteredPosts.length > 0 ? (
-          // Replaced the duplicated grid with the reusable PostGrid component
-          <PostGrid
-            posts={filteredPosts}
-            variant="saved"
-            onRemove={handleRemovePost}
-          />
-        ) : (
-          <div className="text-center py-12">
-            <h2 className="text-xl font-semibold text-gray-700 mb-2">
-              No Saved Posts Found
-            </h2>
-            <p className="text-gray-500">
-              {searchTerm
-                ? "Try a different search term."
-                : "Posts you save from the Explore page will appear here."}
-            </p>
-          </div>
-        )}
-      </div>
-    </>
+      ) : (
+        <div className="text-center py-12">
+          <h2 className="text-xl font-semibold text-gray-700 mb-2">
+            No Collections Yet
+          </h2>
+          <p className="text-gray-500">
+            Posts you save will appear in collections here.
+          </p>
+        </div>
+      )}
+    </div>
   );
 }

@@ -16,6 +16,7 @@ import {
   AuthTokens,
   User,
   PasswordChangeCredentials,
+  Collection,
 } from "@/types";
 import api from "@/utils/api";
 
@@ -35,7 +36,7 @@ interface AuthContextType {
   updateUsername: (newUsername: string) => Promise<void>;
   changePassword: (credentials: PasswordChangeCredentials) => Promise<void>;
   initiateEmailChange: (newEmail: string) => Promise<void>;
-  toggleSavePost: (postId: number) => Promise<string | null>;
+  // toggleSavePost: (postId: number) => Promise<string | null>;
   deleteAccount: (verification: {
     password?: string;
     access_token?: string;
@@ -43,6 +44,13 @@ interface AuthContextType {
   trackPostClick: (postId: number) => Promise<void>;
   trackSearchQuery: (query: string) => Promise<void>;
   trackTryOn: (postId: number) => Promise<void>;
+  collections: Collection[];
+  fetchCollections: () => Promise<void>;
+  createCollection: (name: string) => Promise<Collection | null>;
+  managePostInCollection: (
+    collectionId: number,
+    postId: number
+  ) => Promise<string | null>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -58,6 +66,53 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   const [toastMessage, setToastMessage] = useState("");
   const [showToast, setShowToast] = useState(false);
+
+  const [collections, setCollections] = useState<Collection[]>([]);
+  
+
+  // Function to fetch user's collections
+  const fetchCollections = async () => {
+    if (!user) return;
+    try {
+      const response = await api.get<Collection[]>("/api/auth/collections/");
+      setCollections(response.data);
+    } catch (error) {
+      console.error("Failed to fetch collections:", error);
+    }
+  };
+
+  // Function to create a new collection
+  const createCollection = async (name: string): Promise<Collection | null> => {
+    if (!user) return null;
+    try {
+      const response = await api.post<Collection>("/api/auth/collections/", {
+        name,
+      });
+      fetchCollections(); // Refresh the list after creating
+      return response.data;
+    } catch (error) {
+      console.error("Failed to create collection:", error);
+      return null;
+    }
+  };
+
+  // Function to add/remove a post from a collection
+  const managePostInCollection = async (
+    collectionId: number,
+    postId: number
+  ): Promise<string | null> => {
+    if (!user) return null;
+    try {
+      const response = await api.post(
+        `/api/auth/collections/${collectionId}/posts/${postId}/`
+      );
+      incrementInteraction(); // This is still a valuable signal
+      return response.data.detail;
+    } catch (error) {
+      console.error("Failed to manage post in collection:", error);
+      return null;
+    }
+  };
 
   const showToastWithMessage = (message: string) => {
     setToastMessage(message);
@@ -113,12 +168,18 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   }, [logoutUser]);
 
   useEffect(() => {
-    const storedTokens = localStorage.getItem("authTokens");
-    if (storedTokens) {
-      setTokens(JSON.parse(storedTokens));
-      fetchUserProfile();
-    }
-    setLoading(false);
+    const initializeAuth = async () => {
+      const storedTokens = localStorage.getItem("authTokens");
+      if (storedTokens) {
+        setTokens(JSON.parse(storedTokens));
+        // We now wait for the profile to be fetched
+        await fetchUserProfile();
+      }
+      // This now correctly waits until all auth steps are done
+      setLoading(false);
+    };
+
+    initializeAuth();
   }, [fetchUserProfile]);
 
   const updateUsername = async (newUsername: string) => {
@@ -221,19 +282,19 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
-  const toggleSavePost = async (postId: number): Promise<string | null> => {
-    try {
-      const response = await api.post(`/api/auth/posts/${postId}/toggle-save/`);
-      incrementInteraction();
-      return response.data.detail;
-    } catch (error) {
-      console.error("Failed to save post", error);
-      if (isAxiosError(error)) {
-        alert("Error saving post: " + JSON.stringify(error.response?.data));
-      }
-      return null;
-    }
-  };
+  // const toggleSavePost = async (postId: number): Promise<string | null> => {
+  //   try {
+  //     const response = await api.post(`/api/auth/posts/${postId}/toggle-save/`);
+  //     incrementInteraction();
+  //     return response.data.detail;
+  //   } catch (error) {
+  //     console.error("Failed to save post", error);
+  //     if (isAxiosError(error)) {
+  //       alert("Error saving post: " + JSON.stringify(error.response?.data));
+  //     }
+  //     return null;
+  //   }
+  // };
 
   const deleteAccount = async (verification: {
     password?: string;
@@ -273,11 +334,15 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     updateUsername,
     changePassword,
     initiateEmailChange,
-    toggleSavePost,
+    // toggleSavePost,
     deleteAccount,
     trackPostClick,
     trackSearchQuery,
     trackTryOn,
+    collections,
+    fetchCollections,
+    createCollection,
+    managePostInCollection,
   };
 
   return (

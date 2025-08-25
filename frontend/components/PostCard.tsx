@@ -7,7 +7,7 @@ import { useRouter } from "next/navigation";
 interface PostCardProps {
   post: Post;
   variant: "explore" | "saved";
-  onSave?: (postId: number) => Promise<void>;
+  onSave?: (post: Post) => void;
   onRemove?: (postId: number) => void;
   onPostClick?: (post: Post) => Promise<void>;
 }
@@ -39,7 +39,7 @@ export default function PostCard({
   const handleSaveClick = async (e: React.MouseEvent) => {
     e.stopPropagation();
     if (onSave) {
-      await onSave(post.id);
+      await onSave(post);
     }
   };
 

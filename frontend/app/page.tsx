@@ -10,12 +10,12 @@ import { useNavigation } from "@/context/NavigationContext";
 import LoginModal from "@/components/LoginModal";
 import PostGrid from "@/components/PostGrid";
 import SignUpPopup from "@/components/SignUpPopup";
-import Toast from "@/components/Toast";
 import SearchInput from "@/components/SearchInput";
+import SaveToCollectionModal from "@/components/SaveToCollectionModal";
 
 export default function ExplorePage() {
   const [isLoading, setIsLoading] = useState(true);
-  const { user, toggleSavePost, trackPostClick, trackSearchQuery } = useAuth();
+  const { user, trackPostClick, trackSearchQuery } = useAuth();
   const {
     searchTerm,
     setSearchTerm,
@@ -29,8 +29,8 @@ export default function ExplorePage() {
   const { currentView, handlePostClick, initializeFeed } = useNavigation();
 
   const [showLoginModal, setShowLoginModal] = useState(false);
-  const [toastMessage, setToastMessage] = useState("");
-  const [showToast, setShowToast] = useState(false);
+  const [postToSave, setPostToSave] = useState<Post | null>(null);
+  const [showCollectionsModal, setShowCollectionsModal] = useState(false);
   const [showSignUpPopup, setShowSignUpPopup] = useState(false);
 
   useEffect(() => {
@@ -101,16 +101,12 @@ export default function ExplorePage() {
     return () => window.removeEventListener("scroll", handleScroll);
   }, [user]);
 
-  const handleSaveClick = async (postId: number) => {
+  const openSaveModal = (post: Post) => {
     if (!user) {
       setShowLoginModal(true);
     } else {
-      const message = await toggleSavePost(postId);
-      if (message) {
-        setToastMessage(message);
-        setShowToast(true);
-        setTimeout(() => setShowToast(false), 3000);
-      }
+      setPostToSave(post);
+      setShowCollectionsModal(true);
     }
   };
 
@@ -125,13 +121,17 @@ export default function ExplorePage() {
         isOpen={showLoginModal}
         onClose={() => setShowLoginModal(false)}
       />
-      <Toast message={toastMessage} show={showToast} />
+      <SaveToCollectionModal
+        isOpen={showCollectionsModal}
+        onClose={() => setShowCollectionsModal(false)}
+        postToSave={postToSave}
+      />
       <SignUpPopup
         show={showSignUpPopup}
         onClose={() => setShowSignUpPopup(false)}
       />
 
-      <main className="bg-white md:shadow-lg p-4 md:p-8 min-h-screen">
+      <main className="container mx-auto p-4 md:p-8">
         <div className="mb-8">
           <div className="md:hidden">
             <SearchInput
@@ -154,7 +154,7 @@ export default function ExplorePage() {
           <PostGrid
             posts={filteredPosts}
             variant="explore"
-            onSave={handleSaveClick}
+            onSave={openSaveModal}
             onPostClick={handleGridPostClick}
           />
         ) : (
