@@ -369,12 +369,19 @@ class CollectionListView(generics.ListCreateAPIView):
         serializer.save(user=self.request.user)
 
 
-class CollectionDetailView(generics.RetrieveAPIView):
+class CollectionDetailView(generics.RetrieveUpdateDestroyAPIView):
     permission_classes = [IsAuthenticated]
     serializer_class = CollectionDetailSerializer
 
     def get_queryset(self):
         return self.request.user.collections.all()
+
+    def get_serializer_class(self):
+        # When updating (PUT or PATCH), use the simpler serializer
+        if self.request.method in ['PUT', 'PATCH']:
+            return CollectionCreateSerializer
+        # Otherwise, use the default detailed serializer
+        return CollectionDetailSerializer
 
 
 class ManagePostInCollectionView(APIView):
