@@ -18,7 +18,7 @@ export default function DeleteCollectionModal({
   if (!isOpen || !collectionToDelete) return null;
 
   return (
-    <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4">
+    <div className="fixed inset-0 bg-black/50 backdrop-blur-md z-50 flex items-center justify-center p-4">
       <div className="bg-white rounded-2xl shadow-xl w-full max-w-sm text-center p-8 animate-fade-in-down">
         <h2 className="text-2xl font-bold text-red-600 mb-4">
           Delete Collection

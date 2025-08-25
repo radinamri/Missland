@@ -60,7 +60,7 @@ export default function SearchInput({
     <>
       {isFocused && (
         <div
-          className="fixed inset-0 bg-black/30 backdrop-blur-sm z-10"
+          className="fixed inset-0 bg-black/50 backdrop-blur-md z-10"
           onClick={() => setIsFocused(false)}
         ></div>
       )}

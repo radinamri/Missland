@@ -34,7 +34,7 @@ export default function DeleteAccountModal({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
+    <div className="fixed inset-0 bg-black/50 backdrop-blur-md z-50 flex items-center justify-center p-4">
       <div className="bg-white rounded-2xl shadow-xl p-8 max-w-md w-full text-center animate-fade-in-down">
         <h2 className="text-2xl font-bold text-red-600 mb-4">Delete Account</h2>
         <p className="text-gray-600 mb-6">
