@@ -1,13 +1,14 @@
 "use client";
 
+import { useState } from "react";
 import { Post } from "@/types";
 import Image from "next/image";
 import PostGrid from "./PostGrid";
 import { useAuth } from "@/context/AuthContext";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import SaveToCollectionModal from "./SaveToCollectionModal";
 
-// The props it accepts have been updated.
 interface PostDetailProps {
   post: Post;
   morePosts: Post[];
@@ -19,34 +20,24 @@ export default function PostDetail({
   morePosts,
   onMorePostClick,
 }: PostDetailProps) {
-  const { user, toggleSavePost, showToastWithMessage, trackPostClick } =
-    useAuth();
+  const { user, trackPostClick } = useAuth();
   const router = useRouter();
 
-  // The component no longer needs its own useEffect or state for posts.
+  const [showCollectionsModal, setShowCollectionsModal] = useState(false);
+  const [postToSave, setPostToSave] = useState<Post | null>(null);
 
-  const handleSaveClick = async (id: number) => {
+  const openSaveModal = (postToSave: Post) => {
     if (!user) {
-      alert("Please log in to save posts.");
+      router.push("/login");
       return;
     }
-    const message = await toggleSavePost(id);
-    if (message) {
-      showToastWithMessage(message);
-    }
+    setPostToSave(postToSave);
+    setShowCollectionsModal(true);
   };
 
-  // This new function handles clicks from the "More to explore" grid.
-  // It tracks the click, tells the navigation context to update its state,
-  // and then navigates to the new post's URL to open a new modal.
   const handlePostClick = async (clickedPost: Post) => {
-    // Await the tracking call to complete
     await trackPostClick(clickedPost.id);
-
-    // Then, update the navigation state
     onMorePostClick(clickedPost);
-
-    // And finally, trigger the new modal
     router.push(`/post/${clickedPost.id}`, { scroll: false });
   };
 
@@ -59,80 +50,83 @@ export default function PostDetail({
   }
 
   return (
-    <div className="bg-white overflow-y-auto max-h-[90vh]">
-      <div className="p-4 md:p-8">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto rounded-4xl shadow-lg p-4 md:p-8">
-          {/* Left Column: Image */}
-          <div className="w-full">
-            <Image
-              src={post.image_url}
-              alt={post.title}
-              width={post.width}
-              height={post.height}
-              className="w-full h-auto rounded-2xl"
-              priority
-            />
-          </div>
-          {/* Right Column: Details */}
-          <div className="flex flex-col">
-            {/* Action Bar */}
-            <div className="flex items-center justify-end mb-6 space-x-3">
-              <Link
-                href={`/try-on/${post.id}`}
-                className="bg-gray-100 text-gray-800 font-bold py-3 px-6 rounded-2xl hover:bg-gray-200 transition"
-              >
-                Try On
-              </Link>
-              <button
-                onClick={() => handleSaveClick(post.id)}
-                className="bg-pink-500 text-white font-bold py-3 px-6 rounded-2xl hover:bg-pink-600 transition"
-              >
-                Save
-              </button>
-            </div>
+    <>
+      <SaveToCollectionModal
+        isOpen={showCollectionsModal}
+        onClose={() => setShowCollectionsModal(false)}
+        postToSave={postToSave}
+      />
 
-            {/* Title and Info */}
-            <div className="space-y-4">
-              <h1 className="text-4xl font-bold text-gray-900 leading-tight">
-                {post.title}
-              </h1>
-              <div className="flex items-center space-x-3">
-                <div className="w-10 h-10 bg-pink-100 rounded-full flex items-center justify-center text-pink-600 font-bold">
-                  N
-                </div>
-                <div>
-                  <p className="font-semibold text-gray-800">NANA-AI</p>
-                  <p className="text-sm text-gray-500">Curated Style</p>
-                </div>
+      <div className="bg-white overflow-y-auto max-h-[90vh]">
+        <div className="p-4 md:p-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto rounded-xl shadow-lg p-4 md:p-8">
+            <div className="w-full">
+              <Image
+                src={post.image_url}
+                alt={post.title}
+                width={post.width}
+                height={post.height}
+                className="w-full h-auto rounded-2xl"
+                priority
+              />
+            </div>
+            <div className="flex flex-col">
+              <div className="flex items-center justify-end mb-6 space-x-3">
+                <Link
+                  href={`/try-on/${post.id}`}
+                  className="bg-gray-100 text-gray-800 font-bold py-3 px-6 rounded-2xl hover:bg-gray-200 transition"
+                >
+                  Try On
+                </Link>
+                <button
+                  onClick={() => openSaveModal(post)}
+                  className="bg-pink-500 text-white font-bold py-3 px-6 rounded-2xl hover:bg-pink-600 transition"
+                >
+                  Save
+                </button>
               </div>
-              <div className="flex flex-wrap gap-2 pt-2">
-                {post.tags &&
-                  Object.values(post.tags).map((tag) => (
-                    <span
-                      key={tag}
-                      className="bg-gray-100 text-gray-600 text-sm font-medium px-3 py-1 rounded-lg"
-                    >
-                      {tag}
-                    </span>
-                  ))}
+
+              <div className="space-y-4">
+                <h1 className="text-3xl md:text-4xl font-bold text-gray-900 leading-tight">
+                  {post.title}
+                </h1>
+                <div className="flex items-center space-x-3">
+                  <div className="w-10 h-10 bg-pink-100 rounded-full flex items-center justify-center text-pink-600 font-bold">
+                    N
+                  </div>
+                  <div>
+                    <p className="font-semibold text-gray-800">NANA-AI</p>
+                    <p className="text-sm text-gray-500">Curated Style</p>
+                  </div>
+                </div>
+                <div className="flex flex-wrap gap-2 pt-2">
+                  {post.tags &&
+                    post.tags.map((tag) => (
+                      <span
+                        key={tag}
+                        className="bg-gray-100 text-gray-600 text-sm font-medium px-3 py-1 rounded-lg"
+                      >
+                        {tag}
+                      </span>
+                    ))}
+                </div>
               </div>
             </div>
           </div>
         </div>
-      </div>
 
-      <div className="px-4 md:px-8 py-8">
-        <h2 className="text-2xl font-bold text-gray-800 mb-6 text-center">
-          More to explore
-        </h2>
-        {/* The onPostClick handler is now wired to our new function */}
-        <PostGrid
-          posts={morePosts}
-          variant="explore"
-          onSave={handleSaveClick}
-          onPostClick={handlePostClick}
-        />
+        <div className="px-4 md:px-8 py-8">
+          <h2 className="text-2xl font-bold text-gray-800 mb-6 text-center">
+            More to explore
+          </h2>
+          <PostGrid
+            posts={morePosts}
+            variant="explore"
+            onSave={openSaveModal}
+            onPostClick={handlePostClick}
+          />
+        </div>
       </div>
-    </div>
+    </>
   );
 }
