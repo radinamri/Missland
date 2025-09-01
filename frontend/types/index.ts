@@ -36,6 +36,13 @@ export interface Post {
   width: number;
   height: number;
   tags: string[]; // An array of strings for our searchable tags
+  try_on_image_url: string;
+}
+
+export interface TryOn {
+  id: number;
+  post: Post;
+  created_at: string;
 }
 
 export interface PaginatedPostResponse {

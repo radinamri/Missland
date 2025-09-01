@@ -56,6 +56,8 @@ interface AuthContextType {
     name: string
   ) => Promise<Collection | null>;
   deleteCollection: (collectionId: number) => Promise<boolean>;
+  saveTryOn: (postId: number) => Promise<string | null>;
+  deleteTryOn: (tryOnId: number) => Promise<string | null>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -73,6 +75,29 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [showToast, setShowToast] = useState(false);
 
   const [collections, setCollections] = useState<Collection[]>([]);
+
+  const saveTryOn = async (postId: number): Promise<string | null> => {
+    if (!user) return null;
+    try {
+      const response = await api.post(`/api/auth/posts/${postId}/save-try-on/`);
+      incrementInteraction();
+      return response.data.detail;
+    } catch (error) {
+      console.error("Failed to save try-on:", error);
+      return null;
+    }
+  };
+
+  const deleteTryOn = async (tryOnId: number): Promise<string | null> => {
+    if (!user) return null;
+    try {
+      await api.delete(`/api/auth/profile/my-try-ons/${tryOnId}/`);
+      return "Removed from My Try-Ons.";
+    } catch (error) {
+      console.error("Failed to delete try-on:", error);
+      return null;
+    }
+  };
 
   // Function to fetch user's collections
   const fetchCollections = useCallback(async () => {
@@ -380,6 +405,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     managePostInCollection,
     updateCollection,
     deleteCollection,
+    saveTryOn,
+    deleteTryOn,
   };
 
   return (

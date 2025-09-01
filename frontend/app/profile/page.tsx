@@ -260,7 +260,7 @@ export default function ProfilePage() {
                   }
                 />
                 <SettingsListItem
-                  href="/profile/try-ons" // Example link
+                  href="/profile/my-try-ons" // Example link
                   title="My Try-Ons"
                   icon={
                     <svg
