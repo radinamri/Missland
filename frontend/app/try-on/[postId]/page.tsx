@@ -7,6 +7,7 @@ import api from "@/utils/api";
 import Image from "next/image";
 import { useAuth } from "@/context/AuthContext";
 import { useRouter } from "next/navigation";
+import LoginModal from "@/components/LoginModal";
 
 export default function TryOnPage() {
   const params = useParams();
@@ -14,22 +15,28 @@ export default function TryOnPage() {
   const postId = params.postId as string;
   const { user, saveTryOn, showToastWithMessage } = useAuth();
   const [post, setPost] = useState<Post | null>(null);
+  const [showLoginModal, setShowLoginModal] = useState(false);
 
   useEffect(() => {
     if (postId) {
       // This is a protected feature, so we use the authenticated endpoint
       api
-        .get<Post>(`/api/auth/posts/${postId}/`)
+        .get<Post>(`/api/public/posts/${postId}/`)
         .then((response) => setPost(response.data))
         .catch(() => router.push("/")); // Redirect home if post not found
     }
   }, [postId, router]);
 
   const handleSave = async () => {
-    if (!user || !post) return router.push("/login");
-    const message = await saveTryOn(post.id);
-    if (message) {
-      showToastWithMessage(message);
+    if (!user) {
+      setShowLoginModal(true);
+      return;
+    }
+    if (post) {
+      const message = await saveTryOn(post.id);
+      if (message) {
+        showToastWithMessage(message);
+      }
     }
   };
 
@@ -65,39 +72,46 @@ export default function TryOnPage() {
 
   // This page is now designed for mobile first
   return (
-    <div className="bg-white md:shadow-lg p-4 md:p-8 min-h-screen flex flex-col items-center">
-      <div className="w-full max-w-md">
-        <div className="text-center mb-6">
-          <h1 className="text-2xl font-bold text-gray-800">{post.title}</h1>
-          <p className="text-gray-500">Virtual Try-On Result</p>
-        </div>
+    <>
+      <LoginModal
+        isOpen={showLoginModal}
+        onClose={() => setShowLoginModal(false)}
+      />
 
-        <div className="rounded-2xl overflow-hidden shadow-lg mb-6">
-          <Image
-            src={post.try_on_image_url}
-            alt={`Try-on result for ${post.title}`}
-            width={500}
-            height={500}
-            className="w-full h-auto"
-            priority
-          />
-        </div>
+      <div className="bg-white md:shadow-lg p-4 md:p-8 min-h-screen flex flex-col items-center">
+        <div className="w-full max-w-md">
+          <div className="text-center mb-6">
+            <h1 className="text-2xl font-bold text-gray-800">{post.title}</h1>
+            <p className="text-gray-500">Virtual Try-On Result</p>
+          </div>
 
-        <div className="flex flex-col space-y-3">
-          <button
-            onClick={handleSave}
-            className="w-full bg-pink-500 text-white font-bold py-3 rounded-lg hover:bg-pink-600 transition"
-          >
-            Save to My Try-Ons
-          </button>
-          <button
-            onClick={handleShare}
-            className="w-full bg-gray-800 text-white font-bold py-3 rounded-lg hover:bg-gray-900 transition"
-          >
-            Share
-          </button>
+          <div className="rounded-2xl overflow-hidden shadow-lg mb-6">
+            <Image
+              src={post.try_on_image_url}
+              alt={`Try-on result for ${post.title}`}
+              width={500}
+              height={500}
+              className="w-full h-auto"
+              priority
+            />
+          </div>
+
+          <div className="flex flex-col space-y-3">
+            <button
+              onClick={handleSave}
+              className="w-full bg-pink-500 text-white font-bold py-3 rounded-lg hover:bg-pink-600 transition"
+            >
+              Save to My Try-Ons
+            </button>
+            <button
+              onClick={handleShare}
+              className="w-full bg-gray-800 text-white font-bold py-3 rounded-lg hover:bg-gray-900 transition"
+            >
+              Share
+            </button>
+          </div>
         </div>
       </div>
-    </div>
+    </>
   );
 }
