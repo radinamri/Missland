@@ -83,22 +83,34 @@ export default function BottomNav() {
   return (
     <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-white shadow-[0_-2px_10px_rgba(0,0,0,0.1)] z-50">
       <div className="flex justify-around items-center h-20">
-        {navItems.map((item) => (
-          <Link
-            key={item.label}
-            href={item.href}
-            className="flex flex-col items-center space-y-1"
-          >
-            <item.icon active={pathname === item.href} />
-            <span
-              className={`text-xs font-semibold ${
-                pathname === item.href ? "text-pink-500" : "text-gray-500"
-              }`}
+        {navItems.map((item) => {
+          let isActive = false;
+          if (item.href === "/") {
+            isActive = pathname === item.href;
+          } else {
+            isActive = pathname.startsWith(item.href);
+          }
+          if (item.label === "Try On" && pathname.startsWith("/share/post")) {
+            isActive = true;
+          }
+
+          return (
+            <Link
+              key={item.label}
+              href={item.href}
+              className="flex flex-col items-center space-y-1"
             >
-              {item.label}
-            </span>
-          </Link>
-        ))}
+              <item.icon active={isActive} />
+              <span
+                className={`text-xs font-semibold ${
+                  isActive ? "text-pink-500" : "text-gray-500"
+                }`}
+              >
+                {item.label}
+              </span>
+            </Link>
+          );
+        })}
       </div>
     </nav>
   );
