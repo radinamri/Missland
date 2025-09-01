@@ -4,7 +4,8 @@ from .views import (
     EmailChangeConfirmView, PostListView, ArticleListView, ArticleDetailView,
     PostDetailView, UserDeleteView, MorePostsView, ForYouPostListView,
     TrackPostClickView, TrackSearchQueryView, TrackTryOnView, CollectionListView,
-    CollectionDetailView, ManagePostInCollectionView
+    CollectionDetailView, ManagePostInCollectionView, SaveTryOnView, MyTryOnsListView,
+    DeleteTryOnView
 )
 from dj_rest_auth.views import PasswordChangeView
 
@@ -16,6 +17,8 @@ urlpatterns = [
     # Profile & Account Management
     path('profile/', UserProfileView.as_view(), name='user-profile'),
     path('profile/delete/', UserDeleteView.as_view(), name='user-delete'),
+    path('profile/my-try-ons/', MyTryOnsListView.as_view(), name='my-try-ons-list'),
+    path('profile/my-try-ons/<int:try_on_id>/', DeleteTryOnView.as_view(), name='delete-try-on'),
     path('password/change/', PasswordChangeView.as_view(), name='password_change'),
     path('email/change/initiate/', EmailChangeInitiateView.as_view(), name='email_change_initiate'),
     path('email/change/confirm/', EmailChangeConfirmView.as_view(), name='email_change_confirm'),
@@ -25,6 +28,7 @@ urlpatterns = [
     path('posts/for-you/', ForYouPostListView.as_view(), name='for-you-post-list'),
     path('posts/<int:pk>/', PostDetailView.as_view(), name='post-detail'),
     path('posts/<int:post_id>/more/', MorePostsView.as_view(), name='more-posts'),
+    path('posts/<int:post_id>/save-try-on/', SaveTryOnView.as_view(), name='save-try-on'),
 
     # Articles
     path('articles/', ArticleListView.as_view(), name='article-list'),

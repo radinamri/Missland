@@ -48,9 +48,12 @@ class Command(BaseCommand):
             # --- 3. Use the selected color's hex code in the URL ---
             image_color_hex = color_map[selected_color]
 
+            try_on_image_url = f"https://placehold.co/{width}x{height}/e5e7eb/374151?text=Try-On+Result"
+
             Post.objects.create(
                 title=title,
                 image_url=f"https://placehold.co/{width}x{height}/{image_color_hex}/FFFFFF?text={title.replace(' ', '+')}",
+                try_on_image_url=try_on_image_url,
                 width=width,
                 height=height,
                 tags=list(set(post_tags))

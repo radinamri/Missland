@@ -14,12 +14,12 @@ from rest_framework.views import APIView
 from allauth.socialaccount.providers.google.views import GoogleOAuth2Adapter
 from allauth.socialaccount.providers.oauth2.client import OAuth2Client
 from dj_rest_auth.registration.views import SocialLoginView
-from .models import User, Post, Article, InterestProfile, Collection
+from .models import User, Post, Article, InterestProfile, Collection, TryOn
 from .serializers import (
     UserRegistrationSerializer, UserProfileSerializer, UserProfileUpdateSerializer,
     EmailChangeInitiateSerializer, EmailChangeConfirmSerializer, PostSerializer,
     ArticleListSerializer, ArticleDetailSerializer, UserDeleteSerializer, CollectionDetailSerializer,
-    CollectionCreateSerializer, CollectionListSerializer
+    CollectionCreateSerializer, CollectionListSerializer, TryOnSerializer
 )
 
 
@@ -417,3 +417,52 @@ class ManagePostInCollectionView(APIView):
             return Response({'detail': 'Collection not found.'}, status=status.HTTP_404_NOT_FOUND)
         except Post.DoesNotExist:
             return Response({'detail': 'Post not found.'}, status=status.HTTP_404_NOT_FOUND)
+
+
+class PublicPostDetailView(generics.RetrieveAPIView):
+    queryset = Post.objects.all()
+    serializer_class = PostSerializer
+    permission_classes = [AllowAny]  # This makes it accessible to anyone
+
+
+class SaveTryOnView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request, post_id, *args, **kwargs):
+        try:
+            post = Post.objects.get(id=post_id)
+            # get_or_create prevents duplicate saves
+            try_on, created = TryOn.objects.get_or_create(user=request.user, post=post)
+            if created:
+                return Response({'detail': 'Saved to My Try-Ons.'}, status=status.HTTP_201_CREATED)
+            else:
+                return Response({'detail': 'Already in My Try-Ons.'}, status=status.HTTP_200_OK)
+        except Post.DoesNotExist:
+            return Response({'detail': 'Post not found.'}, status=status.HTTP_404_NOT_FOUND)
+
+
+class MyTryOnsListView(generics.ListAPIView):
+    permission_classes = [IsAuthenticated]
+    serializer_class = TryOnSerializer
+
+    def get_queryset(self):
+        return self.request.user.try_ons.all()
+
+
+class DeleteTryOnView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def delete(self, request, try_on_id, *args, **kwargs):
+        try:
+            # Find the specific try-on object that belongs to the current user
+            try_on = request.user.try_ons.get(id=try_on_id)
+            try_on.delete()
+            return Response(
+                {"detail": "Removed from My Try-Ons."},
+                status=status.HTTP_204_NO_CONTENT
+            )
+        except TryOn.DoesNotExist:
+            return Response(
+                {"detail": "Try-on not found."},
+                status=status.HTTP_404_NOT_FOUND
+            )

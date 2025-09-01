@@ -1,7 +1,7 @@
 import requests
 from django.contrib.auth.password_validation import validate_password
 from rest_framework import serializers
-from .models import User, Post, Article, Collection
+from .models import User, Post, Article, Collection, TryOn
 
 
 class UserRegistrationSerializer(serializers.ModelSerializer):
@@ -84,7 +84,15 @@ class EmailChangeConfirmSerializer(serializers.Serializer):
 class PostSerializer(serializers.ModelSerializer):
     class Meta:
         model = Post
-        fields = ('id', 'title', 'image_url', 'width', 'height', 'tags')
+        fields = ('id', 'title', 'image_url', 'width', 'height', 'tags', 'try_on_image_url')
+
+
+class TryOnSerializer(serializers.ModelSerializer):
+    post = PostSerializer(read_only=True)
+
+    class Meta:
+        model = TryOn
+        fields = ['id', 'post', 'created_at']
 
 
 class ArticleListSerializer(serializers.ModelSerializer):
