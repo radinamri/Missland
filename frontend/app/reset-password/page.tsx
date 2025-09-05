@@ -4,6 +4,46 @@ import { useState, useEffect, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import api from "@/utils/api";
 import Link from "next/link";
+import { isAxiosError } from "axios";
+
+// --- SVG Icons for password visibility ---
+const EyeIcon = () => (
+  <svg
+    className="w-5 h-5"
+    fill="none"
+    stroke="currentColor"
+    viewBox="0 0 24 24"
+  >
+    <path
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      strokeWidth="2"
+      d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
+    ></path>
+    <path
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      strokeWidth="2"
+      d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
+    ></path>
+  </svg>
+);
+
+const EyeSlashIcon = () => (
+  <svg
+    className="w-5 h-5"
+    fill="none"
+    stroke="currentColor"
+    viewBox="0 0 24 24"
+  >
+    <path
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      strokeWidth="2"
+      d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.542-7 .527-1.666 1.32-3.207 2.278-4.525m5.442-2.325a3 3 0 114.243 4.243M1 1l22 22"
+    ></path>
+  </svg>
+);
 
 function ResetPasswordForm() {
   const searchParams = useSearchParams();
@@ -15,6 +55,9 @@ function ResetPasswordForm() {
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+
+  const [showPassword, setShowPassword] = useState(false);
+  const [showPassword2, setShowPassword2] = useState(false);
 
   useEffect(() => {
     setUid(searchParams.get("uid"));
@@ -44,9 +87,14 @@ function ResetPasswordForm() {
         new_password2: password2,
       });
       setMessage(response.data.detail);
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    } catch (err: any) {
-      setError(err.response?.data?.detail || "An unexpected error occurred.");
+    } catch (err) {
+      if (isAxiosError(err)) {
+        setError(
+          err.response?.data?.detail || "An unexpected network error occurred."
+        );
+      } else {
+        setError("An unexpected error occurred.");
+      }
     } finally {
       setIsLoading(false);
     }
@@ -83,14 +131,23 @@ function ResetPasswordForm() {
               >
                 New Password
               </label>
-              <input
-                id="password"
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                className="mt-1 w-full px-4 py-2 bg-gray-100 border-transparent rounded-md focus:ring-2 focus:ring-pink-500 text-gray-500"
-                required
-              />
+              <div className="relative mt-1">
+                <input
+                  id="password"
+                  type={showPassword ? "text" : "password"}
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  className="w-full px-4 py-2 bg-gray-100 border-transparent rounded-md focus:ring-2 focus:ring-pink-500 text-gray-500 pr-10"
+                  required
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute inset-y-0 right-0 flex items-center pr-3 text-gray-400 hover:text-gray-600"
+                >
+                  {showPassword ? <EyeSlashIcon /> : <EyeIcon />}
+                </button>
+              </div>
             </div>
             <div className="mb-6">
               <label
@@ -99,14 +156,23 @@ function ResetPasswordForm() {
               >
                 Confirm New Password
               </label>
-              <input
-                id="password2"
-                type="password"
-                value={password2}
-                onChange={(e) => setPassword2(e.target.value)}
-                className="mt-1 w-full px-4 py-2 bg-gray-100 border-transparent rounded-md focus:ring-2 focus:ring-pink-500 text-gray-500"
-                required
-              />
+              <div className="relative mt-1">
+                <input
+                  id="password2"
+                  type={showPassword2 ? "text" : "password"}
+                  value={password2}
+                  onChange={(e) => setPassword2(e.target.value)}
+                  className="w-full px-4 py-2 bg-gray-100 border-transparent rounded-md focus:ring-2 focus:ring-pink-500 text-gray-500 pr-10"
+                  required
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword2(!showPassword2)}
+                  className="absolute inset-y-0 right-0 flex items-center pr-3 text-gray-400 hover:text-gray-600"
+                >
+                  {showPassword2 ? <EyeSlashIcon /> : <EyeIcon />}
+                </button>
+              </div>
             </div>
 
             {error && (
@@ -129,7 +195,13 @@ function ResetPasswordForm() {
 
 export default function ResetPasswordPage() {
   return (
-    <Suspense fallback={<div>Loading...</div>}>
+    <Suspense
+      fallback={
+        <div className="text-center py-20">
+          <p>Loading...</p>
+        </div>
+      }
+    >
       <ResetPasswordForm />
     </Suspense>
   );

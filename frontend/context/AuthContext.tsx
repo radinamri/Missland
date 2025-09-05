@@ -296,7 +296,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         setTokens(response.data);
         localStorage.setItem("authTokens", JSON.stringify(response.data));
         await fetchUserProfile();
-        router.push("/profile");
+        router.push("/");
       }
     } catch (error) {
       console.error("Login failed", error);
@@ -315,7 +315,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         setTokens(response.data);
         localStorage.setItem("authTokens", JSON.stringify(response.data));
         await fetchUserProfile();
-        router.push("/profile");
+        router.push("/");
       }
     } catch (error) {
       console.error("Google login failed", error);
