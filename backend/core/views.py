@@ -19,7 +19,8 @@ from .serializers import (
     UserRegistrationSerializer, UserProfileSerializer, UserProfileUpdateSerializer,
     EmailChangeInitiateSerializer, EmailChangeConfirmSerializer, PostSerializer,
     ArticleListSerializer, ArticleDetailSerializer, UserDeleteSerializer, CollectionDetailSerializer,
-    CollectionCreateSerializer, CollectionListSerializer, TryOnSerializer
+    CollectionCreateSerializer, CollectionListSerializer, TryOnSerializer, PasswordResetRequestSerializer,
+    PasswordResetConfirmSerializer
 )
 
 
@@ -466,3 +467,62 @@ class DeleteTryOnView(APIView):
                 {"detail": "Try-on not found."},
                 status=status.HTTP_404_NOT_FOUND
             )
+
+
+class PasswordResetRequestView(APIView):
+    permission_classes = [AllowAny]
+    serializer_class = PasswordResetRequestSerializer
+
+    def post(self, request, *args, **kwargs):
+        serializer = self.serializer_class(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        email = serializer.validated_data['email']
+
+        try:
+            user = User.objects.get(email__iexact=email)
+            uid = urlsafe_base64_encode(force_bytes(user.pk))
+            token = default_token_generator.make_token(user)
+            reset_link = f"{settings.CORS_ALLOWED_ORIGINS[0]}/reset-password?uid={uid}&token={token}"
+
+            # Send the email
+            send_mail(
+                'Reset Your Password for Misland',
+                f'Please click the link to reset your password: {reset_link}\nThis link will expire in 1 hour.',
+                'noreply@misland.com',
+                [email],
+                fail_silently=False,
+            )
+        except User.DoesNotExist:
+            # We don't want to reveal if a user exists or not
+            pass
+
+        return Response(
+            {'detail': 'If an account with that email exists, a password reset link has been sent.'},
+            status=status.HTTP_200_OK
+        )
+
+
+class PasswordResetConfirmView(APIView):
+    permission_classes = [AllowAny]
+    serializer_class = PasswordResetConfirmSerializer
+
+    def post(self, request, *args, **kwargs):
+        serializer = self.serializer_class(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        uidb64 = serializer.validated_data['uid']
+        token = serializer.validated_data['token']
+        new_password = serializer.validated_data['new_password1']
+
+        try:
+            uid = force_str(urlsafe_base64_decode(uidb64))
+            user = User.objects.get(pk=uid)
+        except (TypeError, ValueError, OverflowError, User.DoesNotExist):
+            user = None
+
+        if user is not None and default_token_generator.check_token(user, token):
+            user.set_password(new_password)
+            user.save()
+            return Response({'detail': 'Password has been reset successfully.'}, status=status.HTTP_200_OK)
+        else:
+            return Response({'detail': 'The reset link is invalid or has expired.'}, status=status.HTTP_400_BAD_REQUEST)

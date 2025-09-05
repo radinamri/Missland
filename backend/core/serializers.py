@@ -188,3 +188,19 @@ class CollectionDetailSerializer(serializers.ModelSerializer):
         posts_queryset = obj.posts.all().order_by('-id')
         # We manually serialize that list of posts using the PostSerializer.
         return PostSerializer(posts_queryset, many=True).data
+
+
+class PasswordResetRequestSerializer(serializers.Serializer):
+    email = serializers.EmailField(required=True)
+
+
+class PasswordResetConfirmSerializer(serializers.Serializer):
+    uid = serializers.CharField(required=True)
+    token = serializers.CharField(required=True)
+    new_password1 = serializers.CharField(required=True, write_only=True, validators=[validate_password])
+    new_password2 = serializers.CharField(required=True, write_only=True)
+
+    def validate(self, attrs):
+        if attrs['new_password1'] != attrs['new_password2']:
+            raise serializers.ValidationError({"password": "Password fields didn't match."})
+        return attrs

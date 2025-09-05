@@ -5,7 +5,7 @@ from .views import (
     PostDetailView, UserDeleteView, MorePostsView, ForYouPostListView,
     TrackPostClickView, TrackSearchQueryView, TrackTryOnView, CollectionListView,
     CollectionDetailView, ManagePostInCollectionView, SaveTryOnView, MyTryOnsListView,
-    DeleteTryOnView
+    DeleteTryOnView, PasswordResetRequestView, PasswordResetConfirmView
 )
 from dj_rest_auth.views import PasswordChangeView
 
@@ -44,4 +44,8 @@ urlpatterns = [
     path('track/click/', TrackPostClickView.as_view(), name='track-post-click'),
     path('track/search/', TrackSearchQueryView.as_view(), name='track-search-query'),
     path('track/try-on/', TrackTryOnView.as_view(), name='track-post-try-on'),
+
+    # Add these two paths for password reset
+    path('password/reset/', PasswordResetRequestView.as_view(), name='password-reset-request'),
+    path('password/reset/confirm/', PasswordResetConfirmView.as_view(), name='password-reset-confirm'),
 ]
