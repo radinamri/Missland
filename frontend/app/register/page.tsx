@@ -104,7 +104,7 @@ export default function RegisterPage() {
           <div className="text-center space-y-4">
             <Icon className="w-48 h-48 mx-auto" />
             <h1 className="text-4xl font-bold text-white text-shadow">
-              Misland
+              Missland
             </h1>
             <p className="text-lg text-white/80 text-shadow">
               Discover and try on your next favorite style.
