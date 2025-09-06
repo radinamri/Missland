@@ -226,7 +226,7 @@ export default function SavedPostsPage() {
         onConfirm={handleDeleteConfirm}
         collectionToDelete={collectionToDelete}
       />
-      <div className="bg-white md:shadow-lg p-4 md:p-8 min-h-screen">
+      <div className="bg-gray-50 md:shadow-lg p-4 md:p-8 min-h-screen">
         <header className="flex items-center justify-between mb-8">
           <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-800">
             My Collections
