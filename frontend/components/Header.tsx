@@ -6,6 +6,7 @@ import { usePathname } from "next/navigation";
 import { useState, useEffect } from "react";
 import SearchInput from "./SearchInput";
 import { useSearch } from "@/context/SearchContext";
+import Icon from "@/public/icon";
 
 export default function Header() {
   const { user, logoutUser, trackSearchQuery } = useAuth();
@@ -40,21 +41,9 @@ export default function Header() {
         <div className="container mx-auto flex items-center justify-between p-4 md:py-5">
           {/* Left Side: Logo and Name */}
           <div className="md:flex items-center space-x-8">
-            <Link href="/" className="flex items-center space-x-0 z-0">
-              <svg
-                className="w-16 h-16 text-purple-600"
-                viewBox="0 0 64 64"
-                fill="none"
-                xmlns="http://www.w3.org/2000/svg"
-              >
-                <path
-                  d="M18 44V20H26L32 34L38 20H46V44H40V27L34 40H30L24 27V44H18Z"
-                  fill="currentColor"
-                />
-              </svg>
-              <span className="-ml-3 text-xl md:text-2xl font-bold text-gray-800">
-                island
-              </span>
+            <Link href="/" className="flex items-center space-x-2 z-0">
+              <Icon className="w-12 h-12" />
+              <span className="text-xl font-bold text-gray-700">Missland</span>
             </Link>
             <div className="hidden md:flex items-center space-x-8">
               <nav className="flex items-center space-x-8">
