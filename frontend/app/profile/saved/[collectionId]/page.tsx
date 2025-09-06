@@ -83,7 +83,7 @@ export default function CollectionDetailPage() {
         onClose={() => setShowCollectionsModal(false)}
         postToSave={postToSave}
       />
-      <div className="bg-white md:shadow-lg p-4 md:p-8 min-h-screen">
+      <div className="bg-gray-50 md:shadow-lg p-4 md:p-8 min-h-screen">
         <header className="mb-8">
           <Link
             href="/profile/saved"

@@ -137,7 +137,7 @@ export default function ExplorePage() {
         onSwitchToLogin={handleSwitchToLogin}
       />
 
-      <main className="bg-white p-4 md:p-8">
+      <main className="bg-gray-50 p-4 md:p-8">
         <div className="mb-8">
           <div className="md:hidden">
             <SearchInput

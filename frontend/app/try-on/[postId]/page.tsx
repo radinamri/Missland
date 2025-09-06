@@ -75,7 +75,7 @@ export default function TryOnPage() {
         onClose={() => setShowLoginModal(false)}
       />
 
-      <div className="bg-white md:shadow-lg p-4 md:p-8 min-h-screen flex flex-col items-center">
+      <div className="bg-gray-50 md:shadow-lg p-4 md:p-8 min-h-screen flex flex-col items-center">
         <div className="w-full max-w-md">
           <div className="text-center mb-6">
             <h1 className="text-2xl font-bold text-gray-800">{post.title}</h1>

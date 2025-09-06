@@ -70,7 +70,7 @@ export default function MyTryOnsPage() {
   const posts = tryOns.map((tryOn) => tryOn.post);
 
   return (
-    <div className="bg-white md:shadow-lg p-4 md:p-8 min-h-screen">
+    <div className="bg-gray-50 md:shadow-lg p-4 md:p-8 min-h-screen">
       <header className="mb-8">
         <Link
           href="/profile"

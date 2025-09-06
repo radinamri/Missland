@@ -88,7 +88,7 @@ export default function AccountSettingsPage() {
 
   return (
     <>
-      <div className="bg-white md:rounded-2xl md:shadow-lg p-4 md:p-8">
+      <div className="bg-gray-50 md:rounded-2xl md:shadow-lg p-4 md:p-8">
         <header className="mb-8">
           <div className="flex justify-start mb-4">
             <Link

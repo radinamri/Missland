@@ -206,7 +206,7 @@ export default function ProfilePage() {
   );
 
   return (
-    <div className="bg-white min-h-screen">
+    <div className="bg-gray-50 min-h-screen">
       <div className="max-w-4xl mx-auto px-4 py-6">
         <div className="flex flex-col items-center pt-8 pb-10">
           <div className="w-24 h-24 bg-gradient-to-br from-pink-200 to-purple-200 rounded-full flex items-center justify-center text-purple-600 font-bold text-4xl mb-4">
