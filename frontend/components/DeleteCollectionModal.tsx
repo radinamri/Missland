@@ -20,12 +20,12 @@ export default function DeleteCollectionModal({
   return (
     <div className="fixed inset-0 bg-black/50 backdrop-blur-md z-50 flex items-center justify-center p-4">
       <div className="bg-white rounded-2xl shadow-xl w-full max-w-sm text-center p-8 animate-fade-in-down">
-        <h2 className="text-2xl font-bold text-red-600 mb-4">
+        <h2 className="text-2xl font-bold text-red-500 mb-4">
           Delete Collection
         </h2>
         <p className="text-gray-600 mb-6">
           Are you sure you want to delete the collection{" "}
-          <span className="font-bold text-gray-800">
+          <span className="font-bold text-[#3D5A6C]">
             {collectionToDelete.name}
           </span>
           ? This action cannot be undone.
@@ -33,13 +33,13 @@ export default function DeleteCollectionModal({
         <div className="flex justify-center space-x-4">
           <button
             onClick={onClose}
-            className="font-semibold text-gray-700 bg-gray-100 px-6 py-2 rounded-lg hover:bg-gray-200"
+            className="font-semibold text-gray-700 bg-[#E7E7E7] px-6 py-2 rounded-lg hover:bg-[#dcdcdc] transition"
           >
             Cancel
           </button>
           <button
             onClick={onConfirm}
-            className="font-semibold text-white bg-red-600 px-6 py-2 rounded-lg hover:bg-red-700"
+            className="font-semibold text-white bg-red-500 px-6 py-2 rounded-lg hover:bg-red-600 transition"
           >
             Delete
           </button>

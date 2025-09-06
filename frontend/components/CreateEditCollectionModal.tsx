@@ -20,29 +20,47 @@ export default function CreateEditCollectionModal({
   const isEditing = !!collectionToEdit;
 
   useEffect(() => {
-    if (isOpen && isEditing) {
-      setName(collectionToEdit.name);
-    } else {
-      setName("");
+    if (isOpen) {
+      setName(collectionToEdit ? collectionToEdit.name : "");
     }
-  }, [isOpen, collectionToEdit, isEditing]);
+  }, [isOpen, collectionToEdit]);
 
   if (!isOpen) return null;
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (name.trim()) {
-      onSave(name.trim(), collectionToEdit?.id);
+      onSave(name.trim(), collectionToEdit?.id).then(() => {
+        onClose(); // Close modal on success
+      });
     }
   };
 
   return (
     <div className="fixed inset-0 bg-black/50 backdrop-blur-md z-50 flex items-center justify-center p-4">
       <div className="bg-white rounded-2xl shadow-xl w-full max-w-sm animate-fade-in-down">
-        <div className="p-6 border-b text-center">
-          <h2 className="text-xl font-bold text-gray-800">
+        <div className="p-6 border-b text-center relative">
+          <h2 className="text-xl font-bold text-[#3D5A6C]">
             {isEditing ? "Edit Collection" : "Create New Collection"}
           </h2>
+          <button
+            onClick={onClose}
+            className="absolute top-4 right-4 text-gray-400 hover:text-gray-600"
+          >
+            <svg
+              className="w-6 h-6"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth="2"
+                d="M6 18L18 6M6 6l12 12"
+              ></path>
+            </svg>
+          </button>
         </div>
         <form onSubmit={handleSubmit} className="p-6">
           <label
@@ -56,7 +74,7 @@ export default function CreateEditCollectionModal({
             type="text"
             value={name}
             onChange={(e) => setName(e.target.value)}
-            className="w-full px-4 py-2 bg-gray-100 border-transparent rounded-md focus:ring-2 focus:ring-pink-500 text-gray-500"
+            className="w-full px-4 py-3 bg-white border border-gray-300 rounded-lg focus:ring-[#D98B99] focus:border-[#D98B99] placeholder:text-gray-400 text-gray-500 transition"
             autoFocus
             required
           />
@@ -64,13 +82,13 @@ export default function CreateEditCollectionModal({
             <button
               type="button"
               onClick={onClose}
-              className="font-semibold text-gray-600 px-4 py-2 rounded-md hover:bg-gray-100"
+              className="bg-[#E7E7E7] text-gray-700 font-bold py-2 px-4 rounded-lg hover:bg-[#dcdcdc] transition"
             >
               Cancel
             </button>
             <button
               type="submit"
-              className="font-semibold text-white bg-gray-800 px-4 py-2 rounded-md hover:bg-gray-900"
+              className="bg-[#3D5A6C] text-white font-bold py-2 px-4 rounded-lg hover:bg-[#314A5A] transition"
             >
               {isEditing ? "Save Changes" : "Create"}
             </button>
