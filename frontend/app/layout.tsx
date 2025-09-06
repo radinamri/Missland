@@ -8,6 +8,7 @@ import BottomNav from "@/components/BottomNav";
 import ClientLayout from "@/components/ClientLayout";
 import { SearchProvider } from "@/context/SearchContext";
 import { NavigationProvider } from "@/context/NavigationContext";
+import AppInitializer from "@/components/AppInitializer";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -44,13 +45,15 @@ export default function RootLayout({
           <AuthProvider>
             <SearchProvider>
               <NavigationProvider>
-                <div className="flex flex-col bg-white min-h-screen">
-                  <Header />
-                  <ClientLayout modal={modal}>{children}</ClientLayout>
-                  <div className="md:pb-0 pb-20">
-                    <BottomNav />
+                <AppInitializer>
+                  <div className="flex flex-col bg-white min-h-screen">
+                    <Header />
+                    <ClientLayout modal={modal}>{children}</ClientLayout>
+                    <div className="md:pb-0 pb-20">
+                      <BottomNav />
+                    </div>
                   </div>
-                </div>
+                </AppInitializer>
               </NavigationProvider>
             </SearchProvider>
           </AuthProvider>
