@@ -26,48 +26,59 @@ export default function ArticlesPage() {
 
   if (isLoading) {
     return (
-      <div className="text-center py-20">
-        <p className="text-lg text-gray-500 animate-pulse">
-          Loading articles...
-        </p>
+      <div className="flex justify-center items-center min-h-[60vh]">
+        <div className="w-16 h-16 border-4 border-dashed rounded-full animate-spin border-[#3D5A6C]"></div>
       </div>
     );
   }
 
   return (
-    <div className="bg-white md:shadow-lg p-4 md:p-8 min-h-screen">
-      <header className="mb-8 md:mb-12 text-center">
-        <h1 className="text-4xl md:text-5xl font-bold text-gray-900">
-          Our Articles
-        </h1>
-        <p className="text-lg text-gray-500 mt-2">
-          Tips, trends, and inspiration for your next look.
-        </p>
-      </header>
+    <div className="bg-gray-50 min-h-screen">
+      <div className="container mx-auto px-4 py-8 md:py-12">
+        <header className="mb-8 md:mb-12 text-center">
+          <h1 className="text-4xl md:text-5xl font-bold text-[#3D5A6C]">
+            Our Articles
+          </h1>
+          <p className="text-lg text-gray-500 mt-2">
+            Tips, trends, and inspiration for your next look.
+          </p>
+        </header>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-        {articles.map((article) => (
-          <Link
-            href={`/articles/${article.slug}`}
-            key={article.id}
-            className="group block bg-white rounded-2xl shadow-lg hover:shadow-xl transition-shadow duration-300 overflow-hidden"
-          >
-            <div className="relative w-full aspect-video">
-              <Image
-                src={article.thumbnail_url}
-                alt={article.title}
-                fill
-                style={{ objectFit: "cover" }}
-                className="transition-transform duration-300 group-hover:scale-105"
-              />
-            </div>
-            <div className="p-6">
-              <h2 className="text-xl font-bold text-gray-800 group-hover:text-pink-500 transition-colors">
-                {article.title}
-              </h2>
-            </div>
-          </Link>
-        ))}
+        {articles.length > 0 ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {articles.map((article) => (
+              <Link
+                href={`/articles/${article.slug}`}
+                key={article.id}
+                className="group block bg-white rounded-2xl shadow-md hover:shadow-xl transition-shadow duration-300 overflow-hidden"
+              >
+                <div className="relative w-full aspect-[16/10] overflow-hidden">
+                  <Image
+                    src={article.thumbnail_url}
+                    alt={article.title}
+                    fill
+                    style={{ objectFit: "cover" }}
+                    className="transition-transform duration-300 group-hover:scale-105"
+                  />
+                </div>
+                <div className="p-6">
+                  <h2 className="text-xl font-bold text-[#3D5A6C] group-hover:text-[#D98B99] transition-colors duration-300">
+                    {article.title}
+                  </h2>
+                </div>
+              </Link>
+            ))}
+          </div>
+        ) : (
+          <div className="text-center py-12">
+            <h2 className="text-xl font-semibold text-gray-700 mb-2">
+              No Articles Yet
+            </h2>
+            <p className="text-gray-500">
+              We&apos;re working on new content. Please check back soon!
+            </p>
+          </div>
+        )}
       </div>
     </div>
   );

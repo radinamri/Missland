@@ -33,10 +33,8 @@ export default function ArticleDetailPage() {
 
   if (isLoading) {
     return (
-      <div className="text-center py-20">
-        <p className="text-lg text-gray-500 animate-pulse">
-          Loading article...
-        </p>
+      <div className="flex justify-center items-center min-h-[60vh]">
+        <div className="w-16 h-16 border-4 border-dashed rounded-full animate-spin border-[#3D5A6C]"></div>
       </div>
     );
   }
@@ -44,61 +42,71 @@ export default function ArticleDetailPage() {
   if (!article) {
     return (
       <div className="text-center py-20">
-        <p className="text-lg text-red-500">Article not found.</p>
+        <h2 className="text-2xl font-bold text-red-600">Article Not Found</h2>
+        <p className="text-gray-500 mt-2">
+          The article you are looking for does not exist.
+        </p>
+        <Link
+          href="/articles"
+          className="mt-6 inline-block bg-[#3D5A6C] text-white font-bold py-3 px-6 rounded-lg hover:bg-[#314A5A] transition"
+        >
+          Back to Articles
+        </Link>
       </div>
     );
   }
 
   return (
-    // This outer div now matches the style of the main articles page container
-    <div className="bg-white md:shadow-lg p-4 md:p-10">
-      {/* This inner div keeps the article content perfectly centered and sized. */}
-      <div className="max-w-3xl mx-auto">
-        <div className="mb-6">
-          <Link
-            href="/articles"
-            className="inline-flex items-center text-pink-500 hover:underline font-semibold transition-colors"
-          >
-            <svg
-              className="w-5 h-5 mr-2"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
+    <div className="bg-gray-50 min-h-screen">
+      <div className="container mx-auto px-4 py-8 md:py-12">
+        <div className="max-w-3xl mx-auto">
+          <div className="mb-6">
+            <Link
+              href="/articles"
+              className="inline-flex items-center text-[#D98B99] hover:text-[#C47C8A] font-semibold transition-colors"
             >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth="2"
-                d="M15 19l-7-7 7-7"
-              ></path>
-            </svg>
-            Back to all articles
-          </Link>
-        </div>
-        <h1 className="text-3xl md:text-5xl font-bold text-gray-900 mb-4 leading-tight">
-          {article.title}
-        </h1>
-        <p className="text-gray-500 mb-6">
-          Published on{" "}
-          {new Date(article.published_date).toLocaleDateString("en-US", {
-            year: "numeric",
-            month: "long",
-            day: "numeric",
-          })}
-        </p>
+              <svg
+                className="w-5 h-5 mr-2"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth="2"
+                  d="M15 19l-7-7 7-7"
+                ></path>
+              </svg>
+              Back to all articles
+            </Link>
+          </div>
+          <h1 className="text-4xl md:text-5xl font-bold text-[#3D5A6C] mb-4 leading-tight">
+            {article.title}
+          </h1>
+          <p className="text-gray-500 mb-8">
+            Published on{" "}
+            {new Date(article.published_date).toLocaleDateString("en-US", {
+              year: "numeric",
+              month: "long",
+              day: "numeric",
+            })}
+          </p>
 
-        <div className="relative w-full aspect-video rounded-2xl overflow-hidden mb-8 shadow-inner">
-          <Image
-            src={article.thumbnail_url}
-            alt={article.title}
-            fill
-            style={{ objectFit: "cover" }}
-            priority // Ensures the main image loads quickly
-          />
-        </div>
+          <div className="relative w-full aspect-[16/9] rounded-2xl overflow-hidden mb-8 shadow-lg">
+            <Image
+              src={article.thumbnail_url}
+              alt={article.title}
+              fill
+              style={{ objectFit: "cover" }}
+              priority
+            />
+          </div>
 
-        <div className="prose lg:prose-lg max-w-none text-gray-800">
-          <p>{article.content}</p>
+          {/* This styling improves readability of the article content */}
+          <div className="prose lg:prose-xl max-w-none text-gray-800 leading-relaxed">
+            <p>{article.content}</p>
+          </div>
         </div>
       </div>
     </div>
