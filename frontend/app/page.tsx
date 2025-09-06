@@ -115,6 +115,11 @@ export default function ExplorePage() {
     setSearchTerm("");
   };
 
+  const handleSwitchToLogin = () => {
+    setShowSignUpPopup(false);
+    setShowLoginModal(true);
+  };
+
   return (
     <>
       <LoginModal
@@ -129,6 +134,7 @@ export default function ExplorePage() {
       <SignUpPopup
         show={showSignUpPopup}
         onClose={() => setShowSignUpPopup(false)}
+        onSwitchToLogin={handleSwitchToLogin}
       />
 
       <main className="bg-white p-4 md:p-8">
