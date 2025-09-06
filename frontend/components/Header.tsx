@@ -39,7 +39,7 @@ export default function Header() {
           <div className="flex items-center space-x-8">
             <Link href="/" className="flex items-center space-x-2">
               <Icon className="w-12 h-12" />
-              <span className="text-2xl font-bold text-[#3D5A6C]">Misland</span>
+              <span className="text-2xl font-bold text-[#3D5A6C]">Missland</span>
             </Link>
             <nav className="hidden md:flex items-center space-x-8">
               {navLinks.map((link) => (
