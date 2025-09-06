@@ -5,6 +5,7 @@ import { useSearchParams } from "next/navigation";
 import api from "@/utils/api";
 import Link from "next/link";
 import { isAxiosError } from "axios";
+import LoadingSpinner from "@/components/LoadingSpinner";
 
 // --- SVG Icons for password visibility ---
 const EyeIcon = () => (
@@ -195,13 +196,7 @@ function ResetPasswordForm() {
 
 export default function ResetPasswordPage() {
   return (
-    <Suspense
-      fallback={
-        <div className="text-center py-20">
-          <p>Loading...</p>
-        </div>
-      }
-    >
+    <Suspense fallback={<LoadingSpinner />}>
       <ResetPasswordForm />
     </Suspense>
   );

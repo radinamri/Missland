@@ -8,6 +8,7 @@ import Image from "next/image";
 import { Collection } from "@/types";
 import CreateEditCollectionModal from "@/components/CreateEditCollectionModal";
 import DeleteCollectionModal from "@/components/DeleteCollectionModal";
+import LoadingSpinner from "@/components/LoadingSpinner";
 
 // A dedicated component for the collection card to keep the main page clean.
 function CollectionCard({
@@ -208,11 +209,7 @@ export default function SavedPostsPage() {
   };
 
   if (isAuthLoading) {
-    return (
-      <div className="text-center py-20">
-        <p className="text-lg text-gray-500">Loading...</p>
-      </div>
-    );
+    return <LoadingSpinner />;
   }
 
   return (

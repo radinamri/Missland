@@ -5,6 +5,7 @@ import { useParams } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
 import api from "@/utils/api";
+import LoadingSpinner from "@/components/LoadingSpinner";
 
 interface ArticleDetail {
   id: number;
@@ -32,11 +33,7 @@ export default function ArticleDetailPage() {
   }, [slug]);
 
   if (isLoading) {
-    return (
-      <div className="flex justify-center items-center min-h-[60vh]">
-        <div className="w-16 h-16 border-4 border-dashed rounded-full animate-spin border-[#3D5A6C]"></div>
-      </div>
-    );
+    return <LoadingSpinner />;
   }
 
   if (!article) {

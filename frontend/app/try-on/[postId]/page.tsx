@@ -8,6 +8,7 @@ import Image from "next/image";
 import { useAuth } from "@/context/AuthContext";
 import { useRouter } from "next/navigation";
 import LoginModal from "@/components/LoginModal";
+import LoadingSpinner from "@/components/LoadingSpinner";
 
 export default function TryOnPage() {
   const params = useParams();
@@ -45,7 +46,7 @@ export default function TryOnPage() {
     const shareUrl = `${window.location.origin}/share/post/${post.id}`;
     const shareData = {
       title: `Check out this style: ${post.title}`,
-      text: `I just tried on the "${post.title}" style on NANA-AI! Try it yourself.`,
+      text: `I just tried on the "${post.title}" style on Missland! Try it yourself.`,
       url: shareUrl,
     };
     try {
@@ -63,11 +64,7 @@ export default function TryOnPage() {
   };
 
   if (!post) {
-    return (
-      <div className="text-center py-20">
-        <p>Loading Style...</p>
-      </div>
-    );
+    return <LoadingSpinner />;
   }
 
   // This page is now designed for mobile first

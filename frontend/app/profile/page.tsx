@@ -5,6 +5,7 @@ import { useAuth } from "@/context/AuthContext";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import DeleteAccountModal from "@/components/DeleteAccountModal";
+import LoadingSpinner from "@/components/LoadingSpinner";
 
 // --- Reusable Components for the design ---
 
@@ -126,13 +127,7 @@ export default function ProfilePage() {
   };
 
   if (isLoading || !user) {
-    return (
-      <div className="flex items-center justify-center h-[60vh]">
-        <p className="text-lg text-gray-500 animate-pulse">
-          Loading Your Profile...
-        </p>
-      </div>
-    );
+    return <LoadingSpinner />;
   }
 
   const editForms = (

@@ -4,6 +4,7 @@ import { useEffect, useState, Suspense } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import axios from "axios";
 import Link from "next/link";
+import LoadingSpinner from "@/components/LoadingSpinner";
 
 function VerifyEmailContent() {
   const searchParams = useSearchParams();
@@ -52,7 +53,7 @@ function VerifyEmailContent() {
 // Wrap the component in Suspense because useSearchParams requires it.
 export default function VerifyEmailPage() {
   return (
-    <Suspense fallback={<div>Loading...</div>}>
+    <Suspense fallback={<LoadingSpinner />}>
       <VerifyEmailContent />
     </Suspense>
   );

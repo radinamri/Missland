@@ -7,6 +7,7 @@ import { TryOn } from "@/types";
 import api from "@/utils/api";
 import PostGrid from "@/components/PostGrid";
 import Link from "next/link";
+import LoadingSpinner from "@/components/LoadingSpinner";
 
 export default function MyTryOnsPage() {
   // 1. Get the new functions from the context
@@ -63,11 +64,7 @@ export default function MyTryOnsPage() {
   };
 
   if (isAuthLoading || isLoading) {
-    return (
-      <div className="text-center py-20">
-        <p className="text-lg text-gray-500">Loading My Try-Ons...</p>
-      </div>
-    );
+    return <LoadingSpinner />;
   }
 
   const posts = tryOns.map((tryOn) => tryOn.post);

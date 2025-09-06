@@ -8,6 +8,7 @@ import api from "@/utils/api";
 import PostGrid from "@/components/PostGrid";
 import Link from "next/link";
 import SaveToCollectionModal from "@/components/SaveToCollectionModal";
+import LoadingSpinner from "@/components/LoadingSpinner";
 
 // This is now a single, self-contained client component
 export default function CollectionDetailPage() {
@@ -72,11 +73,7 @@ export default function CollectionDetailPage() {
   };
 
   if (isLoading || isAuthLoading) {
-    return (
-      <div className="text-center py-20">
-        <p className="text-lg text-gray-500">Loading Collection...</p>
-      </div>
-    );
+    return <LoadingSpinner />;
   }
 
   return (

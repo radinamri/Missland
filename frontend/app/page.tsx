@@ -153,8 +153,8 @@ export default function ExplorePage() {
         </div>
 
         {isLoading ? (
-          <div className="text-center py-20">
-            <p className="text-lg text-gray-500">Loading your feed...</p>
+          <div className="flex justify-center items-center min-h-[60vh]">
+            <div className="w-16 h-16 border-4 border-dashed rounded-full animate-spin border-[#3D5A6C]"></div>
           </div>
         ) : filteredPosts.length > 0 ? (
           <PostGrid

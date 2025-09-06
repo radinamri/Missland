@@ -5,6 +5,7 @@ import { useAuth } from "@/context/AuthContext";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import DeleteAccountModal from "@/components/DeleteAccountModal";
+import LoadingSpinner from "@/components/LoadingSpinner";
 
 // 1. --- Reusable Input Component for consistent styling ---
 const FormInput = (props: React.InputHTMLAttributes<HTMLInputElement>) => (
@@ -82,13 +83,7 @@ export default function AccountSettingsPage() {
   };
 
   if (isLoading || !user) {
-    return (
-      <div className="flex items-center justify-center h-[60vh]">
-        <p className="text-lg text-gray-500 animate-pulse">
-          Loading Settings...
-        </p>
-      </div>
-    );
+    return <LoadingSpinner />;
   }
 
   return (
