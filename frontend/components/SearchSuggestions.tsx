@@ -22,21 +22,22 @@ export default function SearchSuggestions({
           onClick={() => onCategoryClick(null)}
           className={`py-2 px-4 rounded-lg font-semibold text-sm transition-colors flex-shrink-0 ${
             activeCategory === null
-              ? "bg-gray-800 text-white"
-              : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+              ? "bg-[#3D5A6C] text-white"
+              : "bg-[#E7E7E7] text-[#3D5A6C] hover:bg-[#dcdcdc]"
           }`}
         >
           All
         </button>
-        {/* Category buttons */}
+
+        {/* Dynamically generated category buttons */}
         {categories.map((category) => (
           <button
             key={category}
             onClick={() => onCategoryClick(category)}
             className={`py-2 px-4 rounded-lg font-semibold text-sm transition-colors flex-shrink-0 ${
               activeCategory === category
-                ? "bg-gray-800 text-white"
-                : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                ? "bg-[#3D5A6C] text-white"
+                : "bg-[#E7E7E7] text-[#3D5A6C] hover:bg-[#dcdcdc]"
             }`}
           >
             {category.charAt(0).toUpperCase() + category.slice(1)}
