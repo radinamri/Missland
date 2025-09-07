@@ -10,7 +10,6 @@ import Link from "next/link";
 import LoadingSpinner from "@/components/LoadingSpinner";
 
 export default function MyTryOnsPage() {
-  // 1. Get the new functions from the context
   const {
     user,
     tokens,
@@ -22,7 +21,6 @@ export default function MyTryOnsPage() {
   const [tryOns, setTryOns] = useState<TryOn[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
-  // 2. Create a memoized function to fetch data
   const fetchTryOns = useCallback(async () => {
     if (user) {
       try {
@@ -47,9 +45,7 @@ export default function MyTryOnsPage() {
     fetchTryOns().finally(() => setIsLoading(false));
   }, [fetchTryOns]);
 
-  // 3. Create the remove handler
   const handleRemoveTryOn = async (postIdToRemove: number) => {
-    // Find the specific TryOn object that contains the post to be removed
     const tryOnToRemove = tryOns.find(
       (tryOn) => tryOn.post.id === postIdToRemove
     );
@@ -58,7 +54,6 @@ export default function MyTryOnsPage() {
     const message = await deleteTryOn(tryOnToRemove.id);
     if (message) {
       showToastWithMessage(message);
-      // Refresh the list after deleting
       fetchTryOns();
     }
   };
@@ -70,35 +65,76 @@ export default function MyTryOnsPage() {
   const posts = tryOns.map((tryOn) => tryOn.post);
 
   return (
-    <div className="bg-gray-50 md:shadow-lg p-4 md:p-8 min-h-screen">
-      <header className="mb-8">
-        <Link
-          href="/profile"
-          className="text-sm font-semibold text-gray-500 hover:text-gray-800 mb-2 block"
-        >
-          &larr; Back to Profile
-        </Link>
-        <h1 className="text-3xl md:text-4xl font-bold text-gray-800">
-          My Try-Ons
-        </h1>
-      </header>
-      {posts.length > 0 ? (
-        <PostGrid
-          posts={posts}
-          variant="saved"
-          // 4. Pass the remove handler to the grid
-          onRemove={handleRemoveTryOn}
-        />
-      ) : (
-        <div className="text-center py-12">
-          <h2 className="text-xl font-semibold text-gray-700 mb-2">
-            No Saved Try-Ons
-          </h2>
-          <p className="text-gray-500">
-            Styles you save from a try-on session will appear here.
-          </p>
-        </div>
-      )}
+    <div className="bg-gray-50 min-h-screen">
+      <div className="container mx-auto px-4 py-8 md:py-12">
+        <header className="mb-8 md:mb-12">
+          <Link
+            href="/profile"
+            className="inline-flex items-center text-[#D98B99] hover:text-[#C47C8A] font-semibold transition-colors mb-4"
+          >
+            <svg
+              className="w-5 h-5 mr-2"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth="2"
+                d="M15 19l-7-7 7-7"
+              ></path>
+            </svg>
+            Back to Profile
+          </Link>
+          <h1 className="text-4xl md:text-5xl font-bold text-[#3D5A6C]">
+            My Try-Ons
+          </h1>
+        </header>
+        {posts.length > 0 ? (
+          <PostGrid
+            posts={posts}
+            variant="saved"
+            onRemove={handleRemoveTryOn}
+          />
+        ) : (
+          <div className="text-center py-16 px-6 bg-white rounded-2xl shadow-sm">
+            <div className="mx-auto w-16 h-16 flex items-center justify-center bg-gray-100 rounded-full mb-4">
+              <svg
+                className="w-8 h-8 text-gray-400"
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 24 24"
+                strokeWidth="1.5"
+                stroke="currentColor"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M6.827 6.175A2.31 2.31 0 015.186 7.23c-.38.054-.757.112-1.134.175C2.999 7.58 2.25 8.507 2.25 9.574V18a2.25 2.25 0 002.25 2.25h15A2.25 2.25 0 0021.75 18V9.574c0-1.067-.75-1.994-1.802-2.169a47.865 47.865 0 00-1.134-.175 2.31 2.31 0 01-1.64-1.055l-.822-1.316a2.192 2.192 0 00-1.736-1.039 48.774 48.774 0 00-5.232 0 2.192 2.192 0 00-1.736 1.039l-.821 1.316z"
+                />
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M16.5 12.75a4.5 4.5 0 11-9 0 4.5 4.5 0 019 0zM18.75 10.5h.008v.008h-.008v-.008z"
+                />
+              </svg>
+            </div>
+            <h2 className="text-xl font-semibold text-[#3D5A6C] mb-2">
+              No Saved Try-Ons
+            </h2>
+            <p className="text-gray-500 mb-6">
+              Find a style you love and give it a virtual try-on!
+            </p>
+            <Link
+              href="/"
+              className="bg-[#D98B99] text-white font-bold py-2 px-5 rounded-lg hover:bg-[#C47C8A] transition"
+            >
+              Go to Explore
+            </Link>
+          </div>
+        )}
+      </div>
     </div>
   );
 }
