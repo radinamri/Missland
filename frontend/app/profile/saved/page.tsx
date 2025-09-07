@@ -229,77 +229,94 @@ export default function SavedPostsPage() {
 
   return (
     <>
-      <CreateEditCollectionModal
-        isOpen={isCreateEditModalOpen}
-        onClose={() => setIsCreateEditModalOpen(false)}
-        onSave={handleSaveCollection}
-        collectionToEdit={collectionToEdit}
-      />
-      <DeleteCollectionModal
-        isOpen={isDeleteModalOpen}
-        onClose={() => setIsDeleteModalOpen(false)}
-        onConfirm={handleDeleteConfirm}
-        collectionToDelete={collectionToDelete}
-      />
-      <div className="bg-gray-50 min-h-screen">
-        <div className="container mx-auto px-4 py-8 md:py-12">
-          {/* --- FIX: Updated this header to be responsive --- */}
-          <header className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-8 md:mb-12">
-            <h1 className="text-3xl sm:text-4xl font-bold text-[#3D5A6C] mb-4 sm:mb-0">
-              My Collections
-            </h1>
+      <div className="space-y-8">
+        {/* --- ADDED THIS HEADER SECTION --- */}
+        <header className="space-y-4">
+          <Link
+            href="/profile"
+            className="inline-flex items-center text-[#D98B99] hover:text-[#C47C8A] font-semibold transition-colors lg:hidden"
+          >
+            <svg
+              className="w-5 h-5 mr-2"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth="2"
+                d="M15 19l-7-7 7-7"
+              ></path>
+            </svg>
+            Back to Profile
+          </Link>
+          <h1 className="text-3xl md:text-4xl font-bold text-[#3D5A6C]">
+            My Collections
+          </h1>
+          <button
+            onClick={handleOpenCreateModal}
+            className="bg-[#3D5A6C] text-white font-bold py-2 px-5 rounded-lg hover:bg-[#314A5A] transition text-sm sm:text-base self-start sm:self-auto"
+          >
+            Create Collection
+          </button>
+        </header>
+
+        <CreateEditCollectionModal
+          isOpen={isCreateEditModalOpen}
+          onClose={() => setIsCreateEditModalOpen(false)}
+          onSave={handleSaveCollection}
+          collectionToEdit={collectionToEdit}
+        />
+        <DeleteCollectionModal
+          isOpen={isDeleteModalOpen}
+          onClose={() => setIsDeleteModalOpen(false)}
+          onConfirm={handleDeleteConfirm}
+          collectionToDelete={collectionToDelete}
+        />
+        {collections.length > 0 ? (
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 xl:grid-cols-5 gap-4 md:gap-6">
+            {collections.map((collection) => (
+              <CollectionCard
+                key={collection.id}
+                collection={collection}
+                onEdit={() => handleOpenEditModal(collection)}
+                onDelete={() => handleOpenDeleteModal(collection)}
+              />
+            ))}
+          </div>
+        ) : (
+          <div className="text-center py-16 px-6 bg-white rounded-2xl shadow-sm">
+            <div className="mx-auto w-16 h-16 flex items-center justify-center bg-gray-100 rounded-full mb-4">
+              <svg
+                className="w-8 h-8 text-gray-400"
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 24 24"
+                strokeWidth={1.5}
+                stroke="currentColor"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M2.25 12.75V12A2.25 2.25 0 014.5 9.75h15A2.25 2.25 0 0121.75 12v.75m-8.69-6.44l-2.12-2.12a1.5 1.5 0 00-1.061-.44H4.5A2.25 2.25 0 002.25 6v12a2.25 2.25 0 002.25 2.25h15A2.25 2.25 0 0021.75 18V9a2.25 2.25 0 00-2.25-2.25h-5.379a1.5 1.5 0 01-1.06-.44z"
+                />
+              </svg>
+            </div>
+            <h2 className="text-xl font-semibold text-[#3D5A6C] mb-2">
+              No Collections Yet
+            </h2>
+            <p className="text-gray-500 mb-6">
+              Click the button below to create your first collection.
+            </p>
             <button
               onClick={handleOpenCreateModal}
-              className="bg-[#3D5A6C] text-white font-bold py-2 px-5 rounded-lg hover:bg-[#314A5A] transition text-sm sm:text-base self-start sm:self-auto"
+              className="bg-[#D98B99] text-white font-bold py-2 px-5 rounded-lg hover:bg-[#C47C8A] transition"
             >
               Create Collection
             </button>
-          </header>
-
-          {collections.length > 0 ? (
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 xl:grid-cols-5 gap-4 md:gap-6">
-              {collections.map((collection) => (
-                <CollectionCard
-                  key={collection.id}
-                  collection={collection}
-                  onEdit={() => handleOpenEditModal(collection)}
-                  onDelete={() => handleOpenDeleteModal(collection)}
-                />
-              ))}
-            </div>
-          ) : (
-            <div className="text-center py-16 px-6 bg-white rounded-2xl shadow-sm">
-              <div className="mx-auto w-16 h-16 flex items-center justify-center bg-gray-100 rounded-full mb-4">
-                <svg
-                  className="w-8 h-8 text-gray-400"
-                  xmlns="http://www.w3.org/2000/svg"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  strokeWidth={1.5}
-                  stroke="currentColor"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    d="M2.25 12.75V12A2.25 2.25 0 014.5 9.75h15A2.25 2.25 0 0121.75 12v.75m-8.69-6.44l-2.12-2.12a1.5 1.5 0 00-1.061-.44H4.5A2.25 2.25 0 002.25 6v12a2.25 2.25 0 002.25 2.25h15A2.25 2.25 0 0021.75 18V9a2.25 2.25 0 00-2.25-2.25h-5.379a1.5 1.5 0 01-1.06-.44z"
-                  />
-                </svg>
-              </div>
-              <h2 className="text-xl font-semibold text-[#3D5A6C] mb-2">
-                No Collections Yet
-              </h2>
-              <p className="text-gray-500 mb-6">
-                Click the button below to create your first collection.
-              </p>
-              <button
-                onClick={handleOpenCreateModal}
-                className="bg-[#D98B99] text-white font-bold py-2 px-5 rounded-lg hover:bg-[#C47C8A] transition"
-              >
-                Create Collection
-              </button>
-            </div>
-          )}
-        </div>
+          </div>
+        )}
       </div>
     </>
   );
