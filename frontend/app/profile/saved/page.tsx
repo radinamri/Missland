@@ -10,7 +10,7 @@ import CreateEditCollectionModal from "@/components/CreateEditCollectionModal";
 import DeleteCollectionModal from "@/components/DeleteCollectionModal";
 import LoadingSpinner from "@/components/LoadingSpinner";
 
-// A dedicated component for the collection card to keep the main page clean.
+// --- Collection Card Sub-component ---
 function CollectionCard({
   collection,
   onEdit,
@@ -23,7 +23,6 @@ function CollectionCard({
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
 
-  // Close the menu if the user clicks outside of it
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
@@ -31,16 +30,16 @@ function CollectionCard({
       }
     };
     document.addEventListener("mousedown", handleClickOutside);
-    return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
-    };
+    return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
   return (
     <div className="group relative">
       <Link
         href={`/profile/saved/${collection.id}`}
-        className="aspect-square block bg-gray-100 rounded-2xl shadow-sm hover:shadow-lg transition-shadow duration-300 overflow-hidden"
+        className={`aspect-square block rounded-xl shadow-sm hover:shadow-xl overflow-hidden transition-all duration-300 hover:scale-105 ${
+          collection.thumbnail_url ? "bg-gray-200" : "bg-amber-100"
+        }`}
       >
         <div className="relative w-full h-full">
           {collection.thumbnail_url && (
@@ -49,13 +48,13 @@ function CollectionCard({
               alt={collection.name}
               fill
               style={{ objectFit: "cover" }}
-              className="transition-transform duration-300 group-hover:scale-105"
+              className="transition-transform duration-300"
               sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
             />
           )}
           <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
           <div className="absolute bottom-0 left-0 p-3 md:p-4 text-white">
-            <h2 className="font-bold text-base md:text-lg">
+            <h2 className="font-bold text-base md:text-lg truncate">
               {collection.name}
             </h2>
             <p className="text-xs md:text-sm">{collection.post_count} posts</p>
@@ -63,13 +62,11 @@ function CollectionCard({
         </div>
       </Link>
 
-      {/* --- Mobile & Desktop Actions --- */}
       {collection.name !== "All Posts" && (
         <div ref={menuRef} className="absolute top-2 right-2 z-10">
-          {/* Mobile: Always-visible kebab menu */}
           <button
             onClick={() => setIsMenuOpen(!isMenuOpen)}
-            className="md:hidden w-8 h-8 flex items-center justify-center bg-white/80 rounded-lg shadow"
+            className="md:hidden w-8 h-8 flex items-center justify-center bg-white/80 rounded-full shadow"
           >
             <svg
               className="w-5 h-5 text-gray-700"
@@ -80,11 +77,10 @@ function CollectionCard({
             </svg>
           </button>
 
-          {/* Desktop: Buttons appear on hover */}
           <div className="hidden md:flex items-center space-x-2 opacity-0 group-hover:opacity-100 transition-opacity">
             <button
               onClick={onEdit}
-              className="w-8 h-8 flex items-center justify-center bg-white/80 rounded-lg shadow hover:bg-white"
+              className="w-8 h-8 flex items-center justify-center bg-white/80 rounded-full shadow hover:bg-white"
             >
               <svg
                 className="w-4 h-4 text-gray-700"
@@ -101,33 +97,40 @@ function CollectionCard({
             </button>
             <button
               onClick={onDelete}
-              className="w-8 h-8 flex items-center justify-center bg-white/80 rounded-lg shadow hover:bg-white"
+              className="self-end bg-white/80 text-red-600 w-8 h-8 rounded-full flex items-center justify-center shadow-lg"
             >
               <svg
-                className="w-4 h-4 text-red-600"
-                fill="currentColor"
-                viewBox="0 0 20 20"
+                className="w-5 h-5"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
               >
                 <path
-                  fillRule="evenodd"
-                  d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm4 0a1 1 0 012 0v6a1 1 0 11-2 0V8z"
-                  clipRule="evenodd"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth="2"
+                  d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
                 ></path>
               </svg>
             </button>
           </div>
 
-          {/* Mobile Menu Dropdown */}
           {isMenuOpen && (
             <div className="md:hidden absolute top-10 right-0 bg-white rounded-lg shadow-xl py-1 w-32">
               <button
-                onClick={onEdit}
+                onClick={() => {
+                  onEdit();
+                  setIsMenuOpen(false);
+                }}
                 className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
               >
                 Edit
               </button>
               <button
-                onClick={onDelete}
+                onClick={() => {
+                  onDelete();
+                  setIsMenuOpen(false);
+                }}
                 className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-gray-100"
               >
                 Delete
@@ -140,6 +143,7 @@ function CollectionCard({
   );
 }
 
+// --- Main Page Component ---
 export default function SavedPostsPage() {
   const {
     user,
@@ -226,41 +230,65 @@ export default function SavedPostsPage() {
         onConfirm={handleDeleteConfirm}
         collectionToDelete={collectionToDelete}
       />
-      <div className="bg-gray-50 md:shadow-lg p-4 md:p-8 min-h-screen">
-        <header className="flex items-center justify-between mb-8">
-          <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-800">
-            My Collections
-          </h1>
-          <button
-            onClick={handleOpenCreateModal}
-            className="bg-gray-800 text-white font-semibold py-2 px-4 rounded-lg hover:bg-gray-900 transition text-sm sm:text-base"
-          >
-            Create Collection
-          </button>
-        </header>
+      <div className="bg-gray-50 min-h-screen">
+        <div className="container mx-auto px-4 py-8 md:py-12">
+          {/* --- FIX: Updated this header to be responsive --- */}
+          <header className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-8 md:mb-12">
+            <h1 className="text-3xl sm:text-4xl font-bold text-[#3D5A6C] mb-4 sm:mb-0">
+              My Collections
+            </h1>
+            <button
+              onClick={handleOpenCreateModal}
+              className="bg-[#3D5A6C] text-white font-bold py-2 px-5 rounded-lg hover:bg-[#314A5A] transition text-sm sm:text-base self-start sm:self-auto"
+            >
+              Create Collection
+            </button>
+          </header>
 
-        {collections.length > 0 ? (
-          // Improved responsive grid
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 xl:grid-cols-5 gap-4 md:gap-6">
-            {collections.map((collection) => (
-              <CollectionCard
-                key={collection.id}
-                collection={collection}
-                onEdit={() => handleOpenEditModal(collection)}
-                onDelete={() => handleOpenDeleteModal(collection)}
-              />
-            ))}
-          </div>
-        ) : (
-          <div className="text-center py-12">
-            <h2 className="text-xl font-semibold text-gray-700 mb-2">
-              No Collections Yet
-            </h2>
-            <p className="text-gray-500">
-              Click Create Collection to get started.
-            </p>
-          </div>
-        )}
+          {collections.length > 0 ? (
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 xl:grid-cols-5 gap-4 md:gap-6">
+              {collections.map((collection) => (
+                <CollectionCard
+                  key={collection.id}
+                  collection={collection}
+                  onEdit={() => handleOpenEditModal(collection)}
+                  onDelete={() => handleOpenDeleteModal(collection)}
+                />
+              ))}
+            </div>
+          ) : (
+            <div className="text-center py-16 px-6 bg-white rounded-2xl shadow-sm">
+              <div className="mx-auto w-16 h-16 flex items-center justify-center bg-gray-100 rounded-full mb-4">
+                <svg
+                  className="w-8 h-8 text-gray-400"
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  strokeWidth={1.5}
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M2.25 12.75V12A2.25 2.25 0 014.5 9.75h15A2.25 2.25 0 0121.75 12v.75m-8.69-6.44l-2.12-2.12a1.5 1.5 0 00-1.061-.44H4.5A2.25 2.25 0 002.25 6v12a2.25 2.25 0 002.25 2.25h15A2.25 2.25 0 0021.75 18V9a2.25 2.25 0 00-2.25-2.25h-5.379a1.5 1.5 0 01-1.06-.44z"
+                  />
+                </svg>
+              </div>
+              <h2 className="text-xl font-semibold text-[#3D5A6C] mb-2">
+                No Collections Yet
+              </h2>
+              <p className="text-gray-500 mb-6">
+                Click the button below to create your first collection.
+              </p>
+              <button
+                onClick={handleOpenCreateModal}
+                className="bg-[#D98B99] text-white font-bold py-2 px-5 rounded-lg hover:bg-[#C47C8A] transition"
+              >
+                Create Collection
+              </button>
+            </div>
+          )}
+        </div>
       </div>
     </>
   );
