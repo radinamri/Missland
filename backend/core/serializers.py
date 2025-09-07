@@ -158,17 +158,19 @@ class CollectionCreateSerializer(serializers.ModelSerializer):
 
 
 class CollectionListSerializer(serializers.ModelSerializer):
-    # Get the first post's image as a thumbnail for the collection
-    thumbnail_url = serializers.SerializerMethodField()
+    # Get the first 4 post images for a collage effect
+    posts_preview = serializers.SerializerMethodField()
     post_count = serializers.SerializerMethodField()
 
     class Meta:
         model = Collection
-        fields = ['id', 'name', 'thumbnail_url', 'post_count']
+        fields = ['id', 'name', 'posts_preview', 'post_count']
 
-    def get_thumbnail_url(self, obj):
-        first_post = obj.posts.order_by('-id').first()
-        return first_post.image_url if first_post else None
+    def get_posts_preview(self, obj):
+        # Get the most recent 4 posts from the collection
+        recent_posts = obj.posts.order_by('-id')[:4]
+        # Return a list of their image URLs
+        return [post.image_url for post in recent_posts]
 
     def get_post_count(self, obj):
         return obj.posts.count()
