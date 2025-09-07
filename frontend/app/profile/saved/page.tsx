@@ -37,22 +37,31 @@ function CollectionCard({
     <div className="group relative">
       <Link
         href={`/profile/saved/${collection.id}`}
-        className={`aspect-square block rounded-xl shadow-sm hover:shadow-xl overflow-hidden transition-all duration-300 hover:scale-105 ${
-          collection.thumbnail_url ? "bg-gray-200" : "bg-amber-100"
-        }`}
+        className="aspect-square block rounded-xl shadow-sm hover:shadow-xl overflow-hidden transition-all duration-300 hover:scale-105 bg-gray-200"
       >
         <div className="relative w-full h-full">
-          {collection.thumbnail_url && (
-            <Image
-              src={collection.thumbnail_url}
-              alt={collection.name}
-              fill
-              style={{ objectFit: "cover" }}
-              className="transition-transform duration-300"
-              sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
-            />
+          {/* --- NEW Collage Background --- */}
+          {collection.posts_preview && collection.posts_preview.length > 0 ? (
+            <div className="w-full h-full grid grid-cols-2 grid-rows-2">
+              {collection.posts_preview.map((imageUrl, index) => (
+                <div key={index} className="relative w-full h-full">
+                  <Image
+                    src={imageUrl}
+                    alt={`${collection.name} preview ${index + 1}`}
+                    fill
+                    style={{ objectFit: "cover" }}
+                    className="filter blur-sm scale-110" // Blur and scale up slightly
+                  />
+                </div>
+              ))}
+            </div>
+          ) : (
+            // Fallback for empty collections with a solid color
+            <div className="w-full h-full bg-amber-100"></div>
           )}
-          <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
+
+          {/* Gradient overlay and text remain on top */}
+          <div className="absolute inset-0 bg-black/30"></div>
           <div className="absolute bottom-0 left-0 p-3 md:p-4 text-white">
             <h2 className="font-bold text-base md:text-lg truncate">
               {collection.name}

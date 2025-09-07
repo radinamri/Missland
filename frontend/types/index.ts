@@ -64,10 +64,9 @@ export type NavigationState = {
 export interface Collection {
   id: number;
   name: string;
-  thumbnail_url: string | null;
+  posts_preview: string[];
   post_count: number;
 }
-
 export interface CollectionDetail {
   id: number;
   name: string;
