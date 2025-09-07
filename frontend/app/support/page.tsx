@@ -3,14 +3,14 @@
 import { useState, useMemo } from "react";
 import SearchInput from "@/components/SearchInput";
 
-// --- FAQ Data (Updated with "Misland") ---
+// --- FAQ Data (Updated with "Missland") ---
 const faqCategories = [
   {
     title: "Application Functionality",
     questions: [
       {
-        q: "What is the main purpose of Misland?",
-        a: "Misland is a platform for virtual style exploration. You can browse thousands of nail and hair styles and use our augmented reality feature to see how they look on you in real-time.",
+        q: "What is the main purpose of Missland?",
+        a: "Missland is a platform for virtual style exploration. You can browse thousands of nail and hair styles and use our augmented reality feature to see how they look on you in real-time.",
       },
       {
         q: "How does the virtual try-on work?",
@@ -145,7 +145,7 @@ export default function SupportPage() {
             touch.
           </p>
           <a
-            href="mailto:support@misland.com"
+            href="mailto:support@missland.com"
             className="inline-block bg-[#3D5A6C] text-white font-bold py-3 px-8 rounded-xl hover:bg-[#314A5A] transition-colors"
           >
             Contact Support
