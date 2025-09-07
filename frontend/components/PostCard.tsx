@@ -90,16 +90,16 @@ export default function PostCard({
             <>
               <button
                 onClick={handleTryOnClick}
-                className="bg-white text-gray-800 font-semibold py-2 px-4 rounded-xl shadow-lg hover:bg-pink-100 transition-transform hover:scale-105"
+                className="bg-black/30 text-white font-semibold py-2 px-4 rounded-xl shadow-lg hover:bg-black/50 transition"
               >
                 Try On
               </button>
               <button
                 onClick={handleSaveClick}
-                className="bg-pink-500 text-white w-10 h-10 rounded-full flex items-center justify-center shadow-lg hover:bg-pink-600 transition-transform hover:scale-105"
+                className="w-10 h-10 rounded-full flex items-center justify-center shadow-lg transition-colors bg-black/30 text-white hover:bg-black/50"
               >
                 <svg
-                  className="w-6 h-6"
+                  className="w-5 h-5"
                   fill="none"
                   stroke="currentColor"
                   viewBox="0 0 24 24"
@@ -108,8 +108,8 @@ export default function PostCard({
                     strokeLinecap="round"
                     strokeLinejoin="round"
                     strokeWidth="2"
-                    d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z"
-                  ></path>
+                    d="M17.593 3.322c1.1.128 1.907 1.077 1.907 2.185V21L12 17.25 4.5 21V5.507c0-1.108.806-2.057 1.907-2.185a48.507 48.507 0 0111.186 0z"
+                  />
                 </svg>
               </button>
             </>
