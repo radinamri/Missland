@@ -24,7 +24,11 @@ export default function Header() {
     setIsMobileMenuOpen(false);
   }, [pathname]);
 
-  const navLinks = [{ href: "/articles", label: "Articles" }];
+  const navLinks = [
+    { href: "/", label: "Explore" },
+    { href: "/articles", label: "Articles" },
+    { href: "/support", label: "About" },
+  ];
 
   const handleSuggestionClick = (category: string | null) => {
     setActiveCategory(category);
@@ -39,22 +43,30 @@ export default function Header() {
           <div className="flex items-center space-x-8">
             <Link href="/" className="flex items-center space-x-2">
               <Icon className="w-12 h-12" />
-              <span className="text-2xl font-bold text-[#3D5A6C]">Missland</span>
+              <span className="text-2xl font-bold text-[#3D5A6C]">
+                Missland
+              </span>
             </Link>
             <nav className="hidden md:flex items-center space-x-8">
-              {navLinks.map((link) => (
-                <Link
-                  key={link.href}
-                  href={link.href}
-                  className={`text-base font-semibold transition ${
-                    pathname.startsWith(link.href)
-                      ? "text-[#D98B99]"
-                      : "text-gray-500 hover:text-[#D98B99]"
-                  }`}
-                >
-                  {link.label}
-                </Link>
-              ))}
+              {navLinks.map((link) => {
+                const isActive =
+                  link.href === "/"
+                    ? pathname === link.href
+                    : pathname.startsWith(link.href);
+                return (
+                  <Link
+                    key={link.href}
+                    href={link.href}
+                    className={`text-base font-semibold transition ${
+                      isActive
+                        ? "text-[#D98B99]"
+                        : "text-gray-500 hover:text-[#D98B99]"
+                    }`}
+                  >
+                    {link.label}
+                  </Link>
+                );
+              })}
             </nav>
           </div>
 
