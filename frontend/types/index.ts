@@ -27,6 +27,7 @@ export interface User {
   email: string;
   username: string;
   has_password: boolean;
+  profile_picture: string | null;
 }
 
 export interface Post {

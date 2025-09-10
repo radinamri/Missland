@@ -5,6 +5,7 @@ import { usePathname, useRouter } from "next/navigation";
 import Link from "next/link";
 import { ReactNode, useEffect } from "react";
 import LoadingSpinner from "@/components/LoadingSpinner";
+import Image from "next/image";
 
 // --- Reusable Nav Item Component (Slightly restyled for the new design) ---
 const DashboardNavItem = ({
@@ -74,10 +75,19 @@ export default function ProfileLayout({ children }: { children: ReactNode }) {
           <div className="bg-white rounded-2xl shadow-lg p-6 space-y-6 sticky top-24">
             {/* User Info */}
             <div className="text-center pb-6 border-b border-gray-100">
-              <div className="w-20 h-20 bg-[#A4BBD0] rounded-full mx-auto flex items-center justify-center mb-3">
-                <span className="text-3xl font-bold text-white">
-                  {getInitials(user.email)}
-                </span>
+              <div className="w-20 h-20 bg-[#A4BBD0] rounded-full mx-auto flex items-center justify-center mb-3 relative overflow-hidden">
+                {user.profile_picture ? (
+                  <Image
+                    src={user.profile_picture}
+                    alt={user.username}
+                    fill
+                    style={{ objectFit: "cover" }}
+                  />
+                ) : (
+                  <span className="text-3xl font-bold text-white">
+                    {getInitials(user.email)}
+                  </span>
+                )}
               </div>
               <h2 className="text-lg font-bold text-[#3D5A6C] truncate">
                 {user.username}

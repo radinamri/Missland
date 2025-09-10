@@ -4,6 +4,7 @@ import { ReactNode } from "react";
 import Link from "next/link";
 import { useAuth } from "@/context/AuthContext";
 import LoadingSpinner from "@/components/LoadingSpinner";
+import Image from "next/image";
 
 // --- Reusable Card component for the dashboard grid ---
 const DashboardActionCard = ({
@@ -34,6 +35,7 @@ const DashboardActionCard = ({
 // --- Main Page Component ---
 export default function ProfileHomePage() {
   const { user, isLoading, logoutUser } = useAuth();
+  const getInitials = (email: string) => email.charAt(0).toUpperCase() || "U";
 
   if (isLoading || !user) {
     return <LoadingSpinner />;
@@ -119,10 +121,19 @@ export default function ProfileHomePage() {
       {/* --- This content is only for mobile screens --- */}
       <div className="lg:hidden space-y-4">
         <div className="bg-white rounded-2xl shadow-sm p-6 text-center">
-          <div className="w-20 h-20 bg-[#A4BBD0] rounded-full mx-auto flex items-center justify-center mb-3">
-            <span className="text-3xl font-bold text-white">
-              {user.email.charAt(0).toUpperCase()}
-            </span>
+          <div className="w-20 h-20 bg-[#A4BBD0] rounded-full mx-auto flex items-center justify-center mb-3 relative overflow-hidden">
+            {user.profile_picture ? (
+              <Image
+                src={user.profile_picture}
+                alt={user.username}
+                fill
+                style={{ objectFit: "cover" }}
+              />
+            ) : (
+              <span className="text-3xl font-bold text-white">
+                {getInitials(user.email)}
+              </span>
+            )}
           </div>
           <h2 className="text-xl font-bold text-[#3D5A6C] truncate">
             {user.username}

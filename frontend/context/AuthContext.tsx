@@ -58,6 +58,7 @@ interface AuthContextType {
   deleteCollection: (collectionId: number) => Promise<boolean>;
   saveTryOn: (postId: number) => Promise<string | null>;
   deleteTryOn: (tryOnId: number) => Promise<string | null>;
+  updateProfilePicture: (file: File) => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -272,6 +273,26 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
+  const updateProfilePicture = async (file: File) => {
+    const formData = new FormData();
+    formData.append("profile_picture", file);
+
+    try {
+      // Use PATCH to update, and set the correct Content-Type for files
+      await api.patch("/api/auth/profile/", formData, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      });
+      // Refresh the user profile to get the new image URL
+      await fetchUserProfile();
+      showToastWithMessage("Profile picture updated!");
+    } catch (error) {
+      console.error("Failed to update profile picture", error);
+      showToastWithMessage("Failed to update picture.");
+    }
+  };
+
   const registerUser = async (credentials: RegisterCredentials) => {
     try {
       const response = await api.post("/api/auth/register/", credentials);
@@ -407,6 +428,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     deleteCollection,
     saveTryOn,
     deleteTryOn,
+    updateProfilePicture,
   };
 
   return (

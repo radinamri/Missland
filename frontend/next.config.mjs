@@ -1,7 +1,6 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   images: {
-    // This allows SVG images, which is needed for placehold.co
     dangerouslyAllowSVG: true,
     contentDispositionType: "attachment",
     contentSecurityPolicy: "default-src 'self'; script-src 'none'; sandbox;",
@@ -12,7 +11,12 @@ const nextConfig = {
         port: "",
         pathname: "/**",
       },
-      // When you switch to Pexels/Unsplash, you will add their domains here.
+      {
+        protocol: "http",
+        hostname: "127.0.0.1",
+        port: "8000",
+        pathname: "/media/**",
+      },
     ],
   },
 };

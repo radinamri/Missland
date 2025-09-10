@@ -5,6 +5,7 @@ import DeleteAccountModal from "@/components/DeleteAccountModal";
 import { useState, ReactNode } from "react";
 import LoadingSpinner from "@/components/LoadingSpinner";
 import Link from "next/link";
+import Image from "next/image";
 
 // --- Reusable Components for the page design ---
 const SettingsCard = ({
@@ -67,6 +68,7 @@ export default function AccountSettingsPage() {
     initiateEmailChange,
     changePassword,
     isLoading,
+    updateProfilePicture,
   } = useAuth();
   const [showDeleteModal, setShowDeleteModal] = useState(false);
 
@@ -78,10 +80,30 @@ export default function AccountSettingsPage() {
   const [newPassword2, setNewPassword2] = useState("");
   const [showOldPass, setShowOldPass] = useState(false);
   const [showNewPass, setShowNewPass] = useState(false);
+  const [pictureFile, setPictureFile] = useState<File | null>(null);
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const [fileName, setFileName] = useState<string | null>(null);
 
   if (isLoading || !user) {
     return <LoadingSpinner />;
   }
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      const file = e.target.files[0];
+      setPictureFile(file);
+      setPreviewUrl(URL.createObjectURL(file));
+      setFileName(file.name);
+    }
+  };
+
+  const handlePictureSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (pictureFile) {
+      await updateProfilePicture(pictureFile);
+      setPreviewUrl(null); // Clear preview after upload
+    }
+  };
 
   const handleUsernameSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -142,6 +164,62 @@ export default function AccountSettingsPage() {
           Account Settings
         </h1>
       </header>
+
+      <SettingsCard title="Profile Picture">
+        <form
+          onSubmit={handlePictureSubmit}
+          className="flex flex-col sm:flex-row sm:items-center sm:space-x-4"
+        >
+          <div className="w-20 h-20 bg-gray-200 rounded-full relative overflow-hidden flex-shrink-0 mb-4 sm:mb-0">
+            {(previewUrl || user.profile_picture) && (
+              <Image
+                src={previewUrl || user.profile_picture!}
+                alt="Profile preview"
+                fill
+                style={{ objectFit: "cover" }}
+              />
+            )}
+            {/* Fallback for when there is no image at all */}
+            {!(previewUrl || user.profile_picture) && (
+              <div className="w-full h-full bg-[#A4BBD0] flex items-center justify-center">
+                <span className="text-3xl font-bold text-white">
+                  {user.email.charAt(0).toUpperCase()}
+                </span>
+              </div>
+            )}
+          </div>
+          <div className="flex-grow">
+            {/* Custom Styled File Input */}
+            <div className="flex items-center">
+              <label
+                htmlFor="profile-picture-upload"
+                className="cursor-pointer bg-[#E7E7E7] text-gray-700 font-bold py-2 px-4 rounded-lg hover:bg-[#dcdcdc] transition"
+              >
+                Choose File
+              </label>
+              <input
+                type="file"
+                accept="image/png, image/jpeg"
+                onChange={handleFileChange}
+                id="profile-picture-upload"
+                className="hidden"
+              />
+              <span className="ml-4 text-sm text-gray-500">
+                {pictureFile ? pictureFile.name : "No file selected."}
+              </span>
+            </div>
+            <p className="text-xs text-gray-500 mt-2">PNG or JPG, up to 2MB.</p>
+          </div>
+          {previewUrl && (
+            <button
+              type="submit"
+              className="mt-4 sm:mt-0 bg-[#3D5A6C] text-white font-bold py-2 px-4 rounded-lg hover:bg-[#314A5A] transition"
+            >
+              Upload
+            </button>
+          )}
+        </form>
+      </SettingsCard>
 
       {/* --- Edit Username Card --- */}
       <SettingsCard title="Username">
