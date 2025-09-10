@@ -193,3 +193,6 @@ os.environ['GOOGLE_CLIENT_SECRET'] = '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'
 
 # For development, print emails to the console instead of sending them.
 EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+
+MEDIA_URL = '/media/'
+MEDIA_ROOT = BASE_DIR / 'media'

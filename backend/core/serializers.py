@@ -47,10 +47,11 @@ class UserProfileSerializer(serializers.ModelSerializer):
     and indicating whether the user has a password set.
     """
     has_password = serializers.SerializerMethodField()
+    profile_picture = serializers.ImageField(read_only=True)
 
     class Meta:
         model = User
-        fields = ('id', 'email', 'username', 'has_password')
+        fields = ('id', 'email', 'username', 'has_password', 'profile_picture')
 
     def get_has_password(self, obj):
         return obj.has_usable_password()
@@ -63,7 +64,7 @@ class UserProfileUpdateSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = User
-        fields = ('username',)
+        fields = ('username', 'profile_picture')
 
 
 class EmailChangeInitiateSerializer(serializers.Serializer):

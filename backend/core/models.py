@@ -21,6 +21,8 @@ class User(AbstractUser):
     # Phone number field for OTP. It's optional as users can sign up with email.
     phone_number = models.CharField(max_length=15, blank=True, null=True, unique=True)
 
+    profile_picture = models.ImageField(upload_to='profile_pictures/', null=True, blank=True)
+
     # This is what the user will log in with
     USERNAME_FIELD = 'email'
 
