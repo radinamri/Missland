@@ -146,7 +146,7 @@ function ResetPasswordForm() {
                   onClick={() => setShowPassword(!showPassword)}
                   className="absolute inset-y-0 right-0 flex items-center pr-3 text-gray-400 hover:text-gray-600"
                 >
-                  {showPassword ? <EyeSlashIcon /> : <EyeIcon />}
+                  {showPassword ? <EyeIcon /> : <EyeSlashIcon />}
                 </button>
               </div>
             </div>
@@ -171,7 +171,7 @@ function ResetPasswordForm() {
                   onClick={() => setShowPassword2(!showPassword2)}
                   className="absolute inset-y-0 right-0 flex items-center pr-3 text-gray-400 hover:text-gray-600"
                 >
-                  {showPassword2 ? <EyeSlashIcon /> : <EyeIcon />}
+                  {showPassword2 ? <EyeIcon /> : <EyeSlashIcon />}
                 </button>
               </div>
             </div>
