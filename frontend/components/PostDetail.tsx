@@ -83,7 +83,7 @@ export default function PostDetail({
                 <div className="flex items-center justify-end space-x-3 mb-6">
                   <Link
                     href={`/try-on/${post.id}`}
-                    className="bg-[#E7E7E7] text-[#3D5A6C] font-bold py-3 px-6 rounded-full hover:bg-[#dcdcdc] transition"
+                    className="bg-[#E7E7E7] text-[#3D5A6C] font-bold py-3 px-6 rounded-xl hover:bg-[#dcdcdc] transition"
                   >
                     Try On
                   </Link>
@@ -93,7 +93,7 @@ export default function PostDetail({
                       isSaved
                         ? "bg-[#3D5A6C] text-white"
                         : "bg-[#D98B99] text-white"
-                    } font-bold py-3 px-6 rounded-full hover:opacity-90 transition`}
+                    } font-bold py-3 px-6 rounded-xl hover:opacity-90 transition`}
                     aria-label={isSaved ? "Saved" : "Save"}
                   >
                     {isSaved ? "Saved" : "Save"}
@@ -116,7 +116,7 @@ export default function PostDetail({
                     {post.tags.map((tag) => (
                       <span
                         key={tag}
-                        className="bg-gray-100 text-gray-600 text-sm font-medium px-3 py-1 rounded-full"
+                        className="bg-gray-100 text-gray-600 text-sm font-medium px-3 py-1 rounded-md"
                       >
                         {tag}
                       </span>
