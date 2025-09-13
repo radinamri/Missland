@@ -75,33 +75,31 @@ export default function CollectionDetailPage() {
   }
 
   return (
-    <div className="space-y-4">
-      <div className="space-y-8">
-        <header className="space-y-4">
-          <Link
-            href="/profile/saved"
-            className="inline-flex items-center text-[#D98B99] hover:text-[#C47C8A] font-semibold transition-colors lg:hidden"
+    <div className="space-y-8">
+      <header className="space-y-4">
+        <Link
+          href="/profile/saved"
+          className="inline-flex items-center text-[#D98B99] hover:text-[#C47C8A] font-semibold transition-colors lg:hidden"
+        >
+          <svg
+            className="w-5 h-5 mr-2"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
           >
-            <svg
-              className="w-5 h-5 mr-2"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth="2"
-                d="M15 19l-7-7 7-7"
-              ></path>
-            </svg>
-            Back to Collections
-          </Link>
-          <h1 className="text-3xl md:text-4xl font-bold text-[#3D5A6C]">
-            {collection?.name}
-          </h1>
-        </header>
-      </div>
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth="2"
+              d="M15 19l-7-7 7-7"
+            ></path>
+          </svg>
+          Back to Collections
+        </Link>
+        <h1 className="text-3xl md:text-4xl font-bold text-[#3D5A6C]">
+          {collection?.name}
+        </h1>
+      </header>
 
       <SaveToCollectionModal
         isOpen={showCollectionsModal}

@@ -1,4 +1,3 @@
-// app/profile/my-try-ons/[postId]/page.tsx
 "use client";
 
 import TryOnPostDetail from "@/components/TryOnPostDetail";
