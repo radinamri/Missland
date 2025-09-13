@@ -1,3 +1,4 @@
+// app/profile/my-try-ons/page.tsx
 "use client";
 
 import { useEffect, useState, useCallback } from "react";
@@ -58,6 +59,10 @@ export default function MyTryOnsPage() {
     }
   };
 
+  const handlePostClick = async (post: TryOn["post"]) => {
+    router.push(`/profile/my-try-ons/${post.id}`);
+  };
+
   if (isAuthLoading || isLoading) {
     return <LoadingSpinner />;
   }
@@ -66,7 +71,6 @@ export default function MyTryOnsPage() {
 
   return (
     <div className="space-y-8">
-      {/* --- ADDED THIS HEADER SECTION --- */}
       <header className="space-y-4">
         <Link
           href="/profile"
@@ -83,16 +87,21 @@ export default function MyTryOnsPage() {
               strokeLinejoin="round"
               strokeWidth="2"
               d="M15 19l-7-7 7-7"
-            ></path>
+            />
           </svg>
           Back to Profile
         </Link>
         <h1 className="text-3xl md:text-4xl font-bold text-[#3D5A6C]">
-          My Try-Ones
+          My Try-Ons
         </h1>
       </header>
       {posts.length > 0 ? (
-        <PostGrid posts={posts} variant="saved" onRemove={handleRemoveTryOn} />
+        <PostGrid
+          posts={posts}
+          variant="saved"
+          onRemove={handleRemoveTryOn}
+          onPostClick={handlePostClick}
+        />
       ) : (
         <div className="text-center py-16 px-6 bg-white rounded-2xl shadow-sm">
           <div className="mx-auto w-16 h-16 flex items-center justify-center bg-gray-100 rounded-full mb-4">
