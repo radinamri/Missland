@@ -57,12 +57,15 @@ export const NavigationProvider = ({ children }: { children: ReactNode }) => {
   };
 
   const handleGoBack = useCallback(() => {
-    if (stack.length > 1) {
+    setStack((prevStack) => {
+      if (prevStack.length <= 1) {
+        return prevStack;
+      }
       ignorePopRef.current = true;
       window.history.back();
-      setStack((prevStack) => prevStack.slice(0, -1));
-    }
-  }, [stack]);
+      return prevStack.slice(0, -1);
+    });
+  }, []);
 
   useEffect(() => {
     const handlePopState = () => {
@@ -70,12 +73,14 @@ export const NavigationProvider = ({ children }: { children: ReactNode }) => {
         ignorePopRef.current = false;
         return;
       }
-      handleGoBack();
+      setStack((prevStack) =>
+        prevStack.length > 1 ? prevStack.slice(0, -1) : prevStack
+      );
     };
 
     window.addEventListener("popstate", handlePopState);
     return () => window.removeEventListener("popstate", handlePopState);
-  }, [handleGoBack]);
+  }, []);
 
   const contextValue: NavigationContextType = {
     stack,
