@@ -2,6 +2,7 @@
 
 import { Post } from "@/types";
 import PostCard from "./PostCard";
+import { useRouter } from "next/navigation";
 
 interface PostGridProps {
   posts: Post[];
@@ -20,6 +21,20 @@ export default function PostGrid({
   onPostClick,
   isSaved,
 }: PostGridProps) {
+  const router = useRouter();
+
+  const handlePostClick = async (post: Post) => {
+    if (onPostClick) {
+      await onPostClick(post);
+    } else if (variant === "saved") {
+      // Navigate to saved post detail page
+      const collectionId = window.location.pathname.split("/")[3]; // Extract collectionId from URL
+      router.push(`/profile/saved/${collectionId}/${post.id}`);
+    } else {
+      router.push(`/post/${post.id}`);
+    }
+  };
+
   return (
     <>
       <style jsx global>{`
@@ -50,7 +65,7 @@ export default function PostGrid({
             variant={variant}
             onSave={onSave}
             onRemove={onRemove}
-            onPostClick={onPostClick}
+            onPostClick={handlePostClick}
             isSaved={isSaved ? isSaved(post) : undefined}
           />
         ))}

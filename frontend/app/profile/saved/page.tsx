@@ -50,17 +50,15 @@ function CollectionCard({
                     alt={`${collection.name} preview ${index + 1}`}
                     fill
                     style={{ objectFit: "cover" }}
-                    className="filter blur-sm scale-110" // Blur and scale up slightly
+                    className="filter blur-sm scale-110"
                   />
                 </div>
               ))}
             </div>
           ) : (
-            // Fallback for empty collections with a solid color
             <div className="w-full h-full bg-amber-100"></div>
           )}
 
-          {/* Gradient overlay and text remain on top */}
           <div className="absolute inset-0 bg-black/30"></div>
           <div className="absolute bottom-0 left-0 p-3 md:p-4 text-white">
             <h2 className="font-bold text-base md:text-lg truncate">
@@ -230,7 +228,6 @@ export default function SavedPostsPage() {
   return (
     <>
       <div className="space-y-8">
-        {/* --- ADDED THIS HEADER SECTION --- */}
         <header className="space-y-4">
           <Link
             href="/profile"

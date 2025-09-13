@@ -24,7 +24,6 @@ export default function CollectionDetailPage() {
 
   const [collection, setCollection] = useState<CollectionDetail | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-
   const [showCollectionsModal, setShowCollectionsModal] = useState(false);
   const [postToSave, setPostToSave] = useState<Post | null>(null);
 
@@ -67,14 +66,17 @@ export default function CollectionDetailPage() {
     }
   };
 
+  const handlePostClick = async (post: Post) => {
+    router.push(`/profile/saved/${collectionId}/${post.id}`);
+  };
+
   if (isLoading || isAuthLoading) {
     return <LoadingSpinner />;
   }
 
   return (
-    <>
+    <div className="space-y-4">
       <div className="space-y-8">
-        {/* --- ADDED THIS HEADER SECTION --- */}
         <header className="space-y-4">
           <Link
             href="/profile/saved"
@@ -113,6 +115,7 @@ export default function CollectionDetailPage() {
           variant="saved"
           onSave={openSaveModal}
           onRemove={handleRemovePost}
+          onPostClick={handlePostClick}
         />
       ) : (
         <div className="text-center py-16 px-6 bg-white rounded-2xl shadow-sm mt-8">
@@ -146,6 +149,6 @@ export default function CollectionDetailPage() {
           </Link>
         </div>
       )}
-    </>
+    </div>
   );
 }

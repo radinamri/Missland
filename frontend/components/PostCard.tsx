@@ -51,7 +51,7 @@ export default function PostCard({
   return (
     <div
       onClick={handleCardClick}
-      className="masonry-item group relative rounded-2xl overflow-hidden shadow-lg hover:shadow-xl transition-shadow duration-300 block"
+      className="masonry-item group relative rounded-2xl overflow-hidden shadow-lg hover:shadow-xl transition-shadow duration-300 block cursor-pointer"
     >
       <Image
         src={post.image_url}
