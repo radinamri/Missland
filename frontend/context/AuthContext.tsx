@@ -20,7 +20,6 @@ import {
 } from "@/types";
 import api from "@/utils/api";
 
-// Define the shape of the context
 interface AuthContextType {
   user: User | null;
   tokens: AuthTokens | null;
@@ -36,7 +35,6 @@ interface AuthContextType {
   updateUsername: (newUsername: string) => Promise<void>;
   changePassword: (credentials: PasswordChangeCredentials) => Promise<void>;
   initiateEmailChange: (newEmail: string) => Promise<void>;
-  // toggleSavePost: (postId: number) => Promise<string | null>;
   deleteAccount: (verification: {
     password?: string;
     access_token?: string;
@@ -44,7 +42,7 @@ interface AuthContextType {
   trackPostClick: (postId: number) => Promise<void>;
   trackSearchQuery: (query: string) => Promise<void>;
   trackTryOn: (postId: number) => Promise<void>;
-  collections: Collection[];
+  collections: Collection[] | null;
   fetchCollections: () => Promise<void>;
   createCollection: (name: string) => Promise<Collection | null>;
   managePostInCollection: (
@@ -69,58 +67,45 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [loading, setLoading] = useState(true);
   const router = useRouter();
   const [interactionCount, setInteractionCount] = useState(0);
+  const [toastMessage, setToastMessage] = useState("");
+  const [showToast, setShowToast] = useState(false);
+  const [collections, setCollections] = useState<Collection[] | null>(null);
 
   const incrementInteraction = () => setInteractionCount((prev) => prev + 1);
 
-  const [toastMessage, setToastMessage] = useState("");
-  const [showToast, setShowToast] = useState(false);
-
-  const [collections, setCollections] = useState<Collection[]>([]);
-
-  const saveTryOn = async (postId: number): Promise<string | null> => {
-    if (!user) return null;
-    try {
-      const response = await api.post(`/api/auth/posts/${postId}/save-try-on/`);
-      incrementInteraction();
-      return response.data.detail;
-    } catch (error) {
-      console.error("Failed to save try-on:", error);
-      return null;
-    }
+  const showToastWithMessage = (message: string) => {
+    setToastMessage(message);
+    setShowToast(true);
+    setTimeout(() => setShowToast(false), 3000);
   };
 
-  const deleteTryOn = async (tryOnId: number): Promise<string | null> => {
-    if (!user) return null;
-    try {
-      await api.delete(`/api/auth/profile/my-try-ons/${tryOnId}/`);
-      return "Removed from My Try-Ons.";
-    } catch (error) {
-      console.error("Failed to delete try-on:", error);
-      return null;
-    }
-  };
-
-  // Function to fetch user's collections
   const fetchCollections = useCallback(async () => {
+    if (!user) {
+      setCollections(null);
+      return;
+    }
     try {
       const response = await api.get<Collection[]>("/api/auth/collections/");
       setCollections(response.data);
     } catch (error) {
       console.error("Failed to fetch collections:", error);
+      showToastWithMessage("Failed to fetch collections.");
+      setCollections(null);
     }
-  }, []);
+  }, [user]);
 
-  // Function to create a new collection
   const createCollection = async (name: string): Promise<Collection | null> => {
     if (!user) return null;
     try {
       const response = await api.post<Collection>("/api/auth/collections/", {
         name,
       });
-      fetchCollections(); // Refresh the list after creating
+      await fetchCollections();
+      showToastWithMessage("Collection created!");
       return response.data;
     } catch (error) {
       console.error("Failed to create collection:", error);
+      showToastWithMessage("Failed to create collection.");
       return null;
     }
   };
@@ -134,11 +119,12 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         `/api/auth/collections/${collectionId}/`,
         { name }
       );
-      await fetchCollections(); // Refresh the list after updating
+      await fetchCollections();
+      showToastWithMessage("Collection updated!");
       return response.data;
     } catch (error) {
-      console.error("Failed to update collection", error);
-      // You can add more specific error handling here
+      console.error("Failed to update collection:", error);
+      showToastWithMessage("Failed to update collection.");
       return null;
     }
   };
@@ -146,15 +132,16 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const deleteCollection = async (collectionId: number): Promise<boolean> => {
     try {
       await api.delete(`/api/auth/collections/${collectionId}/`);
-      await fetchCollections(); // Refresh the list after deleting
+      await fetchCollections();
+      showToastWithMessage("Collection deleted!");
       return true;
     } catch (error) {
-      console.error("Failed to delete collection", error);
+      console.error("Failed to delete collection:", error);
+      showToastWithMessage("Failed to delete collection.");
       return false;
     }
   };
 
-  // Function to add/remove a post from a collection
   const managePostInCollection = async (
     collectionId: number,
     postId: number
@@ -164,18 +151,41 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       const response = await api.post(
         `/api/auth/collections/${collectionId}/posts/${postId}/`
       );
-      incrementInteraction(); // This is still a valuable signal
+      await fetchCollections();
+      incrementInteraction();
       return response.data.detail;
     } catch (error) {
       console.error("Failed to manage post in collection:", error);
+      showToastWithMessage("Failed to manage post in collection.");
       return null;
     }
   };
 
-  const showToastWithMessage = (message: string) => {
-    setToastMessage(message);
-    setShowToast(true);
-    setTimeout(() => setShowToast(false), 3000);
+  const saveTryOn = async (postId: number): Promise<string | null> => {
+    if (!user) return null;
+    try {
+      const response = await api.post(`/api/auth/posts/${postId}/save-try-on/`);
+      incrementInteraction();
+      showToastWithMessage(response.data.detail);
+      return response.data.detail;
+    } catch (error) {
+      console.error("Failed to save try-on:", error);
+      showToastWithMessage("Failed to save try-on.");
+      return null;
+    }
+  };
+
+  const deleteTryOn = async (tryOnId: number): Promise<string | null> => {
+    if (!user) return null;
+    try {
+      await api.delete(`/api/auth/profile/my-try-ons/${tryOnId}/`);
+      showToastWithMessage("Removed from My Try-Ons.");
+      return "Removed from My Try-Ons.";
+    } catch (error) {
+      console.error("Failed to delete try-on:", error);
+      showToastWithMessage("Failed to delete try-on.");
+      return null;
+    }
   };
 
   const trackPostClick = async (postId: number) => {
@@ -211,6 +221,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const logoutUser = useCallback(() => {
     setTokens(null);
     setUser(null);
+    setCollections(null);
     localStorage.removeItem("authTokens");
     router.push("/login");
   }, [router]);
@@ -220,7 +231,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       const response = await api.get<User>("/api/auth/profile/");
       setUser(response.data);
     } catch (error) {
-      console.error("Failed to fetch user profile", error);
+      console.error("Failed to fetch user profile:", error);
       logoutUser();
     }
   }, [logoutUser]);
@@ -240,6 +251,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   useEffect(() => {
     if (user) {
       fetchCollections();
+    } else {
+      setCollections(null);
     }
   }, [user, fetchCollections]);
 
@@ -249,11 +262,13 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       await fetchUserProfile();
       showToastWithMessage("Username updated successfully!");
     } catch (error) {
-      console.error("Failed to update username", error);
+      console.error("Failed to update username:", error);
       if (isAxiosError(error)) {
-        alert(
+        showToastWithMessage(
           "Failed to update username: " + JSON.stringify(error.response?.data)
         );
+      } else {
+        showToastWithMessage("Failed to update username.");
       }
     }
   };
@@ -261,14 +276,18 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const changePassword = async (credentials: PasswordChangeCredentials) => {
     try {
       await api.post("/api/auth/password/change/", credentials);
-      alert("Password changed successfully! Please log in again.");
+      showToastWithMessage(
+        "Password changed successfully! Please log in again."
+      );
       logoutUser();
     } catch (error) {
-      console.error("Failed to change password", error);
+      console.error("Failed to change password:", error);
       if (isAxiosError(error)) {
-        alert(
+        showToastWithMessage(
           "Failed to change password: " + JSON.stringify(error.response?.data)
         );
+      } else {
+        showToastWithMessage("Failed to change password.");
       }
     }
   };
@@ -276,20 +295,15 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const updateProfilePicture = async (file: File) => {
     const formData = new FormData();
     formData.append("profile_picture", file);
-
     try {
-      // Use PATCH to update, and set the correct Content-Type for files
       await api.patch("/api/auth/profile/", formData, {
-        headers: {
-          "Content-Type": "multipart/form-data",
-        },
+        headers: { "Content-Type": "multipart/form-data" },
       });
-      // Refresh the user profile to get the new image URL
       await fetchUserProfile();
       showToastWithMessage("Profile picture updated!");
     } catch (error) {
-      console.error("Failed to update profile picture", error);
-      showToastWithMessage("Failed to update picture.");
+      console.error("Failed to update profile picture:", error);
+      showToastWithMessage("Failed to update profile picture.");
     }
   };
 
@@ -303,9 +317,13 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         });
       }
     } catch (error) {
-      console.error("Registration failed", error);
+      console.error("Registration failed:", error);
       if (isAxiosError(error)) {
-        alert("Registration failed: " + JSON.stringify(error.response?.data));
+        showToastWithMessage(
+          "Registration failed: " + JSON.stringify(error.response?.data)
+        );
+      } else {
+        showToastWithMessage("Registration failed.");
       }
     }
   };
@@ -318,11 +336,16 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         localStorage.setItem("authTokens", JSON.stringify(response.data));
         await fetchUserProfile();
         router.push("/");
+        showToastWithMessage("Login successful!");
       }
     } catch (error) {
-      console.error("Login failed", error);
+      console.error("Login failed:", error);
       if (isAxiosError(error)) {
-        alert("Login failed: " + JSON.stringify(error.response?.data));
+        showToastWithMessage(
+          "Login failed: " + JSON.stringify(error.response?.data)
+        );
+      } else {
+        showToastWithMessage("Login failed.");
       }
     }
   };
@@ -337,11 +360,16 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         localStorage.setItem("authTokens", JSON.stringify(response.data));
         await fetchUserProfile();
         router.push("/");
+        showToastWithMessage("Google login successful!");
       }
     } catch (error) {
-      console.error("Google login failed", error);
+      console.error("Google login failed:", error);
       if (isAxiosError(error)) {
-        alert("Google login failed: " + JSON.stringify(error.response?.data));
+        showToastWithMessage(
+          "Google login failed: " + JSON.stringify(error.response?.data)
+        );
+      } else {
+        showToastWithMessage("Google login failed.");
       }
     }
   };
@@ -351,31 +379,21 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       await api.post("/api/auth/email/change/initiate/", {
         new_email: newEmail,
       });
-      alert("Verification link sent! Please check your new email address.");
+      showToastWithMessage(
+        "Verification link sent! Please check your new email address."
+      );
     } catch (error) {
-      console.error("Failed to initiate email change", error);
+      console.error("Failed to initiate email change:", error);
       if (isAxiosError(error)) {
-        alert(
+        showToastWithMessage(
           "Failed to initiate email change: " +
             JSON.stringify(error.response?.data)
         );
+      } else {
+        showToastWithMessage("Failed to initiate email change.");
       }
     }
   };
-
-  // const toggleSavePost = async (postId: number): Promise<string | null> => {
-  //   try {
-  //     const response = await api.post(`/api/auth/posts/${postId}/toggle-save/`);
-  //     incrementInteraction();
-  //     return response.data.detail;
-  //   } catch (error) {
-  //     console.error("Failed to save post", error);
-  //     if (isAxiosError(error)) {
-  //       alert("Error saving post: " + JSON.stringify(error.response?.data));
-  //     }
-  //     return null;
-  //   }
-  // };
 
   const deleteAccount = async (verification: {
     password?: string;
@@ -383,18 +401,21 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   }): Promise<boolean> => {
     try {
       await api.delete("/api/auth/profile/delete/", { data: verification });
-      alert("Your account has been successfully deleted.");
+      showToastWithMessage("Your account has been successfully deleted.");
       setTokens(null);
       setUser(null);
+      setCollections(null);
       localStorage.clear();
       router.push("/");
       return true;
     } catch (error) {
-      console.error("Failed to delete account", error);
+      console.error("Failed to delete account:", error);
       if (isAxiosError(error)) {
-        alert(
+        showToastWithMessage(
           "Failed to delete account: " + JSON.stringify(error.response?.data)
         );
+      } else {
+        showToastWithMessage("Failed to delete account.");
       }
       return false;
     }
@@ -415,7 +436,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     updateUsername,
     changePassword,
     initiateEmailChange,
-    // toggleSavePost,
     deleteAccount,
     trackPostClick,
     trackSearchQuery,

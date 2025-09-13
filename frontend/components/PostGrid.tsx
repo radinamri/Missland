@@ -9,6 +9,7 @@ interface PostGridProps {
   onSave?: (post: Post) => void;
   onRemove?: (postId: number) => void;
   onPostClick?: (post: Post) => Promise<void>;
+  isSaved?: (post: Post) => boolean;
 }
 
 export default function PostGrid({
@@ -17,6 +18,7 @@ export default function PostGrid({
   onSave,
   onRemove,
   onPostClick,
+  isSaved,
 }: PostGridProps) {
   return (
     <>
@@ -49,6 +51,7 @@ export default function PostGrid({
             onSave={onSave}
             onRemove={onRemove}
             onPostClick={onPostClick}
+            isSaved={isSaved ? isSaved(post) : undefined}
           />
         ))}
       </div>

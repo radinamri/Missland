@@ -10,6 +10,7 @@ interface PostCardProps {
   onSave?: (post: Post) => void;
   onRemove?: (postId: number) => void;
   onPostClick?: (post: Post) => Promise<void>;
+  isSaved?: boolean;
 }
 
 export default function PostCard({
@@ -18,24 +19,21 @@ export default function PostCard({
   onSave,
   onRemove,
   onPostClick,
+  isSaved,
 }: PostCardProps) {
   const router = useRouter();
 
   const handleCardClick = async () => {
-    // Await the tracking call before navigating to prevent race conditions
     if (onPostClick) {
       await onPostClick(post);
     }
-    router.push(`/post/${post.id}`);
   };
 
-  // Handler for the Try On button
   const handleTryOnClick = (e: React.MouseEvent) => {
-    e.stopPropagation(); // Prevent the main card link from firing
+    e.stopPropagation();
     router.push(`/try-on/${post.id}`);
   };
 
-  // Handler for the Save button
   const handleSaveClick = async (e: React.MouseEvent) => {
     e.stopPropagation();
     if (onSave) {
@@ -43,7 +41,6 @@ export default function PostCard({
     }
   };
 
-  // Handler for the Remove button
   const handleRemoveClick = (e: React.MouseEvent) => {
     e.stopPropagation();
     if (onRemove) {
@@ -52,7 +49,6 @@ export default function PostCard({
   };
 
   return (
-    // The entire card is a link to the post detail page
     <div
       onClick={handleCardClick}
       className="masonry-item group relative rounded-2xl overflow-hidden shadow-lg hover:shadow-xl transition-shadow duration-300 block"
@@ -65,27 +61,25 @@ export default function PostCard({
         className="w-full h-auto block transition-transform duration-300 group-hover:scale-105"
       />
 
-      {/* Overlay for actions */}
       <div
         className={`absolute inset-0 flex flex-col justify-between p-2 md:p-4 transition-opacity duration-300 
-        ${
-          variant === "explore"
-            ? "md:bg-black/40 md:opacity-0 group-hover:opacity-100"
-            : "" // For mobile explore, gradient is visible. For desktop, it appears on hover.
-        }
-        ${
-          variant === "saved"
-            ? "md:bg-black/40 md:opacity-0 group-hover:opacity-100"
-            : "" // For mobile saved, gradient is visible. For desktop, it appears on hover.
-        }
-      `}
+          ${
+            variant === "explore"
+              ? "md:bg-black/40 md:opacity-0 group-hover:opacity-100"
+              : ""
+          }
+          ${
+            variant === "saved"
+              ? "md:bg-black/40 md:opacity-0 group-hover:opacity-100"
+              : ""
+          }
+        `}
       >
         <p className="text-white text-sm font-semibold drop-shadow-md">
           {post.title}
         </p>
 
         <div className="flex items-center justify-between">
-          {/* Conditionally render buttons based on the variant */}
           {variant === "explore" && (
             <>
               <button
@@ -96,11 +90,16 @@ export default function PostCard({
               </button>
               <button
                 onClick={handleSaveClick}
-                className="w-10 h-10 rounded-full flex items-center justify-center shadow-lg transition-colors bg-black/30 text-white hover:bg-black/50"
+                className={`w-10 h-10 rounded-full flex items-center justify-center shadow-lg transition-colors ${
+                  isSaved
+                    ? "bg-[#3D5A6C] text-white"
+                    : "bg-black/30 text-white hover:bg-black/50"
+                }`}
+                aria-label={isSaved ? "Saved" : "Save"}
               >
                 <svg
                   className="w-5 h-5"
-                  fill="none"
+                  fill={isSaved ? "currentColor" : "none"}
                   stroke="currentColor"
                   viewBox="0 0 24 24"
                 >
@@ -134,7 +133,7 @@ export default function PostCard({
                     strokeLinejoin="round"
                     strokeWidth="2"
                     d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
-                  ></path>
+                  />
                 </svg>
               </button>
             </>

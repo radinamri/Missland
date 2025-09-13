@@ -1,9 +1,8 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
-import { Collection, Post } from "@/types";
+import { Post } from "@/types";
 import { useAuth } from "@/context/AuthContext";
-import LoadingSpinner from "./LoadingSpinner";
 
 export default function SaveToCollectionModal({
   isOpen,
@@ -23,36 +22,34 @@ export default function SaveToCollectionModal({
     showToastWithMessage,
   } = useAuth();
 
-  const [isLoading, setIsLoading] = useState(true);
   const [isCreating, setIsCreating] = useState(false);
   const [newCollectionName, setNewCollectionName] = useState("");
-
-  // State for the custom dropdown
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
-  const [selectedCollection, setSelectedCollection] =
-    useState<Collection | null>(null);
+  const [selectedCollection, setSelectedCollection] = useState<number | null>(
+    null
+  );
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (isOpen && user) {
-      setIsLoading(true);
-      fetchCollections().then(() => setIsLoading(false));
+      fetchCollections();
     }
     if (!isOpen) {
       setIsCreating(false);
       setNewCollectionName("");
       setIsDropdownOpen(false);
+      setSelectedCollection(null);
     }
   }, [isOpen, user, fetchCollections]);
 
-  // Set the default selected collection once collections are loaded
+  // Set default selected collection
   useEffect(() => {
-    if (collections.length > 0 && !selectedCollection) {
-      setSelectedCollection(collections[0]);
+    if (collections && collections.length > 0 && !selectedCollection) {
+      setSelectedCollection(collections[0].id);
     }
   }, [collections, selectedCollection]);
 
-  // Close dropdown if user clicks outside
+  // Close dropdown if clicking outside
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (
@@ -70,11 +67,13 @@ export default function SaveToCollectionModal({
 
   const handleCreateAndSave = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (newCollectionName.trim()) {
-      const newCollection = await createCollection(newCollectionName.trim());
-      if (newCollection) {
-        await handleSave(newCollection.id);
-      }
+    if (!newCollectionName.trim()) {
+      showToastWithMessage("Collection name cannot be empty.");
+      return;
+    }
+    const newCollection = await createCollection(newCollectionName.trim());
+    if (newCollection) {
+      await handleSave(newCollection.id);
     }
   };
 
@@ -96,6 +95,7 @@ export default function SaveToCollectionModal({
           <button
             onClick={onClose}
             className="absolute top-4 right-4 text-gray-400 hover:text-gray-600"
+            aria-label="Close modal"
           >
             <svg
               className="w-6 h-6"
@@ -108,15 +108,13 @@ export default function SaveToCollectionModal({
                 strokeLinejoin="round"
                 strokeWidth="2"
                 d="M6 18L18 6M6 6l12 12"
-              ></path>
+              />
             </svg>
           </button>
         </div>
 
         <div className="p-4 space-y-4">
-          {isLoading ? (
-            <LoadingSpinner />
-          ) : isCreating ? (
+          {isCreating ? (
             <form onSubmit={handleCreateAndSave}>
               <input
                 type="text"
@@ -144,63 +142,77 @@ export default function SaveToCollectionModal({
             </form>
           ) : (
             <>
-              {/* Custom Dropdown */}
-              <div ref={dropdownRef} className="relative">
-                <button
-                  onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-                  className="w-full flex items-center justify-between text-left p-3 bg-gray-50 border border-gray-200 rounded-lg"
-                >
-                  <span className="font-semibold text-[#3D5A6C]">
-                    {selectedCollection?.name || "Select a Collection"}
-                  </span>
-                  <svg
-                    className={`w-5 h-5 text-gray-400 transition-transform ${
-                      isDropdownOpen ? "rotate-180" : ""
-                    }`}
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
+              {collections?.length === 0 ? (
+                <p className="text-gray-600">
+                  No collections found. Create a new one below.
+                </p>
+              ) : (
+                <div ref={dropdownRef} className="relative">
+                  <button
+                    onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+                    className="w-full flex items-center justify-between text-left p-3 bg-gray-50 border border-gray-200 rounded-lg"
+                    role="combobox"
+                    aria-expanded={isDropdownOpen}
+                    aria-controls="collection-dropdown"
                   >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth="2"
-                      d="M19 9l-7 7-7-7"
-                    ></path>
-                  </svg>
-                </button>
-                {isDropdownOpen && (
-                  <div className="absolute top-full mt-2 w-full bg-white rounded-lg shadow-lg border z-10 max-h-48 overflow-y-auto">
-                    {collections.map((collection) => (
-                      <div
-                        key={collection.id}
-                        onClick={() => {
-                          setSelectedCollection(collection);
-                          setIsDropdownOpen(false);
-                        }}
-                        className="p-3 hover:bg-gray-100 cursor-pointer font-medium text-gray-700"
-                      >
-                        {collection.name}
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </div>
-
+                    <span className="font-semibold text-[#3D5A6C]">
+                      {selectedCollection
+                        ? collections?.find((c) => c.id === selectedCollection)
+                            ?.name
+                        : "Select a Collection"}
+                    </span>
+                    <svg
+                      className={`w-5 h-5 text-gray-400 transition-transform ${
+                        isDropdownOpen ? "rotate-180" : ""
+                      }`}
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth="2"
+                        d="M19 9l-7 7-7-7"
+                      />
+                    </svg>
+                  </button>
+                  {isDropdownOpen && (
+                    <div
+                      id="collection-dropdown"
+                      className="absolute top-full mt-2 w-full bg-white rounded-lg shadow-lg border z-10 max-h-48 overflow-y-auto"
+                    >
+                      {collections?.map((collection) => (
+                        <div
+                          key={collection.id}
+                          onClick={() => {
+                            setSelectedCollection(collection.id);
+                            setIsDropdownOpen(false);
+                          }}
+                          className="p-3 hover:bg-gray-100 cursor-pointer font-medium text-gray-700"
+                        >
+                          {collection.name}
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
               <button
                 onClick={() =>
-                  selectedCollection && handleSave(selectedCollection.id)
+                  selectedCollection && handleSave(selectedCollection)
                 }
                 disabled={!selectedCollection}
-                className="w-full bg-[#3D5A6C] text-white font-bold py-3 rounded-lg hover:bg-[#314A5A] transition disabled:opacity-50"
+                className="w-full bg-[#3D5A6C] text-white font-bold py-3 rounded-lg hover:bg-[#314A5A] transition disabled:opacity-50 disabled:cursor-not-allowed"
+                aria-label="Save to selected collection"
               >
                 Save
               </button>
-
               <div className="text-center">
                 <button
                   onClick={() => setIsCreating(true)}
                   className="font-semibold text-[#D98B99] hover:underline text-sm"
+                  aria-label="Create new collection"
                 >
                   Create New Collection
                 </button>

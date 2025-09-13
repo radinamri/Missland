@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useState, useMemo } from "react";
-import { useRouter } from "next/navigation";
 import { Post, PaginatedPostResponse } from "@/types";
 import api from "@/utils/api";
 import { useAuth } from "@/context/AuthContext";
@@ -12,10 +11,11 @@ import PostGrid from "@/components/PostGrid";
 import SignUpPopup from "@/components/SignUpPopup";
 import SearchInput from "@/components/SearchInput";
 import SaveToCollectionModal from "@/components/SaveToCollectionModal";
+import PostDetail from "@/components/PostDetail";
 
 export default function ExplorePage() {
   const [isLoading, setIsLoading] = useState(true);
-  const { user, trackPostClick, trackSearchQuery } = useAuth();
+  const { user, trackPostClick, trackSearchQuery, collections } = useAuth();
   const {
     searchTerm,
     setSearchTerm,
@@ -24,9 +24,9 @@ export default function ExplorePage() {
     activeCategory,
     setActiveCategory,
   } = useSearch();
-  const router = useRouter();
 
-  const { currentView, handlePostClick, initializeFeed } = useNavigation();
+  const { currentView, handlePostClick, handleGoBack, initializeFeed } =
+    useNavigation();
 
   const [showLoginModal, setShowLoginModal] = useState(false);
   const [postToSave, setPostToSave] = useState<Post | null>(null);
@@ -53,7 +53,7 @@ export default function ExplorePage() {
         initializeFeed({
           type: "explore",
           posts: response.data.results,
-          seed: response.data.seed,
+          seed: String(response.data.seed ?? ""),
         });
       } catch (error) {
         console.error("Failed to fetch posts:", error);
@@ -67,7 +67,6 @@ export default function ExplorePage() {
   const handleGridPostClick = async (post: Post) => {
     await trackPostClick(post.id);
     handlePostClick(post);
-    router.push(`/post/${post.id}`, { scroll: false });
   };
 
   const filteredPosts = useMemo(() => {
@@ -120,6 +119,8 @@ export default function ExplorePage() {
     setShowLoginModal(true);
   };
 
+  const isDetailView = currentView?.type === "detail";
+
   return (
     <>
       <LoginModal
@@ -156,17 +157,42 @@ export default function ExplorePage() {
           <div className="flex justify-center items-center min-h-[60vh]">
             <div className="w-16 h-16 border-4 border-dashed rounded-full animate-spin border-[#3D5A6C]"></div>
           </div>
-        ) : filteredPosts.length > 0 ? (
-          <PostGrid
-            posts={filteredPosts}
-            variant="explore"
-            onSave={openSaveModal}
-            onPostClick={handleGridPostClick}
-          />
         ) : (
-          <div className="text-center py-20">
-            <p className="text-lg text-gray-500">No posts found.</p>
-          </div>
+          <>
+            {isDetailView && currentView.parentPost && (
+              <PostDetail
+                post={currentView.parentPost}
+                morePosts={filteredPosts}
+                onMorePostClick={async (post) => {
+                  await trackPostClick(post.id);
+                  handlePostClick(post);
+                }}
+                onSave={openSaveModal}
+                onBack={handleGoBack}
+                onOpenLoginModal={() => setShowLoginModal(true)}
+              />
+            )}
+
+            {!isDetailView && filteredPosts.length > 0 ? (
+              <PostGrid
+                posts={filteredPosts}
+                variant="explore"
+                onSave={openSaveModal}
+                onPostClick={handleGridPostClick}
+                isSaved={(p) =>
+                  collections?.some((c) =>
+                    (c.posts || []).some((cp) => cp.id === p.id)
+                  ) ?? false
+                }
+              />
+            ) : null}
+
+            {filteredPosts.length === 0 && !isDetailView && (
+              <div className="text-center py-20">
+                <p className="text-lg text-gray-500">No posts found.</p>
+              </div>
+            )}
+          </>
         )}
       </main>
     </>

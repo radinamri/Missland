@@ -1,6 +1,14 @@
 "use client";
 
-import { createContext, useState, useContext, ReactNode } from "react";
+import {
+  createContext,
+  useState,
+  useContext,
+  ReactNode,
+  useRef,
+  useEffect,
+  useCallback,
+} from "react";
 import { Post, NavigationState, PaginatedPostResponse } from "@/types";
 import api from "@/utils/api";
 
@@ -18,16 +26,18 @@ const NavigationContext = createContext<NavigationContextType | undefined>(
 
 export const NavigationProvider = ({ children }: { children: ReactNode }) => {
   const [stack, setStack] = useState<NavigationState[]>([]);
+  const ignorePopRef = useRef(false);
 
   const currentView = stack.length > 0 ? stack[stack.length - 1] : null;
 
   const initializeFeed = (initialState: NavigationState) => {
-    setStack([initialState]);
+    if (stack.length === 0) {
+      setStack([initialState]);
+    }
   };
 
   const handlePostClick = async (post: Post) => {
     try {
-      // Fetch "more posts" for the post that was just clicked
       const response = await api.get<PaginatedPostResponse>(
         `/api/auth/posts/${post.id}/more/`
       );
@@ -36,22 +46,36 @@ export const NavigationProvider = ({ children }: { children: ReactNode }) => {
         type: "detail",
         parentPost: post,
         posts: response.data.results,
-        seed: response.data.seed,
+        seed: String(response.data.seed ?? ""),
       };
 
-      // Push the new view onto the stack
       setStack((prevStack) => [...prevStack, newView]);
+      window.history.pushState({}, "", `/post/${post.id}`);
     } catch (error) {
       console.error("Failed to fetch more posts:", error);
     }
   };
 
-  const handleGoBack = () => {
-    // Pop the last view from the stack, but never empty it completely
+  const handleGoBack = useCallback(() => {
     if (stack.length > 1) {
+      ignorePopRef.current = true;
+      window.history.back();
       setStack((prevStack) => prevStack.slice(0, -1));
     }
-  };
+  }, [stack]);
+
+  useEffect(() => {
+    const handlePopState = () => {
+      if (ignorePopRef.current) {
+        ignorePopRef.current = false;
+        return;
+      }
+      handleGoBack();
+    };
+
+    window.addEventListener("popstate", handlePopState);
+    return () => window.removeEventListener("popstate", handlePopState);
+  }, [handleGoBack]);
 
   const contextValue: NavigationContextType = {
     stack,

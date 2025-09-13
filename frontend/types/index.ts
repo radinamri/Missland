@@ -21,8 +21,6 @@ export interface AuthTokens {
 }
 
 export interface User {
-  // Define what user information you want to store
-  // e.g., from decoding the JWT
   id: number;
   email: string;
   username: string;
@@ -36,7 +34,7 @@ export interface Post {
   image_url: string;
   width: number;
   height: number;
-  tags: string[]; // An array of strings for our searchable tags
+  tags: string[];
   try_on_image_url: string;
 }
 
@@ -47,29 +45,27 @@ export interface TryOn {
 }
 
 export interface PaginatedPostResponse {
-  seed: number;
+  seed?: number | string;
   results: Post[];
 }
-
-export type NavigationState = {
-  // 'explore' for the main feed, 'detail' for a post view
-  type: "explore" | "detail";
-  // The posts to display in the grid (either the main feed or "more to explore")
-  posts: Post[];
-  // The seed used to generate this list of posts
-  seed: number;
-  // The parent post if we are in a detail view
-  parentPost?: Post;
-};
 
 export interface Collection {
   id: number;
   name: string;
-  posts_preview: string[];
-  post_count: number;
+  posts?: Post[];
+  posts_preview?: string[];
+  post_count?: number;
 }
+
 export interface CollectionDetail {
   id: number;
   name: string;
   posts: Post[];
+}
+
+export interface NavigationState {
+  type: "explore" | "detail";
+  posts: Post[];
+  seed: string;
+  parentPost?: Post;
 }

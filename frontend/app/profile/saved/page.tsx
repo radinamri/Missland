@@ -274,7 +274,7 @@ export default function SavedPostsPage() {
           onConfirm={handleDeleteConfirm}
           collectionToDelete={collectionToDelete}
         />
-        {collections.length > 0 ? (
+        {collections && collections.length > 0 ? (
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 xl:grid-cols-5 gap-4 md:gap-6">
             {collections.map((collection) => (
               <CollectionCard
