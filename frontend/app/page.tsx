@@ -12,6 +12,7 @@ import SignUpPopup from "@/components/SignUpPopup";
 import SearchInput from "@/components/SearchInput";
 import SaveToCollectionModal from "@/components/SaveToCollectionModal";
 import PostDetail from "@/components/PostDetail";
+import LoadingSpinner from "@/components/LoadingSpinner";
 
 export default function ExplorePage() {
   const [isLoading, setIsLoading] = useState(true);
@@ -154,9 +155,7 @@ export default function ExplorePage() {
         </div>
 
         {isLoading ? (
-          <div className="flex justify-center items-center min-h-[60vh]">
-            <div className="w-16 h-16 border-4 border-dashed rounded-full animate-spin border-[#3D5A6C]"></div>
-          </div>
+          <LoadingSpinner />
         ) : (
           <>
             {isDetailView && currentView.parentPost && (
