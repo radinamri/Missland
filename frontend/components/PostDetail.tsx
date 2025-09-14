@@ -23,6 +23,7 @@ export default function PostDetail({
   onMorePostClick,
   onSave,
   onBack,
+  onOpenLoginModal,
 }: PostDetailProps) {
   const { user, collections } = useAuth();
 
@@ -35,6 +36,11 @@ export default function PostDetail({
     );
   }, [collections, post, user]);
 
+  // Debugging logs
+  console.log("PostDetail props:", { post, morePosts });
+  console.log("Post saved status:", isSaved);
+  console.log("Collections:", collections);
+
   return (
     <>
       <SaveToCollectionModal
@@ -42,34 +48,34 @@ export default function PostDetail({
         onClose={() => setShowCollectionsModal(false)}
         postToSave={post}
       />
-      <header className="md:hidden z-10">
-        <button
-          onClick={onBack}
-          className="inline-flex items-center text-[#D98B99] hover:text-[#C47C8A] font-semibold transition-colors"
-          aria-label="Go back"
-        >
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            fill="none"
-            viewBox="0 0 24 24"
-            strokeWidth={1.5}
-            stroke="currentColor"
-            className="w-6 h-6"
+      <div className="min-h-screen bg-gray-50 px-4 md:px-8 pt-6 pb-8 md:pt-12">
+        <header className="md:hidden mb-6">
+          <button
+            onClick={onBack}
+            className="inline-flex items-center text-[#D98B99] hover:text-[#C47C8A] font-semibold transition-colors"
+            aria-label="Go back"
           >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              d="M15.75 19.5 8.25 12l7.5-7.5"
-            />
-          </svg>
-          Back to explore
-        </button>
-      </header>
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              fill="none"
+              viewBox="0 0 24 24"
+              strokeWidth={1.5}
+              stroke="currentColor"
+              className="w-6 h-6"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d="M15.75 19.5 8.25 12l7.5-7.5"
+              />
+            </svg>
+            Back to explore
+          </button>
+        </header>
 
-      <div className="w-full">
-        <div className="max-w-4xl mx-auto bg-white rounded-3xl shadow-xl overflow-hidden">
-          <div className="grid grid-cols-1 md:grid-cols-2">
-            <div className="relative w-full min-h-[400px] md:min-h-0 md:aspect-[4/5]">
+        <div className="w-full max-w-4xl mx-auto bg-white rounded-3xl shadow-xl overflow-hidden">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-0">
+            <div className="relative w-full aspect-[4/5]">
               <Image
                 src={post.image_url}
                 alt={post.title}
@@ -88,7 +94,13 @@ export default function PostDetail({
                   Try On
                 </Link>
                 <button
-                  onClick={() => onSave(post)}
+                  onClick={() => {
+                    if (!user && onOpenLoginModal) {
+                      onOpenLoginModal();
+                    } else {
+                      setShowCollectionsModal(true);
+                    }
+                  }}
                   className={`${
                     isSaved
                       ? "bg-[#3D5A6C] text-white"
@@ -113,34 +125,40 @@ export default function PostDetail({
                   </div>
                 </div>
                 <div className="flex flex-wrap gap-2 pt-4">
-                  {post.tags.map((tag) => (
+                  {post.tags?.map((tag) => (
                     <span
                       key={tag}
                       className="bg-gray-100 text-gray-600 text-sm font-medium px-3 py-1 rounded-md"
                     >
                       {tag}
                     </span>
-                  ))}
+                  )) ?? (
+                    <p className="text-gray-500 text-sm">No tags available</p>
+                  )}
                 </div>
               </div>
             </div>
           </div>
         </div>
-        <div className="mt-12 md:px-8">
+        <div className="mt-12">
           <h2 className="text-2xl font-bold text-gray-800 mb-6 text-center">
             More to explore
           </h2>
-          <PostGrid
-            posts={morePosts}
-            variant="explore"
-            onPostClick={onMorePostClick}
-            onSave={onSave}
-            isSaved={(p) =>
-              collections?.some((c) =>
-                (c.posts || []).some((cp) => cp.id === p.id)
-              ) ?? false
-            }
-          />
+          {morePosts.length > 0 ? (
+            <PostGrid
+              posts={morePosts}
+              variant="explore"
+              onPostClick={onMorePostClick}
+              onSave={onSave}
+              isSaved={(p) =>
+                collections?.some((c) =>
+                  (c.posts || []).some((cp) => cp.id === p.id)
+                ) ?? false
+              }
+            />
+          ) : (
+            <p className="text-center text-gray-500">No more posts available</p>
+          )}
         </div>
       </div>
     </>

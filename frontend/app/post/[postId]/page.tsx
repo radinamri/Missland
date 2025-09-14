@@ -1,36 +1,59 @@
+"use client";
+
+import { useEffect, useState } from "react";
+import { useParams } from "next/navigation";
 import PostDetail from "@/components/PostDetail";
 import { Post, PaginatedPostResponse } from "@/types";
 import api from "@/utils/api";
 import { notFound } from "next/navigation";
+import LoadingSpinner from "@/components/LoadingSpinner";
 
-async function getPostData(postId: string) {
-  try {
-    const postPromise = api.get<Post>(`/api/auth/posts/${postId}/`);
-    const morePostsPromise = api.get<PaginatedPostResponse>(
-      `/api/auth/posts/${postId}/more/`
-    );
+export default function PostPage() {
+  const params = useParams();
+  const postId = params.postId as string;
+  const [data, setData] = useState<{
+    post: Post;
+    morePosts: Post[];
+  } | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
 
-    const [postResponse, morePostsResponse] = await Promise.all([
-      postPromise,
-      morePostsPromise,
-    ]);
+  useEffect(() => {
+    async function getPostData() {
+      try {
+        setIsLoading(true);
+        const postPromise = api.get<Post>(`/api/auth/posts/${postId}/`);
+        const morePostsPromise = api.get<PaginatedPostResponse>(
+          `/api/auth/posts/${postId}/more/`
+        );
 
-    return {
-      post: postResponse.data,
-      morePosts: morePostsResponse.data.results,
-    };
-  } catch (error) {
-    console.error("Failed to fetch post data for full page", error);
-    return null;
+        const [postResponse, morePostsResponse] = await Promise.all([
+          postPromise,
+          morePostsPromise,
+        ]);
+
+        console.log("Post data:", postResponse.data);
+        console.log("More posts data:", morePostsResponse.data.results);
+
+        setData({
+          post: postResponse.data,
+          morePosts: morePostsResponse.data.results,
+        });
+      } catch (error) {
+        console.error("Failed to fetch post data for full page", error);
+        setData(null);
+      } finally {
+        setIsLoading(false);
+      }
+    }
+
+    if (postId) {
+      getPostData();
+    }
+  }, [postId]);
+
+  if (isLoading) {
+    return <LoadingSpinner />;
   }
-}
-
-export default async function PostPage({
-  params,
-}: {
-  params: { postId: string };
-}) {
-  const data = await getPostData(params.postId);
 
   if (!data) {
     notFound();

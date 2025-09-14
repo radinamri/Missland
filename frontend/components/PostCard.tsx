@@ -61,6 +61,28 @@ export default function PostCard({
     setIsMenuOpen(false);
   };
 
+  const handleShareClick = async (e: React.MouseEvent) => {
+    e.stopPropagation();
+    const shareUrl = `${window.location.origin}/post/${post.id}`;
+    const shareData = {
+      title: `Check out this style: ${post.title}`,
+      text: `I found "${post.title}" on Missland! Check it out.`,
+      url: shareUrl,
+    };
+    try {
+      if (navigator.share) {
+        await navigator.share(shareData);
+      } else {
+        await navigator.clipboard.writeText(shareUrl);
+        alert("Link copied to clipboard!");
+      }
+    } catch (error) {
+      console.error("Failed to share:", error);
+      alert("Could not share at this time.");
+    }
+    setIsMenuOpen(false);
+  };
+
   const toggleMenu = (e: React.MouseEvent) => {
     e.stopPropagation();
     setIsMenuOpen(!isMenuOpen);
@@ -116,7 +138,7 @@ export default function PostCard({
               <div className="absolute right-0 mt-2 w-32 bg-white rounded-lg shadow-lg z-10">
                 <button
                   onClick={handleDownloadClick}
-                  className="flex items-center w-full px-4 py-2 text-sm text-gray-700 rounded-lg hover:bg-gray-100"
+                  className="flex items-center w-full px-4 py-2 text-sm text-gray-700 rounded-t-lg hover:bg-gray-100"
                 >
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
@@ -132,6 +154,22 @@ export default function PostCard({
                     />
                   </svg>
                   Download
+                </button>
+                <button
+                  onClick={handleShareClick}
+                  className="flex items-center w-full px-4 py-2 text-sm text-gray-700 rounded-b-lg hover:bg-gray-100"
+                >
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="16"
+                    height="16"
+                    fill="currentColor"
+                    className="bi bi-share mr-2"
+                    viewBox="0 0 16 16"
+                  >
+                    <path d="M13.5 1a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3M11 2.5a2.5 2.5 0 1 1 .603 1.628l-6.718 3.12a2.5 2.5 0 0 1 0 1.504l6.718 3.12a2.5 2.5 0 1 1-.488.876l-6.718-3.12a2.5 2.5 0 1 1 0-3.256l6.718-3.12A2.5 2.5 0 0 1 11 2.5m-8.5 4a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3m11 5.5a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3" />
+                  </svg>
+                  Share
                 </button>
               </div>
             )}

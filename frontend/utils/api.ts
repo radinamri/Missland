@@ -8,11 +8,13 @@ const api = axios.create({
 // Request Interceptor: Adds the access token to every outgoing request
 api.interceptors.request.use(
   (config) => {
-    const storedTokens = localStorage.getItem("authTokens");
-    if (storedTokens) {
-      const tokens: AuthTokens = JSON.parse(storedTokens);
-      if (tokens.access) {
-        config.headers.Authorization = `Bearer ${tokens.access}`;
+    if (typeof window !== "undefined") {
+      const storedTokens = localStorage.getItem("authTokens");
+      if (storedTokens) {
+        const tokens: AuthTokens = JSON.parse(storedTokens);
+        if (tokens.access) {
+          config.headers.Authorization = `Bearer ${tokens.access}`;
+        }
       }
     }
     return config;
@@ -32,33 +34,38 @@ api.interceptors.response.use(
     if (error.response?.status === 401 && !originalRequest._retry) {
       originalRequest._retry = true; // Mark it as a retry to prevent infinite loops
 
-      const storedTokens = localStorage.getItem("authTokens");
-      if (storedTokens) {
-        const tokens: AuthTokens = JSON.parse(storedTokens);
+      if (typeof window !== "undefined") {
+        const storedTokens = localStorage.getItem("authTokens");
+        if (storedTokens) {
+          const tokens: AuthTokens = JSON.parse(storedTokens);
 
-        try {
-          // Attempt to get a new access token using the refresh token
-          const response = await axios.post<AuthTokens>(
-            `${process.env.NEXT_PUBLIC_API_URL}/api/token/refresh/`,
-            {
-              refresh: tokens.refresh,
-            }
-          );
+          try {
+            // Attempt to get a new access token using the refresh token
+            const response = await axios.post<AuthTokens>(
+              `${process.env.NEXT_PUBLIC_API_URL}/api/token/refresh/`,
+              {
+                refresh: tokens.refresh,
+              }
+            );
 
-          // If successful, update the tokens in localStorage
-          const newTokens = response.data;
-          localStorage.setItem("authTokens", JSON.stringify(newTokens));
+            // If successful, update the tokens in localStorage
+            const newTokens = response.data;
+            localStorage.setItem("authTokens", JSON.stringify(newTokens));
 
-          // Update the authorization header for the original request and retry it
-          originalRequest.headers.Authorization = `Bearer ${newTokens.access}`;
-          return api(originalRequest);
-        } catch (refreshError) {
-          // If the refresh token is also invalid, log the user out
-          console.error("Refresh token is invalid, logging out.", refreshError);
-          localStorage.removeItem("authTokens");
-          // Redirect to login page
-          window.location.href = "/login";
-          return Promise.reject(refreshError);
+            // Update the authorization header for the original request and retry it
+            originalRequest.headers.Authorization = `Bearer ${newTokens.access}`;
+            return api(originalRequest);
+          } catch (refreshError) {
+            // If the refresh token is also invalid, log the user out
+            console.error(
+              "Refresh token is invalid, logging out.",
+              refreshError
+            );
+            localStorage.removeItem("authTokens");
+            // Redirect to login page
+            window.location.href = "/login";
+            return Promise.reject(refreshError);
+          }
         }
       }
     }
