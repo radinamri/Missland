@@ -298,13 +298,13 @@ export default function AccountSettingsPage() {
                   type={showOldPass ? "text" : "password"}
                   value={oldPassword}
                   onChange={(e) => setOldPassword(e.target.value)}
-                  className="w-full px-4 py-3 bg-white border border-gray-300 rounded-lg pr-10"
+                  className="w-full px-4 py-3 bg-white border border-gray-300 rounded-lg pr-10 placeholder:text-gray-400 text-gray-500"
                   required
                 />
                 <button
                   type="button"
                   onClick={() => setShowOldPass(!showOldPass)}
-                  className="absolute inset-y-0 right-0 flex items-center px-3 text-gray-500"
+                  className="absolute inset-y-0 right-0 flex items-center px-3"
                 >
                   {showOldPass ? <EyeSlashIcon /> : <EyeIcon />}
                 </button>
@@ -323,13 +323,13 @@ export default function AccountSettingsPage() {
                   type={showNewPass ? "text" : "password"}
                   value={newPassword1}
                   onChange={(e) => setNewPassword1(e.target.value)}
-                  className="w-full px-4 py-3 bg-white border border-gray-300 rounded-lg pr-10"
+                  className="w-full px-4 py-3 bg-white border border-gray-300 rounded-lg pr-10 placeholder:text-gray-400 text-gray-500"
                   required
                 />
                 <button
                   type="button"
                   onClick={() => setShowNewPass(!showNewPass)}
-                  className="absolute inset-y-0 right-0 flex items-center px-3 text-gray-500"
+                  className="absolute inset-y-0 right-0 flex items-center px-3"
                 >
                   {showOldPass ? <EyeSlashIcon /> : <EyeIcon />}
                 </button>
@@ -347,7 +347,7 @@ export default function AccountSettingsPage() {
                 type="password"
                 value={newPassword2}
                 onChange={(e) => setNewPassword2(e.target.value)}
-                className="w-full px-4 py-3 bg-white border border-gray-300 rounded-lg"
+                className="w-full px-4 py-3 bg-white border border-gray-300 rounded-lg placeholder:text-gray-400 text-gray-500"
                 required
               />
             </div>
