@@ -3,6 +3,7 @@
 import { Post } from "@/types";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
+import { useState } from "react";
 
 interface PostCardProps {
   post: Post;
@@ -22,6 +23,7 @@ export default function PostCard({
   isSaved,
 }: PostCardProps) {
   const router = useRouter();
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   const handleCardClick = async () => {
     if (onPostClick) {
@@ -46,6 +48,22 @@ export default function PostCard({
     if (onRemove) {
       onRemove(post.id);
     }
+  };
+
+  const handleDownloadClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    const link = document.createElement("a");
+    link.href = post.image_url;
+    link.download = `${post.title}.png`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    setIsMenuOpen(false);
+  };
+
+  const toggleMenu = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setIsMenuOpen(!isMenuOpen);
   };
 
   return (
@@ -75,9 +93,50 @@ export default function PostCard({
           }
         `}
       >
-        <p className="text-white text-sm font-semibold drop-shadow-md">
-          {post.title}
-        </p>
+        <div className="flex justify-between items-start">
+          <p className="text-white text-sm font-semibold drop-shadow-md">
+            {post.title}
+          </p>
+          <div className="relative">
+            <button
+              onClick={toggleMenu}
+              className="bg-black/30 text-white w-8 h-8 rounded-full flex items-center justify-center shadow-lg hover:bg-black/50 transition"
+              aria-label="Menu"
+            >
+              <svg
+                className="w-5 h-5"
+                fill="currentColor"
+                viewBox="0 0 20 20"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path d="M6 10a2 2 0 11-4 0 2 2 0 014 0zM12 10a2 2 0 11-4 0 2 2 0 014 0zM18 10a2 2 0 11-4 0 2 2 0 014 0z" />
+              </svg>
+            </button>
+            {isMenuOpen && (
+              <div className="absolute right-0 mt-2 w-32 bg-white rounded-lg shadow-lg z-10">
+                <button
+                  onClick={handleDownloadClick}
+                  className="flex items-center w-full px-4 py-2 text-sm text-gray-700 rounded-lg hover:bg-gray-100"
+                >
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="16"
+                    height="16"
+                    fill="currentColor"
+                    className="bi bi-arrow-down mr-2"
+                    viewBox="0 0 16 16"
+                  >
+                    <path
+                      fillRule="evenodd"
+                      d="M8 1a.5.5 0 0 1 .5.5v11.793l3.146-3.147a.5.5 0 0 1 .708.708l-4 4a.5.5 0 0 1-.708 0l-4-4a.5.5 0 0 1 .708-.708L7.5 13.293V1.5A.5.5 0 0 1 8 1"
+                    />
+                  </svg>
+                  Download
+                </button>
+              </div>
+            )}
+          </div>
+        </div>
 
         <div className="flex items-center justify-between">
           {variant === "explore" && (
