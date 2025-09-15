@@ -65,11 +65,11 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
   const [tokens, setTokens] = useState<AuthTokens | null>(null);
   const [loading, setLoading] = useState(true);
-  const router = useRouter();
   const [interactionCount, setInteractionCount] = useState(0);
   const [toastMessage, setToastMessage] = useState("");
   const [showToast, setShowToast] = useState(false);
   const [collections, setCollections] = useState<Collection[] | null>(null);
+  const router = useRouter();
 
   const incrementInteraction = () => setInteractionCount((prev) => prev + 1);
 
@@ -201,7 +201,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const trackSearchQuery = async (query: string) => {
     if (!user || !query.trim()) return;
     try {
-      await api.post("/api/auth/track/search/", { query });
+      const response = await api.post("/api/auth/track/search/", { query });
       incrementInteraction();
     } catch (error) {
       console.error("Failed to track search query:", error);
@@ -258,7 +258,11 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   const updateUsername = async (newUsername: string) => {
     try {
-      await api.patch("/api/auth/profile/", { username: newUsername });
+      const formData = new FormData();
+      formData.append("username", newUsername);
+      await api.patch("/api/auth/profile/", formData, {
+        headers: { "Content-Type": "multipart/form-data" },
+      });
       await fetchUserProfile();
       showToastWithMessage("Username updated successfully!");
     } catch (error) {
