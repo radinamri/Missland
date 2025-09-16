@@ -1,4 +1,3 @@
-// app/share/post/[postId]/page.tsx
 "use client";
 
 import { useEffect, useState } from "react";
@@ -49,49 +48,76 @@ export default function SharePage() {
   }
 
   return (
-    <div className="bg-gray-50 min-h-screen flex flex-col items-center justify-center p-4 text-center">
-      <div className="bg-white p-6 rounded-2xl shadow-xl max-w-sm w-full">
-        <h1 className="text-2xl font-bold text-gray-800 mb-4">{post.title}</h1>
-
-        <div className="rounded-xl overflow-hidden mb-6 aspect-w-1 aspect-h-1">
-          <Image
-            src={post.try_on_image_url}
-            alt={`Try-on result for ${post.title}`}
-            width={500}
-            height={500}
-            className="w-full h-full object-cover"
-            priority
-          />
-        </div>
-
-        <div className="flex flex-col space-y-3">
-          <Link
-            href={`/try-on/${post.id}`}
-            className="w-full bg-pink-500 text-white font-bold py-3 rounded-lg hover:bg-pink-600 transition"
-          >
-            Try On Yourself
-          </Link>
-          {user ? (
-            <button
-              onClick={handleSaveToCollection}
-              className="w-full bg-blue-500 text-white font-bold py-3 rounded-lg hover:bg-blue-600 transition"
-            >
-              Save to Collection
-            </button>
-          ) : (
-            <Link
-              href="/login"
-              className="w-full bg-gray-800 text-white font-bold py-3 rounded-lg hover:bg-gray-900 transition"
-            >
-              Login or Sign Up
-            </Link>
-          )}
-          <Link
-            href="/"
-            className="w-full bg-gray-100 text-gray-700 font-bold py-3 rounded-lg hover:bg-gray-200 transition"
-          >
-            Explore More
-          </Link>
+    <div className="min-h-screen bg-gray-50 px-4 md:px-8 pt-6 pb-8 md:pt-12">
+      <div className="w-full max-w-4xl mx-auto bg-white rounded-3xl shadow-xl overflow-hidden">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-0">
+          <div className="relative w-full aspect-[4/5]">
+            <Image
+              src={post.try_on_image_url}
+              alt={`Try-on result for ${post.title}`}
+              fill
+              style={{ objectFit: "cover" }}
+              sizes="(max-width: 768px) 100vw, 50vw"
+              priority
+            />
+          </div>
+          <div className="flex flex-col p-6 md:p-8">
+            <div className="space-y-4 flex-grow">
+              <h1 className="text-3xl md:text-4xl font-bold text-[#3D5A6C] leading-tight">
+                {post.title}
+              </h1>
+              <div className="flex items-center space-x-3 pt-2">
+                <div className="w-10 h-10 bg-[#A4BBD0] rounded-full flex items-center justify-center text-white font-bold">
+                  M
+                </div>
+                <div>
+                  <p className="font-semibold text-[#3D5A6C]">Missland</p>
+                  <p className="text-sm text-gray-500">Curated Style</p>
+                </div>
+              </div>
+              <div className="flex flex-wrap gap-2 pt-4">
+                {post.tags?.map((tag) => (
+                  <span
+                    key={tag}
+                    className="bg-gray-100 text-gray-600 text-sm font-medium px-3 py-1 rounded-md"
+                  >
+                    {tag}
+                  </span>
+                )) ?? (
+                  <p className="text-gray-500 text-sm">No tags available</p>
+                )}
+              </div>
+            </div>
+            <div className="flex flex-col items-center justify-center space-y-2 mt-16">
+              <Link
+                href={`/try-on/${post.id}`}
+                className="w-full text-center bg-[#3D5A6C] text-white font-bold py-3 px-6 rounded-xl hover:bg-[#314A5A] transition"
+              >
+                Try On Yourself
+              </Link>
+              {user ? (
+                <button
+                  onClick={handleSaveToCollection}
+                  className="w-full text-center bg-[#D98B99] text-white font-bold py-3 px-6 rounded-xl hover:opacity-90 transition"
+                >
+                  Save to Collection
+                </button>
+              ) : (
+                <Link
+                  href="/login"
+                  className="w-full text-center bg-[#D98B99] text-white font-bold py-3 px-6 rounded-xl hover:opacity-90 transition"
+                >
+                  Login or Sign Up
+                </Link>
+              )}
+              <Link
+                href="/"
+                className="w-full text-center bg-[#E7E7E7] text-[#3D5A6C] font-bold py-3 px-6 rounded-xl hover:bg-[#dcdcdc] transition"
+              >
+                Explore More
+              </Link>
+            </div>
+          </div>
         </div>
       </div>
     </div>
