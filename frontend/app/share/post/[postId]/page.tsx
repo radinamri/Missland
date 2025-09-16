@@ -1,31 +1,51 @@
+// app/share/post/[postId]/page.tsx
+"use client";
+
+import { useEffect, useState } from "react";
+import { useParams, useRouter } from "next/navigation";
 import { Post } from "@/types";
 import Image from "next/image";
 import Link from "next/link";
-import { notFound } from "next/navigation";
+import { useAuth } from "@/context/AuthContext";
+import api from "@/utils/api";
+import LoadingSpinner from "@/components/LoadingSpinner";
 
-// Fetch data on the server
-async function getPost(postId: string): Promise<Post | null> {
-  try {
-    const res = await fetch(
-      `${process.env.NEXT_PUBLIC_API_URL}/api/public/posts/${postId}/`
-    );
-    if (!res.ok) return null;
-    return res.json();
-  } catch (error) {
-    console.error(error);
-    return null;
-  }
-}
+export default function SharePage() {
+  const params = useParams();
+  const router = useRouter();
+  const postId = params.postId as string;
+  const { user, managePostInCollection, showToastWithMessage } = useAuth();
+  const [post, setPost] = useState<Post | null>(null);
 
-export default async function SharePage({
-  params,
-}: {
-  params: { postId: string };
-}) {
-  const post = await getPost(params.postId);
+  useEffect(() => {
+    if (postId) {
+      // Fetch post data
+      api
+        .get<Post>(`/api/public/posts/${postId}/`)
+        .then((response) => setPost(response.data))
+        .catch(() => router.push("/")); // Redirect home if post not found
+    }
+  }, [postId, router]);
+
+  const handleSaveToCollection = async () => {
+    if (!user || !post) {
+      showToastWithMessage("Please log in to save to a collection.");
+      return;
+    }
+    try {
+      // Assuming collection ID 1 as default; adjust based on your app's logic
+      const response = await managePostInCollection(1, post.id);
+      if (response) {
+        showToastWithMessage(response);
+      }
+    } catch (error) {
+      console.error("Failed to save to collection:", error);
+      showToastWithMessage("Failed to save to collection.");
+    }
+  };
 
   if (!post) {
-    notFound();
+    return <LoadingSpinner />;
   }
 
   return (
@@ -40,6 +60,7 @@ export default async function SharePage({
             width={500}
             height={500}
             className="w-full h-full object-cover"
+            priority
           />
         </div>
 
@@ -50,12 +71,21 @@ export default async function SharePage({
           >
             Try On Yourself
           </Link>
-          <Link
-            href="/login"
-            className="w-full bg-gray-800 text-white font-bold py-3 rounded-lg hover:bg-gray-900 transition"
-          >
-            Login or Sign Up
-          </Link>
+          {user ? (
+            <button
+              onClick={handleSaveToCollection}
+              className="w-full bg-blue-500 text-white font-bold py-3 rounded-lg hover:bg-blue-600 transition"
+            >
+              Save to Collection
+            </button>
+          ) : (
+            <Link
+              href="/login"
+              className="w-full bg-gray-800 text-white font-bold py-3 rounded-lg hover:bg-gray-900 transition"
+            >
+              Login or Sign Up
+            </Link>
+          )}
           <Link
             href="/"
             className="w-full bg-gray-100 text-gray-700 font-bold py-3 rounded-lg hover:bg-gray-200 transition"
