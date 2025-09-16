@@ -82,6 +82,10 @@ export const NavigationProvider = ({ children }: { children: ReactNode }) => {
     return () => window.removeEventListener("popstate", handlePopState);
   }, []);
 
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }, [stack]);
+
   const contextValue: NavigationContextType = {
     stack,
     currentView,
