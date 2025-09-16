@@ -65,6 +65,27 @@ export default function ExplorePage() {
     fetchInitialPosts();
   }, [user, initializeFeed, currentView, setAllCategories]);
 
+  useEffect(() => {
+    if (
+      user &&
+      currentView?.posts &&
+      currentView.posts.length > 0 &&
+      !isLoading
+    ) {
+      const pendingIdStr = localStorage.getItem("pendingSavePostId");
+      if (pendingIdStr) {
+        const postId = parseInt(pendingIdStr, 10);
+        const post = currentView.posts.find((p) => p.id === postId);
+        if (post) {
+          setPostToSave(post);
+          setShowCollectionsModal(true);
+          trackPostClick(post.id).catch(console.error);
+        }
+        localStorage.removeItem("pendingSavePostId");
+      }
+    }
+  }, [user, currentView, isLoading, trackPostClick]);
+
   const handleGridPostClick = async (post: Post) => {
     await trackPostClick(post.id);
     handlePostClick(post);
@@ -103,6 +124,7 @@ export default function ExplorePage() {
 
   const openSaveModal = (post: Post) => {
     if (!user) {
+      localStorage.setItem("pendingSavePostId", post.id.toString());
       setShowLoginModal(true);
     } else {
       setPostToSave(post);
