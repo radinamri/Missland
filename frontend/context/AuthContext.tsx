@@ -223,6 +223,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     setUser(null);
     setCollections(null);
     localStorage.removeItem("authTokens");
+    localStorage.removeItem("pendingSavePostId");
     router.push("/login");
   }, [router]);
 
@@ -410,6 +411,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       setUser(null);
       setCollections(null);
       localStorage.clear();
+      localStorage.removeItem("pendingSavePostId");
       router.push("/");
       return true;
     } catch (error) {

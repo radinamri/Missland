@@ -16,7 +16,13 @@ import LoadingSpinner from "@/components/LoadingSpinner";
 
 export default function ExplorePage() {
   const [isLoading, setIsLoading] = useState(true);
-  const { user, trackPostClick, trackSearchQuery, collections } = useAuth();
+  const {
+    user,
+    trackPostClick,
+    trackSearchQuery,
+    collections,
+    showToastWithMessage,
+  } = useAuth();
   const {
     searchTerm,
     setSearchTerm,
@@ -68,9 +74,9 @@ export default function ExplorePage() {
   useEffect(() => {
     if (
       user &&
+      !isLoading &&
       currentView?.posts &&
-      currentView.posts.length > 0 &&
-      !isLoading
+      currentView.posts.length > 0
     ) {
       const pendingIdStr = localStorage.getItem("pendingSavePostId");
       if (pendingIdStr) {
@@ -80,11 +86,16 @@ export default function ExplorePage() {
           setPostToSave(post);
           setShowCollectionsModal(true);
           trackPostClick(post.id).catch(console.error);
+          showToastWithMessage("Now saving the post to your collection!");
+        } else {
+          showToastWithMessage(
+            "Post not available right now. Please try again."
+          );
         }
         localStorage.removeItem("pendingSavePostId");
       }
     }
-  }, [user, currentView, isLoading, trackPostClick]);
+  }, [user, currentView, isLoading, trackPostClick, showToastWithMessage]);
 
   const handleGridPostClick = async (post: Post) => {
     await trackPostClick(post.id);
@@ -126,6 +137,7 @@ export default function ExplorePage() {
     if (!user) {
       localStorage.setItem("pendingSavePostId", post.id.toString());
       setShowLoginModal(true);
+      showToastWithMessage("Please log in to save this post.");
     } else {
       setPostToSave(post);
       setShowCollectionsModal(true);
