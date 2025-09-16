@@ -40,7 +40,7 @@ function CollectionCard({
         className="aspect-square block rounded-xl shadow-sm hover:shadow-xl overflow-hidden transition-all duration-300 hover:scale-105 bg-gray-200"
       >
         <div className="relative w-full h-full">
-          {/* --- NEW Collage Background --- */}
+          {/* --- Collage Background --- */}
           {collection.posts_preview && collection.posts_preview.length > 0 ? (
             <div className="w-full h-full grid grid-cols-2 grid-rows-2">
               {collection.posts_preview.map((imageUrl, index) => (
@@ -50,7 +50,7 @@ function CollectionCard({
                     alt={`${collection.name} preview ${index + 1}`}
                     fill
                     style={{ objectFit: "cover" }}
-                    className="filter blur-sm scale-110"
+                    className="scale-100"
                   />
                 </div>
               ))}
