@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef } from "react";
 import { Post } from "@/types";
 import { useAuth } from "@/context/AuthContext";
+import Image from "next/image";
 
 export default function SaveToCollectionModal({
   isOpen,
@@ -189,9 +190,43 @@ export default function SaveToCollectionModal({
                             setSelectedCollection(collection.id);
                             setIsDropdownOpen(false);
                           }}
-                          className="p-3 hover:bg-gray-100 cursor-pointer font-medium text-gray-700"
+                          className="p-3 hover:bg-gray-100 cursor-pointer flex items-center space-x-3"
                         >
-                          {collection.name}
+                          <div className="w-12 h-12 rounded-md overflow-hidden bg-gray-200 flex-shrink-0">
+                            {collection.posts_preview &&
+                            collection.posts_preview.length > 0 ? (
+                              <div className="w-full h-full grid grid-cols-2 grid-rows-2">
+                                {collection.posts_preview.map(
+                                  (imageUrl, index) => (
+                                    <div
+                                      key={index}
+                                      className="relative w-full h-full"
+                                    >
+                                      <Image
+                                        src={imageUrl}
+                                        alt={`${collection.name} preview ${
+                                          index + 1
+                                        }`}
+                                        fill
+                                        style={{ objectFit: "cover" }}
+                                        className="scale-100"
+                                      />
+                                    </div>
+                                  )
+                                )}
+                              </div>
+                            ) : (
+                              <div className="w-full h-full bg-amber-100"></div>
+                            )}
+                          </div>
+                          <div className="flex-1">
+                            <div className="font-medium text-gray-700">
+                              {collection.name}
+                            </div>
+                            <div className="text-xs text-gray-500">
+                              {collection.post_count} posts
+                            </div>
+                          </div>
                         </div>
                       ))}
                     </div>
