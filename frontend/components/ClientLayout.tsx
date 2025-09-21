@@ -1,4 +1,3 @@
-// app/components/ClientLayout.tsx
 "use client";
 
 import { useAuth } from "@/context/AuthContext";
