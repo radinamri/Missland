@@ -49,7 +49,7 @@ export default function PostGrid({
         }
         @media (min-width: 1024px) {
           .masonry-grid {
-            column-count: 4;
+            column-count: 5;
           }
         }
         .masonry-item {
