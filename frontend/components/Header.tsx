@@ -27,8 +27,6 @@ export default function Header() {
   const navLinks = [
     { href: "/", label: "Explore" },
     { href: "/try-on", label: "Try-On" },
-    { href: "/articles", label: "Articles" },
-    { href: "/support", label: "About" },
   ];
 
   const handleSuggestionClick = (category: string | null) => {
@@ -39,14 +37,14 @@ export default function Header() {
   return (
     <>
       <header className="bg-white shadow-sm sticky top-0 z-30 h-20 flex items-center">
-        <div className="container mx-auto flex items-center justify-between">
+        <div className="flex items-center justify-between w-full md:px-8 px-4">
           {/* Left Side: Logo and Desktop Nav */}
-          <div className="flex items-center space-x-8">
+          <div className="flex items-center space-x-4">
             <Link href="/" className="flex items-center space-x-2">
               <Icon className="w-10 h-10" />
               <span className="text-xl font-bold text-[#3D5A6C]">Missland</span>
             </Link>
-            <nav className="hidden md:flex items-center space-x-8">
+            <nav className="hidden md:flex items-center space-x-4">
               {navLinks.map((link) => {
                 const isActive =
                   link.href === "/"
@@ -71,7 +69,7 @@ export default function Header() {
 
           {/* Center: Search Input (Desktop Only on Homepage) */}
           {pathname === "/" && (
-            <div className="hidden md:block flex-grow mx-8 lg:mx-16">
+            <div className="hidden md:block flex-grow mx-8 lg:mx-4">
               <SearchInput
                 placeholder="Search nails, styles, colors..."
                 value={searchTerm}
@@ -84,8 +82,8 @@ export default function Header() {
             </div>
           )}
 
-          {/* Right Side: Auth Buttons (Desktop) */}
-          <div className="hidden md:flex items-center space-x-2">
+          {/* Right Side: Auth Buttons and Dropdown (Desktop) */}
+          <div className="hidden md:flex items-center space-x-2 relative">
             {user ? (
               <Link
                 href="/profile"
@@ -109,6 +107,37 @@ export default function Header() {
                 </Link>
               </>
             )}
+            <div className="relative group">
+              <button className="text-gray-500 hover:text-gray-700 mt-2 focus:outline-none">
+                <svg
+                  className="w-5 h-5"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth="2"
+                    d="M19 9l-7 7-7-7"
+                  />
+                </svg>
+              </button>
+              <div className="absolute right-0 mt-2 w-48 bg-white border border-gray-200 rounded-xl shadow-lg opacity-0 group-hover:opacity-100 transition-all duration-300 ease-in-out transform group-hover:translate-y-2 -translate-y-1">
+                <Link
+                  href="/articles"
+                  className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded-t-xl transition-colors"
+                >
+                  Articles
+                </Link>
+                <Link
+                  href="/support"
+                  className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded-b-xl transition-colors"
+                >
+                  About
+                </Link>
+              </div>
+            </div>
           </div>
 
           {/* Mobile Menu Button */}

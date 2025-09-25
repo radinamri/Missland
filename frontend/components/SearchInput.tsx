@@ -89,7 +89,7 @@ export default function SearchInput({
             onChange={onChange}
             onKeyDown={handleKeyDown}
             onFocus={() => setIsFocused(true)}
-            className="w-full placeholder:text-gray-400 text-[#3D5A6C] bg-white border border-gray-300 rounded-2xl py-3 pl-12 pr-10 text-base focus:outline-none focus:ring-2 focus:ring-[#D98B99] focus:border-[#D98B99] transition"
+            className="w-full placeholder:text-gray-400 text-[#3D5A6C] bg-white border border-gray-300 rounded-2xl py-2.5 pl-12 pr-10 text-base focus:outline-none focus:ring-2 focus:ring-[#D98B99] focus:border-[#D98B99] transition"
           />
           <svg
             className="w-6 h-6 text-gray-400 absolute left-4 top-1/2 -translate-y-1/2"
