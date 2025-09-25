@@ -7,6 +7,7 @@ import { Post, PaginatedPostResponse } from "@/types";
 import api from "@/utils/api";
 import { notFound } from "next/navigation";
 import LoadingSpinner from "@/components/LoadingSpinner";
+import { useSearch } from "@/context/SearchContext";
 
 export default function PostPage() {
   const params = useParams();
@@ -16,6 +17,7 @@ export default function PostPage() {
     morePosts: Post[];
   } | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const { setAllCategories } = useSearch();
 
   useEffect(() => {
     async function getPostData() {
@@ -34,6 +36,17 @@ export default function PostPage() {
         console.log("Post data:", postResponse.data);
         console.log("More posts data:", morePostsResponse.data.results);
 
+        // Update allCategories with tags from post and morePosts
+        const allFetchedCategories = Array.from(
+          new Set([
+            ...(postResponse.data.tags || []),
+            ...morePostsResponse.data.results.flatMap(
+              (post) => post.tags || []
+            ),
+          ])
+        );
+        setAllCategories(allFetchedCategories);
+
         setData({
           post: postResponse.data,
           morePosts: morePostsResponse.data.results,
@@ -49,7 +62,7 @@ export default function PostPage() {
     if (postId) {
       getPostData();
     }
-  }, [postId]);
+  }, [postId, setAllCategories]);
 
   if (isLoading) {
     return <LoadingSpinner />;

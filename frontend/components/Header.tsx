@@ -6,7 +6,10 @@ import { usePathname } from "next/navigation";
 import { useState, useEffect } from "react";
 import SearchInput from "./SearchInput";
 import { useSearch } from "@/context/SearchContext";
+import { useNavigation } from "@/context/NavigationContext";
 import Icon from "@/public/icon";
+import api from "@/utils/api";
+import { PaginatedPostResponse } from "@/types";
 
 export default function Header() {
   const { user, logoutUser, trackSearchQuery } = useAuth();
@@ -17,6 +20,7 @@ export default function Header() {
     activeCategory,
     setActiveCategory,
   } = useSearch();
+  const { initializeFeed, setStack } = useNavigation();
   const pathname = usePathname();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
@@ -29,9 +33,43 @@ export default function Header() {
     { href: "/try-on", label: "Try-On" },
   ];
 
-  const handleSuggestionClick = (category: string | null) => {
+  const handleSuggestionClick = async (category: string | null) => {
     setActiveCategory(category);
     setSearchTerm("");
+    try {
+      const response = await api.get<PaginatedPostResponse>(
+        user ? "/api/auth/posts/for-you/" : "/api/auth/posts/"
+      );
+      setStack([
+        {
+          type: "explore",
+          posts: response.data.results,
+          seed: String(response.data.seed ?? ""),
+        },
+      ]);
+      window.history.pushState({}, "", "/");
+    } catch (error) {
+      console.error("Failed to fetch posts for explore page:", error);
+    }
+  };
+
+  const handleSearchSubmit = async (query: string) => {
+    try {
+      await trackSearchQuery(query);
+      const response = await api.get<PaginatedPostResponse>(
+        user ? "/api/auth/posts/for-you/" : "/api/auth/posts/"
+      );
+      setStack([
+        {
+          type: "explore",
+          posts: response.data.results,
+          seed: String(response.data.seed ?? ""),
+        },
+      ]);
+      window.history.pushState({}, "", "/");
+    } catch (error) {
+      console.error("Failed to fetch posts for explore page:", error);
+    }
   };
 
   return (
@@ -67,14 +105,14 @@ export default function Header() {
             </nav>
           </div>
 
-          {/* Center: Search Input (Desktop Only on Homepage) */}
-          {pathname === "/" && (
+          {/* Center: Search Input (Desktop Only on Homepage or PostDetail) */}
+          {(pathname === "/" || pathname.startsWith("/post/")) && (
             <div className="hidden md:block flex-grow mx-8 lg:mx-4">
               <SearchInput
                 placeholder="Search nails, styles, colors..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                onSearchSubmit={trackSearchQuery}
+                onSearchSubmit={handleSearchSubmit}
                 categories={allCategories}
                 onCategoryClick={handleSuggestionClick}
                 activeCategory={activeCategory}
@@ -186,7 +224,6 @@ export default function Header() {
           isMobileMenuOpen ? "translate-x-0" : "translate-x-full"
         } transition-transform duration-300 ease-in-out md:hidden`}
       >
-        {/* --- FIX: Added this close button --- */}
         <button
           onClick={() => setIsMobileMenuOpen(false)}
           className="absolute top-6 right-4 text-gray-600 hover:text-gray-900"

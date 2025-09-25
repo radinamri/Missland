@@ -18,6 +18,7 @@ interface NavigationContextType {
   handlePostClick: (post: Post) => Promise<void>;
   handleGoBack: () => void;
   initializeFeed: (initialState: NavigationState) => void;
+  setStack: (stack: NavigationState[]) => void;
 }
 
 const NavigationContext = createContext<NavigationContextType | undefined>(
@@ -31,9 +32,7 @@ export const NavigationProvider = ({ children }: { children: ReactNode }) => {
   const currentView = stack.length > 0 ? stack[stack.length - 1] : null;
 
   const initializeFeed = (initialState: NavigationState) => {
-    if (stack.length === 0) {
-      setStack([initialState]);
-    }
+    setStack([initialState]);
   };
 
   const handlePostClick = async (post: Post) => {
@@ -73,9 +72,12 @@ export const NavigationProvider = ({ children }: { children: ReactNode }) => {
         ignorePopRef.current = false;
         return;
       }
-      setStack((prevStack) =>
-        prevStack.length > 1 ? prevStack.slice(0, -1) : prevStack
-      );
+      setStack((prevStack) => {
+        if (prevStack.length <= 1) {
+          return prevStack;
+        }
+        return prevStack.slice(0, -1);
+      });
     };
 
     window.addEventListener("popstate", handlePopState);
@@ -92,6 +94,7 @@ export const NavigationProvider = ({ children }: { children: ReactNode }) => {
     handlePostClick,
     handleGoBack,
     initializeFeed,
+    setStack,
   };
 
   return (
