@@ -138,7 +138,7 @@ export default function PostCard({
               <div className="absolute right-0 mt-2 w-32 bg-white rounded-xl shadow-lg z-10">
                 <button
                   onClick={handleDownloadClick}
-                  className="flex items-center w-full px-4 py-2 text-sm text-gray-700 rounded-t-lg hover:bg-gray-100"
+                  className="flex items-center w-full px-4 py-2 text-sm text-gray-700 rounded-t-xl hover:bg-gray-100"
                 >
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
@@ -157,7 +157,7 @@ export default function PostCard({
                 </button>
                 <button
                   onClick={handleShareClick}
-                  className="flex items-center w-full px-4 py-2 text-sm text-gray-700 rounded-b-lg hover:bg-gray-100"
+                  className="flex items-center w-full px-4 py-2 text-sm text-gray-700 rounded-b-xl hover:bg-gray-100"
                 >
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
