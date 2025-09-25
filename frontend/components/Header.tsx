@@ -39,14 +39,12 @@ export default function Header() {
   return (
     <>
       <header className="bg-white shadow-sm sticky top-0 z-30 h-20 flex items-center">
-        <div className="container mx-auto flex items-center justify-between px-4">
+        <div className="container mx-auto flex items-center justify-between">
           {/* Left Side: Logo and Desktop Nav */}
           <div className="flex items-center space-x-8">
             <Link href="/" className="flex items-center space-x-2">
-              <Icon className="w-12 h-12" />
-              <span className="text-2xl font-bold text-[#3D5A6C]">
-                Missland
-              </span>
+              <Icon className="w-10 h-10" />
+              <span className="text-xl font-bold text-[#3D5A6C]">Missland</span>
             </Link>
             <nav className="hidden md:flex items-center space-x-8">
               {navLinks.map((link) => {
@@ -91,7 +89,7 @@ export default function Header() {
             {user ? (
               <Link
                 href="/profile"
-                className="bg-[#3D5A6C] text-white font-bold py-3 px-6 rounded-xl hover:bg-[#314A5A] transition-colors"
+                className="bg-[#3D5A6C] text-white font-bold py-3 px-4 rounded-2xl hover:bg-[#314A5A] transition-colors"
               >
                 Profile
               </Link>
@@ -99,13 +97,13 @@ export default function Header() {
               <>
                 <Link
                   href="/login"
-                  className="bg-[#E7E7E7] rounded-xl py-3 px-6 font-bold text-gray-700 hover:bg-[#dcdcdc] transition-colors"
+                  className="bg-[#E7E7E7] rounded-2xl py-3 px-4 font-bold text-gray-700 hover:bg-[#dcdcdc] transition-colors"
                 >
                   Login
                 </Link>
                 <Link
                   href="/register"
-                  className="bg-[#3D5A6C] text-white font-bold py-3 px-6 rounded-xl hover:bg-[#314A5A] transition-colors"
+                  className="bg-[#3D5A6C] text-white font-bold py-3 px-4 rounded-2xl hover:bg-[#314A5A] transition-colors"
                 >
                   Sign Up
                 </Link>
