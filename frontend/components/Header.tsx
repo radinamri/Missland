@@ -20,7 +20,7 @@ export default function Header() {
     activeCategory,
     setActiveCategory,
   } = useSearch();
-  const { initializeFeed, setStack } = useNavigation();
+  const { setStack } = useNavigation();
   const pathname = usePathname();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
