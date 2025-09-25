@@ -135,7 +135,7 @@ export default function PostCard({
               </svg>
             </button>
             {isMenuOpen && (
-              <div className="absolute right-0 mt-2 w-32 bg-white rounded-lg shadow-lg z-10">
+              <div className="absolute right-0 mt-2 w-32 bg-white rounded-xl shadow-lg z-10">
                 <button
                   onClick={handleDownloadClick}
                   className="flex items-center w-full px-4 py-2 text-sm text-gray-700 rounded-t-lg hover:bg-gray-100"
