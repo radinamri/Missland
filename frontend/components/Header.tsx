@@ -10,6 +10,7 @@ import { useNavigation } from "@/context/NavigationContext";
 import Icon from "@/public/icon";
 import api from "@/utils/api";
 import { PaginatedPostResponse } from "@/types";
+import Image from "next/image";
 
 export default function Header() {
   const { user, logoutUser, trackSearchQuery } = useAuth();
@@ -123,12 +124,16 @@ export default function Header() {
           {/* Right Side: Auth Buttons and Dropdown (Desktop) */}
           <div className="hidden md:flex items-center space-x-2 relative">
             {user ? (
-              <Link
-                href="/profile"
-                className="bg-[#3D5A6C] text-white font-bold py-3 px-4 rounded-2xl hover:bg-[#314A5A] transition-colors"
-              >
-                Profile
-              </Link>
+              <div className="w-10 h-10 rounded-full flex items-center justify-center relative overflow-hidden">
+                <Link href="/profile">
+                  <Image
+                    src={user.profile_picture || "/default-profile.png"}
+                    alt={user.username}
+                    fill
+                    style={{ objectFit: "cover" }}
+                  />
+                </Link>
+              </div>
             ) : (
               <>
                 <Link
