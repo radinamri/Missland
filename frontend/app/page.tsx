@@ -159,7 +159,7 @@ export default function ExplorePage() {
   return (
     <>
       <div className="relative min-h-screen">
-        <div className="fixed top-0 left-0 w-full h-screen bg-gradient-to-r from-pink-50 to-blue-50 z-0" />
+        <div className="fixed top-0 left-0 w-full h-screen bg-gradient-to-r from-pink-100 to-blue-100 z-0" />
         <LoginModal
           isOpen={showLoginModal}
           onClose={() => setShowLoginModal(false)}
