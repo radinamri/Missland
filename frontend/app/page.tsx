@@ -158,76 +158,79 @@ export default function ExplorePage() {
 
   return (
     <>
-      <LoginModal
-        isOpen={showLoginModal}
-        onClose={() => setShowLoginModal(false)}
-      />
-      <SaveToCollectionModal
-        isOpen={showCollectionsModal}
-        onClose={() => setShowCollectionsModal(false)}
-        postToSave={postToSave}
-      />
-      <SignUpPopup
-        show={showSignUpPopup}
-        onClose={() => setShowSignUpPopup(false)}
-        onSwitchToLogin={handleSwitchToLogin}
-      />
+      <div className="relative min-h-screen">
+        <div className="fixed top-0 left-0 w-full h-screen bg-gradient-to-r from-pink-50 to-blue-50 z-0" />
+        <LoginModal
+          isOpen={showLoginModal}
+          onClose={() => setShowLoginModal(false)}
+        />
+        <SaveToCollectionModal
+          isOpen={showCollectionsModal}
+          onClose={() => setShowCollectionsModal(false)}
+          postToSave={postToSave}
+        />
+        <SignUpPopup
+          show={showSignUpPopup}
+          onClose={() => setShowSignUpPopup(false)}
+          onSwitchToLogin={handleSwitchToLogin}
+        />
 
-      <main className="bg-gray-50 p-4 md:p-8">
-        <div className="mb-8">
-          <div className="md:hidden">
-            <SearchInput
-              placeholder="Search nails, styles..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              onSearchSubmit={trackSearchQuery}
-              categories={allCategories}
-              onCategoryClick={handleSuggestionClick}
-              activeCategory={activeCategory}
-            />
+        <main className="p-4 md:p-8">
+          <div className="mb-8">
+            <div className="md:hidden">
+              <SearchInput
+                placeholder="Search nails, styles..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                onSearchSubmit={trackSearchQuery}
+                categories={allCategories}
+                onCategoryClick={handleSuggestionClick}
+                activeCategory={activeCategory}
+              />
+            </div>
           </div>
-        </div>
 
-        {isLoading ? (
-          <LoadingSpinner />
-        ) : (
-          <>
-            {isDetailView && currentView.parentPost && (
-              <PostDetail
-                post={currentView.parentPost}
-                morePosts={filteredPosts}
-                onMorePostClick={async (post) => {
-                  await trackPostClick(post.id);
-                  handlePostClick(post);
-                }}
-                onSave={openSaveModal}
-                onBack={handleGoBack}
-                onOpenLoginModal={() => setShowLoginModal(true)}
-              />
-            )}
+          {isLoading ? (
+            <LoadingSpinner />
+          ) : (
+            <>
+              {isDetailView && currentView.parentPost && (
+                <PostDetail
+                  post={currentView.parentPost}
+                  morePosts={filteredPosts}
+                  onMorePostClick={async (post) => {
+                    await trackPostClick(post.id);
+                    handlePostClick(post);
+                  }}
+                  onSave={openSaveModal}
+                  onBack={handleGoBack}
+                  onOpenLoginModal={() => setShowLoginModal(true)}
+                />
+              )}
 
-            {!isDetailView && filteredPosts.length > 0 ? (
-              <PostGrid
-                posts={filteredPosts}
-                variant="explore"
-                onSave={openSaveModal}
-                onPostClick={handleGridPostClick}
-                isSaved={(p) =>
-                  collections?.some((c) =>
-                    (c.posts || []).some((cp) => cp.id === p.id)
-                  ) ?? false
-                }
-              />
-            ) : null}
+              {!isDetailView && filteredPosts.length > 0 ? (
+                <PostGrid
+                  posts={filteredPosts}
+                  variant="explore"
+                  onSave={openSaveModal}
+                  onPostClick={handleGridPostClick}
+                  isSaved={(p) =>
+                    collections?.some((c) =>
+                      (c.posts || []).some((cp) => cp.id === p.id)
+                    ) ?? false
+                  }
+                />
+              ) : null}
 
-            {filteredPosts.length === 0 && !isDetailView && (
-              <div className="text-center py-20">
-                <p className="text-lg text-gray-500">No posts found.</p>
-              </div>
-            )}
-          </>
-        )}
-      </main>
+              {filteredPosts.length === 0 && !isDetailView && (
+                <div className="text-center py-20">
+                  <p className="text-lg text-gray-500">No posts found.</p>
+                </div>
+              )}
+            </>
+          )}
+        </main>
+      </div>
     </>
   );
 }
