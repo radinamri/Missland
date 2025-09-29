@@ -79,7 +79,7 @@ export default function PostDetail({
         onClose={() => setShowCollectionsModal(false)}
         postToSave={post}
       />
-      <div className="min-h-screen bg-gray-50 px-4 md:px-8 pt-6 pb-8 md:pt-12">
+      <div className="min-h-screen px-4 md:px-8 pt-6 pb-24 md:pt-12">
         <header className="md:hidden mb-4">
           <button
             onClick={onBack}
