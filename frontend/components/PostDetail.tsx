@@ -5,8 +5,10 @@ import { Post } from "@/types";
 import Image from "next/image";
 import PostGrid from "./PostGrid";
 import { useAuth } from "@/context/AuthContext";
+import { useSearch } from "@/context/SearchContext";
 import Link from "next/link";
 import SaveToCollectionModal from "./SaveToCollectionModal";
+import SearchInput from "./SearchInput";
 
 interface PostDetailProps {
   post: Post;
@@ -25,8 +27,14 @@ export default function PostDetail({
   onBack,
   onOpenLoginModal,
 }: PostDetailProps) {
-  const { user, collections } = useAuth();
-
+  const { user, collections, trackSearchQuery } = useAuth();
+  const {
+    searchTerm,
+    setSearchTerm,
+    allCategories,
+    activeCategory,
+    setActiveCategory,
+  } = useSearch();
   const [showCollectionsModal, setShowCollectionsModal] = useState(false);
 
   const isSaved = useMemo(() => {
@@ -36,10 +44,33 @@ export default function PostDetail({
     );
   }, [collections, post, user]);
 
+  // Filter morePosts based on searchTerm and activeCategory
+  const filteredMorePosts = useMemo(() => {
+    return morePosts.filter((post) => {
+      const matchesCategory = activeCategory
+        ? post.tags.includes(activeCategory)
+        : true;
+      const matchesSearch =
+        searchTerm.trim() === ""
+          ? true
+          : post.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            post.tags.some((tag) =>
+              tag.toLowerCase().includes(searchTerm.toLowerCase())
+            );
+      return matchesCategory && matchesSearch;
+    });
+  }, [morePosts, activeCategory, searchTerm]);
+
   // Debugging logs
   console.log("PostDetail props:", { post, morePosts });
   console.log("Post saved status:", isSaved);
   console.log("Collections:", collections);
+
+  // Handle category click for SearchInput
+  const handleSuggestionClick = (category: string | null) => {
+    setActiveCategory(category);
+    setSearchTerm("");
+  };
 
   return (
     <>
@@ -49,7 +80,7 @@ export default function PostDetail({
         postToSave={post}
       />
       <div className="min-h-screen bg-gray-50 px-4 md:px-8 pt-6 pb-8 md:pt-12">
-        <header className="md:hidden mb-6">
+        <header className="md:hidden mb-4">
           <button
             onClick={onBack}
             className="inline-flex items-center text-[#D98B99] hover:text-[#C47C8A] font-semibold transition-colors"
@@ -72,6 +103,19 @@ export default function PostDetail({
             Back to explore
           </button>
         </header>
+
+        {/* SearchInput for mobile screens */}
+        <div className="mb-8 md:hidden">
+          <SearchInput
+            placeholder="Search nails, styles..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            onSearchSubmit={trackSearchQuery}
+            categories={allCategories}
+            onCategoryClick={handleSuggestionClick}
+            activeCategory={activeCategory}
+          />
+        </div>
 
         <div className="w-full max-w-4xl mx-auto bg-white rounded-3xl shadow-xl overflow-hidden">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-0">
@@ -144,9 +188,9 @@ export default function PostDetail({
           <h2 className="text-2xl font-bold text-gray-800 mb-6 text-center">
             More to explore
           </h2>
-          {morePosts.length > 0 ? (
+          {filteredMorePosts.length > 0 ? (
             <PostGrid
-              posts={morePosts}
+              posts={filteredMorePosts}
               variant="explore"
               onPostClick={onMorePostClick}
               onSave={onSave}
