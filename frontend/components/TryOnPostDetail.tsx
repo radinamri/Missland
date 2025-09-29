@@ -51,7 +51,7 @@ export default function TryOnPostDetail({
       </header>
 
       {/* Mobile Layout: Instagram-like, full-width, vertically scrollable */}
-      <div className="md:hidden">
+      <div className="md:hidden pb-16">
         <div className="w-full mt-2">
           <div className="max-w-4xl mx-auto bg-white rounded-3xl shadow-xl overflow-hidden">
             <div className="relative w-full min-h-[400px] md:min-h-0 md:aspect-[4/5]">

@@ -119,7 +119,7 @@ export default function ProfileHomePage() {
   return (
     <>
       {/* --- This content is only for mobile screens --- */}
-      <div className="lg:hidden space-y-4">
+      <div className="lg:hidden space-y-4 pb-20">
         <div className="bg-white rounded-2xl shadow-sm p-6 text-center">
           <div className="w-20 h-20 bg-[#A4BBD0] rounded-full mx-auto flex items-center justify-center mb-3 relative overflow-hidden">
             {user.profile_picture ? (
