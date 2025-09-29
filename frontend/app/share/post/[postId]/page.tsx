@@ -8,13 +8,17 @@ import Link from "next/link";
 import { useAuth } from "@/context/AuthContext";
 import api from "@/utils/api";
 import LoadingSpinner from "@/components/LoadingSpinner";
+import SaveToCollectionModal from "@/components/SaveToCollectionModal";
+import LoginModal from "@/components/LoginModal";
 
 export default function SharePage() {
   const params = useParams();
   const router = useRouter();
   const postId = params.postId as string;
-  const { user, managePostInCollection, showToastWithMessage } = useAuth();
+  const { user, showToastWithMessage, trackPostClick } = useAuth();
   const [post, setPost] = useState<Post | null>(null);
+  const [showCollectionsModal, setShowCollectionsModal] = useState(false);
+  const [showLoginModal, setShowLoginModal] = useState(false);
 
   useEffect(() => {
     if (postId) {
@@ -26,21 +30,30 @@ export default function SharePage() {
     }
   }, [postId, router]);
 
-  const handleSaveToCollection = async () => {
+  useEffect(() => {
+    const pendingIdStr = localStorage.getItem("pendingSavePostId");
+    if (
+      pendingIdStr &&
+      user &&
+      post &&
+      parseInt(pendingIdStr, 10) === post.id
+    ) {
+      setShowCollectionsModal(true);
+      trackPostClick(post.id).catch(console.error);
+      showToastWithMessage("Now saving the post to your collection!");
+      localStorage.removeItem("pendingSavePostId");
+    }
+  }, [user, post, trackPostClick, showToastWithMessage]);
+
+  const handleSaveToCollection = () => {
     if (!user || !post) {
-      showToastWithMessage("Please log in to save to a collection.");
+      localStorage.setItem("pendingSavePostId", postId);
+      setShowLoginModal(true);
+      showToastWithMessage("Please log in to save this post.");
       return;
     }
-    try {
-      // Assuming collection ID 1 as default; adjust based on your app's logic
-      const response = await managePostInCollection(1, post.id);
-      if (response) {
-        showToastWithMessage(response);
-      }
-    } catch (error) {
-      console.error("Failed to save to collection:", error);
-      showToastWithMessage("Failed to save to collection.");
-    }
+    setShowCollectionsModal(true);
+    trackPostClick(post.id).catch(console.error);
   };
 
   if (!post) {
@@ -48,7 +61,16 @@ export default function SharePage() {
   }
 
   return (
-    <div className="min-h-screen px-4 md:px-8 pt-6 pb-8 md:pt-12">
+    <div className="px-4 md:px-8 pt-6 pb-8 md:pt-12">
+      <LoginModal
+        isOpen={showLoginModal}
+        onClose={() => setShowLoginModal(false)}
+      />
+      <SaveToCollectionModal
+        isOpen={showCollectionsModal}
+        onClose={() => setShowCollectionsModal(false)}
+        postToSave={post}
+      />
       <div className="w-full max-w-4xl mx-auto bg-white rounded-3xl shadow-xl overflow-hidden">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-0">
           <div className="relative w-full aspect-[4/5]">
@@ -95,21 +117,12 @@ export default function SharePage() {
               >
                 Try On Yourself
               </Link>
-              {user ? (
-                <button
-                  onClick={handleSaveToCollection}
-                  className="w-full text-center bg-[#D98B99] text-white font-bold py-3 px-6 rounded-xl hover:opacity-90 transition"
-                >
-                  Save to Collection
-                </button>
-              ) : (
-                <Link
-                  href="/login"
-                  className="w-full text-center bg-[#D98B99] text-white font-bold py-3 px-6 rounded-xl hover:opacity-90 transition"
-                >
-                  Login or Sign Up
-                </Link>
-              )}
+              <button
+                onClick={handleSaveToCollection}
+                className="w-full text-center bg-[#D98B99] text-white font-bold py-3 px-6 rounded-xl hover:opacity-90 transition"
+              >
+                Save to Collection
+              </button>
               <Link
                 href="/"
                 className="w-full text-center bg-[#E7E7E7] text-[#3D5A6C] font-bold py-3 px-6 rounded-xl hover:bg-[#dcdcdc] transition"
