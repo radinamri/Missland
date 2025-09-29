@@ -27,7 +27,8 @@ export default function PostDetail({
   onBack,
   onOpenLoginModal,
 }: PostDetailProps) {
-  const { user, collections, trackSearchQuery } = useAuth();
+  const { user, collections, trackSearchQuery, showToastWithMessage } =
+    useAuth();
   const {
     searchTerm,
     setSearchTerm,
@@ -61,10 +62,45 @@ export default function PostDetail({
     });
   }, [morePosts, activeCategory, searchTerm]);
 
-  // Debugging logs
-  console.log("PostDetail props:", { post, morePosts });
-  console.log("Post saved status:", isSaved);
-  console.log("Collections:", collections);
+  // Handle download
+  const handleDownload = async () => {
+    try {
+      const response = await fetch(post.image_url);
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = `${post.title.replace(/\s+/g, "_")}.jpg`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
+      showToastWithMessage("Image downloaded successfully!");
+    } catch (error) {
+      console.error("Failed to download image:", error);
+      showToastWithMessage("Failed to download image. Please try again.");
+    }
+  };
+
+  // Handle share
+  const handleShare = async () => {
+    const shareUrl = `${window.location.origin}/share/post/${post.id}`;
+    try {
+      if (navigator.share) {
+        await navigator.share({
+          title: post.title,
+          url: shareUrl,
+        });
+        showToastWithMessage("Shared successfully!");
+      } else {
+        await navigator.clipboard.writeText(shareUrl);
+        showToastWithMessage("Link copied to clipboard!");
+      }
+    } catch (error) {
+      console.error("Failed to share:", error);
+      showToastWithMessage("Failed to share. Please try again.");
+    }
+  };
 
   // Handle category click for SearchInput
   const handleSuggestionClick = (category: string | null) => {
@@ -130,11 +166,31 @@ export default function PostDetail({
               />
             </div>
             <div className="flex flex-col p-6 md:p-8">
-              <div className="flex items-center justify-end space-x-3 mb-6">
+              <div className="flex flex-col space-y-2 mb-6">
                 <Link
                   href={`/try-on/${post.id}`}
-                  className="bg-[#E7E7E7] text-[#3D5A6C] font-bold py-3 px-6 rounded-xl hover:bg-[#dcdcdc] transition"
+                  className="flex items-center justify-center w-full bg-[#E7E7E7] text-[#3D5A6C] font-bold py-3 px-4 rounded-xl hover:bg-[#dcdcdc] transition"
+                  aria-label="Try On"
                 >
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    strokeWidth={1.5}
+                    stroke="currentColor"
+                    className="w-5 h-5 mr-2"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      d="M6.827 6.175A2.31 2.31 0 015.186 7.23c-.38.054-.757.112-1.134.175C2.999 7.58 2.25 8.507 2.25 9.574V18a2.25 2.25 0 002.25 2.25h15A2.25 2.25 0 0021.75 18V9.574c0-1.067-.75-1.994-1.802-2.169a47.865 47.865 0 00-1.134-.175 2.31 2.31 0 01-1.64-1.055l-.822-1.316a2.192 2.192 0 00-1.736-1.039 48.774 48.774 0 00-5.232 0 2.192 2.192 0 00-1.736 1.039l-.821 1.316z"
+                    />
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      d="M16.5 12.75a4.5 4.5 0 11-9 0 4.5 4.5 0 019 0zM18.75 10.5h.008v.008h-.008v-.008z"
+                    />
+                  </svg>
                   Try On
                 </Link>
                 <button
@@ -145,14 +201,70 @@ export default function PostDetail({
                       setShowCollectionsModal(true);
                     }
                   }}
-                  className={`${
+                  className={`flex items-center justify-center w-full ${
                     isSaved
                       ? "bg-[#3D5A6C] text-white"
                       : "bg-[#D98B99] text-white"
-                  } font-bold py-3 px-6 rounded-xl hover:opacity-90 transition`}
+                  } font-bold py-3 px-4 rounded-xl hover:opacity-90 transition`}
                   aria-label={isSaved ? "Saved" : "Save"}
                 >
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    strokeWidth={1.5}
+                    stroke="currentColor"
+                    className="w-5 h-5 mr-2"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      d="M17.593 3.322c1.1.128 1.907 1.077 1.907 2.185V21L12 17.25 4.5 21V5.507c0-1.108.806-2.057 1.907-2.185a48.507 48.507 0 0111.186 0z"
+                    />
+                  </svg>
                   {isSaved ? "Saved" : "Save"}
+                </button>
+                <button
+                  onClick={handleShare}
+                  className="flex items-center justify-center w-full bg-[#A4BBD0] text-white font-bold py-3 px-4 rounded-xl hover:opacity-90 transition"
+                  aria-label="Share"
+                >
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    strokeWidth={1.5}
+                    stroke="currentColor"
+                    className="w-5 h-5 mr-2"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      d="M7.217 10.907a2.25 2.25 0 100 2.186m0-2.186c.18.324.283.696.283 1.093s-.103.77-.283 1.093m0-2.186l9.566-5.314m-9.566 7.5l9.566 5.314m0 0a2.25 2.25 0 103.935 2.186 2.25 2.25 0 00-3.935-2.186zm0-12.814a2.25 2.25 0 103.933-2.185 2.25 2.25 0 00-3.933 2.185z"
+                    />
+                  </svg>
+                  Share
+                </button>
+                <button
+                  onClick={handleDownload}
+                  className="flex items-center justify-center w-full bg-[#6B7280] text-white font-bold py-3 px-4 rounded-xl hover:opacity-90 transition"
+                  aria-label="Download"
+                >
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    strokeWidth={1.5}
+                    stroke="currentColor"
+                    className="w-5 h-5 mr-2"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3"
+                    />
+                  </svg>
+                  Download
                 </button>
               </div>
               <div className="space-y-4 flex-grow">
