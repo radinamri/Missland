@@ -75,7 +75,7 @@ export default function TryOnPage() {
         onClose={() => setShowLoginModal(false)}
       />
 
-      <div className="min-h-screen bg-gray-50 px-4 md:px-8 pt-6 pb-8 md:pt-12">
+      <div className="min-h-screen px-4 md:px-8 pt-6 pb-8 md:pt-12">
         <div className="w-full max-w-4xl mx-auto bg-white rounded-3xl shadow-xl overflow-hidden">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-0">
             <div className="relative w-full aspect-[4/5]">
