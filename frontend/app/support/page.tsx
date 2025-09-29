@@ -89,8 +89,8 @@ export default function SupportPage() {
   }, [searchTerm]);
 
   return (
-    <div className="bg-gray-50 min-h-screen">
-      <div className="container mx-auto px-4 py-8 md:py-12">
+    <main className="p-4 md:p-8">
+      <div className="container mx-auto">
         <header className="text-center mb-10">
           <h1 className="text-4xl md:text-5xl font-bold text-[#3D5A6C]">
             Support Center
@@ -129,8 +129,8 @@ export default function SupportPage() {
                 No results found
               </h3>
               <p className="text-gray-500 mt-2">
-                We couldn&apos;t find any answers matching your search. Please try
-                different keywords.
+                We couldn&apos;t find any answers matching your search. Please
+                try different keywords.
               </p>
             </div>
           )}
@@ -141,8 +141,8 @@ export default function SupportPage() {
             Still need help?
           </h2>
           <p className="text-gray-600 mt-2 mb-6">
-            If you can&apos;t find the answer you&apos;re looking for, please get in
-            touch.
+            If you can&apos;t find the answer you&apos;re looking for, please
+            get in touch.
           </p>
           <a
             href="mailto:support@missland.com"
@@ -152,6 +152,6 @@ export default function SupportPage() {
           </a>
         </div>
       </div>
-    </div>
+    </main>
   );
 }

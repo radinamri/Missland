@@ -38,24 +38,26 @@ export default function ArticleDetailPage() {
 
   if (!article) {
     return (
-      <div className="text-center py-20">
-        <h2 className="text-2xl font-bold text-red-600">Article Not Found</h2>
-        <p className="text-gray-500 mt-2">
-          The article you are looking for does not exist.
-        </p>
-        <Link
-          href="/articles"
-          className="mt-6 inline-block bg-[#3D5A6C] text-white font-bold py-3 px-6 rounded-lg hover:bg-[#314A5A] transition"
-        >
-          Back to Articles
-        </Link>
-      </div>
+      <main className="p-4 md:p-8">
+        <div className="text-center py-20">
+          <h2 className="text-2xl font-bold text-red-600">Article Not Found</h2>
+          <p className="text-gray-500 mt-2">
+            The article you are looking for does not exist.
+          </p>
+          <Link
+            href="/articles"
+            className="mt-6 inline-block bg-[#3D5A6C] text-white font-bold py-3 px-6 rounded-lg hover:bg-[#314A5A] transition"
+          >
+            Back to Articles
+          </Link>
+        </div>
+      </main>
     );
   }
 
   return (
-    <div className="bg-gray-50 min-h-screen">
-      <div className="container mx-auto px-4 py-8 md:py-12">
+    <main className="p-4 md:p-8">
+      <div className="container mx-auto">
         <div className="max-w-3xl mx-auto">
           <div className="mb-6">
             <Link
@@ -106,6 +108,6 @@ export default function ArticleDetailPage() {
           </div>
         </div>
       </div>
-    </div>
+    </main>
   );
 }

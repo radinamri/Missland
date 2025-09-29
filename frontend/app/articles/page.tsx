@@ -30,8 +30,8 @@ export default function ArticlesPage() {
   }
 
   return (
-    <div className="bg-gray-50 min-h-screen">
-      <div className="container mx-auto px-4 py-8 md:py-12">
+    <main className="p-4 md:p-8">
+      <div className="container mx-auto">
         <header className="mb-8 md:mb-12 text-center">
           <h1 className="text-4xl md:text-5xl font-bold text-[#3D5A6C]">
             Our Articles
@@ -77,6 +77,6 @@ export default function ArticlesPage() {
           </div>
         )}
       </div>
-    </div>
+    </main>
   );
 }
