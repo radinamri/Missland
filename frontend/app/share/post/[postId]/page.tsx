@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { Post } from "@/types";
 import Image from "next/image";
@@ -19,6 +19,7 @@ export default function SharePage() {
   const [post, setPost] = useState<Post | null>(null);
   const [showCollectionsModal, setShowCollectionsModal] = useState(false);
   const [showLoginModal, setShowLoginModal] = useState(false);
+  const timeoutId = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
     if (postId) {
@@ -45,15 +46,44 @@ export default function SharePage() {
     }
   }, [user, post, trackPostClick, showToastWithMessage]);
 
+  // Auto-show LoginModal for unauthenticated users after 5 seconds
+  useEffect(() => {
+    if (!user && post && !showLoginModal && !showCollectionsModal) {
+      const id = setTimeout(() => {
+        setShowLoginModal(true);
+      }, 5000); // 5 seconds delay
+      timeoutId.current = id; // Store timeout ID in ref
+    }
+
+    // Cleanup timeout on unmount or when conditions change
+    return () => {
+      if (timeoutId.current) {
+        clearTimeout(timeoutId.current);
+      }
+    };
+  }, [user, post, showLoginModal, showCollectionsModal]);
+
   const handleSaveToCollection = () => {
     if (!user || !post) {
       localStorage.setItem("pendingSavePostId", postId);
       setShowLoginModal(true);
       showToastWithMessage("Please log in to save this post.");
+      if (timeoutId.current) {
+        clearTimeout(timeoutId.current); // Clear timeout on interaction
+      }
       return;
     }
     setShowCollectionsModal(true);
     trackPostClick(post.id).catch(console.error);
+    if (timeoutId.current) {
+      clearTimeout(timeoutId.current); // Clear timeout on interaction
+    }
+  };
+
+  const handleInteraction = () => {
+    if (timeoutId.current) {
+      clearTimeout(timeoutId.current); // Clear timeout on any interaction
+    }
   };
 
   if (!post) {
@@ -61,7 +91,11 @@ export default function SharePage() {
   }
 
   return (
-    <div className="px-4 md:px-8 pt-6 pb-8 md:pt-12">
+    <div
+      className="px-4 md:px-8 pt-6 pb-8 md:pt-12"
+      onClick={handleInteraction} // Clear timeout on any click
+      onTouchStart={handleInteraction} // Clear timeout on touch for mobile
+    >
       <LoginModal
         isOpen={showLoginModal}
         onClose={() => setShowLoginModal(false)}
@@ -114,6 +148,7 @@ export default function SharePage() {
               <Link
                 href={`/try-on/${post.id}`}
                 className="w-full text-center bg-[#3D5A6C] text-white font-bold py-3 px-6 rounded-xl hover:bg-[#314A5A] transition"
+                onClick={handleInteraction}
               >
                 Try On Yourself
               </Link>
@@ -126,6 +161,7 @@ export default function SharePage() {
               <Link
                 href="/"
                 className="w-full text-center bg-[#E7E7E7] text-[#3D5A6C] font-bold py-3 px-6 rounded-xl hover:bg-[#dcdcdc] transition"
+                onClick={handleInteraction}
               >
                 Explore More
               </Link>
