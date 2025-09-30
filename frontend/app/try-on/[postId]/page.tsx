@@ -75,6 +75,28 @@ export default function TryOnPage() {
         onClose={() => setShowLoginModal(false)}
       />
 
+      <header className="md:hidden z-10 pt-6 pl-4">
+        <button
+          onClick={() => router.replace(`/post/${post.id}`)}
+          className="inline-flex items-center text-[#D98B99] hover:text-[#C47C8A] font-semibold transition-colors"
+        >
+          <svg
+            className="w-5 h-5 mr-2"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth="2"
+              d="M15 19l-7-7 7-7"
+            />
+          </svg>
+          Back to {post.title}
+        </button>
+      </header>
+
       <div className="min-h-screen px-4 md:px-8 pt-6 pb-8 md:pt-12">
         <div className="w-full max-w-4xl mx-auto bg-white rounded-3xl shadow-xl overflow-hidden">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-0">
