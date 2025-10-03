@@ -195,7 +195,7 @@ export default function TryOnPostDetail({
                   </div>
                   <Link
                     href={`/try-on/${post.id}`}
-                    className="flex items-center justify-center bg-[#D98B99] text-white text-lg font-bold hover:bg-[#C47C8A] rounded-2xl px-3 py-2 transition"
+                    className="flex items-center justify-center bg-[#D98B99] text-white text-xl font-bold hover:bg-[#C47C8A] rounded-2xl px-3 py-2 transition"
                     aria-label="Try On"
                     title="Try on this nail design"
                   >
@@ -458,7 +458,7 @@ export default function TryOnPostDetail({
                         </div>
                         <Link
                           href={`/try-on/${post.id}`}
-                          className="flex items-center justify-center bg-[#D98B99] text-white text-lg font-bold hover:bg-[#C47C8A] rounded-2xl px-3 py-2 transition"
+                          className="flex items-center justify-center bg-[#D98B99] text-white text-xl font-bold hover:bg-[#C47C8A] rounded-2xl px-3 py-2 transition"
                           aria-label="Try On"
                           title="Try on this nail design"
                         >
