@@ -116,7 +116,7 @@ export default function TryOnPostDetail({
                 priority
               />
             </div>
-            <div className="px-4 pt-4 pb-8 bg-white rounded-3xl">
+            <div className="px-4 pt-4 pb-4 bg-white rounded-3xl">
               {/* <div className="flex items-center mb-4">
                 <div className="flex items-center space-x-3">
                   <div className="w-10 h-10 bg-[#A4BBD0] rounded-full flex items-center justify-center text-white font-bold">
@@ -377,7 +377,7 @@ export default function TryOnPostDetail({
                       sizes="100vw"
                     />
                   </div>
-                  <div className="px-4 pt-4 pb-8 bg-white rounded-3xl">
+                  <div className="px-4 pt-4 pb-4 bg-white rounded-3xl">
                     {/* <div className="flex items-center mb-4">
                       <div className="flex items-center space-x-3">
                         <div className="w-10 h-10 bg-[#A4BBD0] rounded-full flex items-center justify-center text-white font-bold">
