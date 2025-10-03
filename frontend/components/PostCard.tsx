@@ -3,7 +3,7 @@
 import { Post } from "@/types";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+// import { useState } from "react";
 
 interface PostCardProps {
   post: Post;
@@ -17,13 +17,13 @@ interface PostCardProps {
 export default function PostCard({
   post,
   variant,
-  onSave,
+  // onSave,
   onRemove,
   onPostClick,
-  isSaved,
-}: PostCardProps) {
+}: // isSaved,
+PostCardProps) {
   const router = useRouter();
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  // const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   const handleCardClick = async () => {
     if (onPostClick) {
@@ -36,12 +36,12 @@ export default function PostCard({
     router.push(`/try-on/${post.id}`);
   };
 
-  const handleSaveClick = async (e: React.MouseEvent) => {
-    e.stopPropagation();
-    if (onSave) {
-      await onSave(post);
-    }
-  };
+  // const handleSaveClick = async (e: React.MouseEvent) => {
+  //   e.stopPropagation();
+  //   if (onSave) {
+  //     await onSave(post);
+  //   }
+  // };
 
   const handleRemoveClick = (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -50,43 +50,43 @@ export default function PostCard({
     }
   };
 
-  const handleDownloadClick = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    const link = document.createElement("a");
-    link.href = post.image_url;
-    link.download = `${post.title}.png`;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    setIsMenuOpen(false);
-  };
+  // const handleDownloadClick = (e: React.MouseEvent) => {
+  //   e.stopPropagation();
+  //   const link = document.createElement("a");
+  //   link.href = post.image_url;
+  //   link.download = `${post.title}.png`;
+  //   document.body.appendChild(link);
+  //   link.click();
+  //   document.body.removeChild(link);
+  //   setIsMenuOpen(false);
+  // };
 
-  const handleShareClick = async (e: React.MouseEvent) => {
-    e.stopPropagation();
-    const shareUrl = `${window.location.origin}/post/${post.id}`;
-    const shareData = {
-      title: `Check out this style: ${post.title}`,
-      text: `I found "${post.title}" on Missland! Check it out.`,
-      url: shareUrl,
-    };
-    try {
-      if (navigator.share) {
-        await navigator.share(shareData);
-      } else {
-        await navigator.clipboard.writeText(shareUrl);
-        alert("Link copied to clipboard!");
-      }
-    } catch (error) {
-      console.error("Failed to share:", error);
-      alert("Could not share at this time.");
-    }
-    setIsMenuOpen(false);
-  };
+  // const handleShareClick = async (e: React.MouseEvent) => {
+  //   e.stopPropagation();
+  //   const shareUrl = `${window.location.origin}/post/${post.id}`;
+  //   const shareData = {
+  //     title: `Check out this style: ${post.title}`,
+  //     text: `I found "${post.title}" on Missland! Check it out.`,
+  //     url: shareUrl,
+  //   };
+  //   try {
+  //     if (navigator.share) {
+  //       await navigator.share(shareData);
+  //     } else {
+  //       await navigator.clipboard.writeText(shareUrl);
+  //       alert("Link copied to clipboard!");
+  //     }
+  //   } catch (error) {
+  //     console.error("Failed to share:", error);
+  //     alert("Could not share at this time.");
+  //   }
+  //   setIsMenuOpen(false);
+  // };
 
-  const toggleMenu = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    setIsMenuOpen(!isMenuOpen);
-  };
+  // const toggleMenu = (e: React.MouseEvent) => {
+  //   e.stopPropagation();
+  //   setIsMenuOpen(!isMenuOpen);
+  // };
 
   return (
     <div
@@ -119,7 +119,7 @@ export default function PostCard({
           <p className="text-white text-sm font-semibold drop-shadow-md">
             {post.title}
           </p>
-          <div className="relative">
+          {/* <div className="relative">
             <button
               onClick={toggleMenu}
               className="bg-black/30 text-white w-8 h-8 rounded-full flex items-center justify-center shadow-lg hover:bg-black/50 transition"
@@ -173,7 +173,7 @@ export default function PostCard({
                 </button>
               </div>
             )}
-          </div>
+          </div> */}
         </div>
 
         <div className="flex items-center justify-between">
@@ -185,7 +185,7 @@ export default function PostCard({
               >
                 Try On
               </button>
-              <button
+              {/* <button
                 onClick={handleSaveClick}
                 className={`w-10 h-10 rounded-full flex items-center justify-center shadow-lg transition-colors ${
                   isSaved
@@ -207,7 +207,7 @@ export default function PostCard({
                     d="M17.593 3.322c1.1.128 1.907 1.077 1.907 2.185V21L12 17.25 4.5 21V5.507c0-1.108.806-2.057 1.907-2.185a48.507 48.507 0 0111.186 0z"
                   />
                 </svg>
-              </button>
+              </button> */}
             </>
           )}
 
