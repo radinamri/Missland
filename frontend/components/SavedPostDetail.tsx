@@ -7,7 +7,7 @@ import PostGrid from "./PostGrid";
 import { useAuth } from "@/context/AuthContext";
 import Link from "next/link";
 import SaveToCollectionModal from "./SaveToCollectionModal";
-import { useState, useMemo } from "react";
+import { useState } from "react";
 
 interface SavedPostDetailProps {
   post: Post;
@@ -25,23 +25,14 @@ export default function SavedPostDetail({
   onMorePostClick,
   onRemove,
   collectionId,
-  onOpenLoginModal,
 }: SavedPostDetailProps) {
-  const { collections, user, showToastWithMessage } = useAuth();
+  const { collections, showToastWithMessage } = useAuth();
   const router = useRouter();
   const [showCollectionsModal, setShowCollectionsModal] = useState(false);
 
   // Find the collection name based on collectionId
   const collection = collections?.find((c) => c.id === parseInt(collectionId));
   const collectionName = collection?.name || "Collection";
-
-  // Check if the post is saved
-  const isSaved = useMemo(() => {
-    if (!user || !collections) return false;
-    return collections.some((collection) =>
-      (collection.posts || []).some((p) => p.id === post.id)
-    );
-  }, [collections, post, user]);
 
   const handleRemoveClick = (postId: number) => {
     onRemove(postId);
@@ -147,35 +138,6 @@ export default function SavedPostDetail({
                 <div className="flex flex-row md:pb-32 pb-8 w-full justify-between">
                   <div className="flex flex-row">
                     <button
-                      onClick={() => {
-                        if (!user && onOpenLoginModal) {
-                          onOpenLoginModal();
-                        } else {
-                          setShowCollectionsModal(true);
-                        }
-                      }}
-                      className="flex items-center justify-center font-bold text-[#3D5A6C] hover:bg-gray-100 rounded-2xl pl-3 p-1 transition"
-                      aria-label={isSaved ? "Saved" : "Save"}
-                      title={
-                        isSaved ? "Saved to collection" : "Save to collection"
-                      }
-                    >
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                        strokeWidth={1.5}
-                        stroke="currentColor"
-                        className="w-6 h-6 mr-2"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          d="M17.593 3.322c1.1.128 1.907 1.077 1.907 2.185V21L12 17.25 4.5 21V5.507c0-1.108.806-2.057 1.907-2.185a48.507 48.507 0 0111.186 0z"
-                        />
-                      </svg>
-                    </button>
-                    <button
                       onClick={handleShare}
                       className="flex items-center justify-center text-[#3D5A6C] font-bold hover:bg-gray-100 rounded-2xl pl-2 p-1 transition"
                       aria-label="Share"
@@ -187,7 +149,7 @@ export default function SavedPostDetail({
                         viewBox="0 0 24 24"
                         strokeWidth={1.5}
                         stroke="currentColor"
-                        className="w-6 h-6 mr-2"
+                        className="w-8 h-8 mr-2"
                       >
                         <path
                           strokeLinecap="round"
@@ -208,7 +170,7 @@ export default function SavedPostDetail({
                         viewBox="0 0 24 24"
                         strokeWidth={1.5}
                         stroke="currentColor"
-                        className="w-6 h-6 mr-2"
+                        className="w-8 h-8 mr-2"
                       >
                         <path
                           strokeLinecap="round"
@@ -223,7 +185,7 @@ export default function SavedPostDetail({
                       aria-label="Remove"
                     >
                       <svg
-                        className="w-6 h-6 mr-2"
+                        className="w-8 h-8 mr-2"
                         fill="none"
                         stroke="currentColor"
                         viewBox="0 0 24 24"
@@ -239,7 +201,7 @@ export default function SavedPostDetail({
                   </div>
                   <Link
                     href={`/try-on/${post.id}`}
-                    className="flex items-center justify-center bg-[#D98B99] text-white text-lg font-bold hover:bg-[#C47C8A] rounded-2xl px-3 py-2 transition"
+                    className="flex items-center justify-center bg-[#D98B99] text-white text-xl font-bold hover:bg-[#C47C8A] rounded-2xl px-3 py-2 transition"
                     aria-label="Try On"
                     title="Try on this nail design"
                   >
@@ -249,7 +211,7 @@ export default function SavedPostDetail({
                       viewBox="0 0 24 24"
                       strokeWidth={1.5}
                       stroke="currentColor"
-                      className="w-6 h-6 mr-2"
+                      className="w-8 h-8 mr-2"
                     >
                       <path
                         strokeLinecap="round"
@@ -439,37 +401,6 @@ export default function SavedPostDetail({
                       <div className="flex flex-row md:pb-32 pb-8 w-full justify-between">
                         <div className="flex flex-row">
                           <button
-                            onClick={() => {
-                              if (!user && onOpenLoginModal) {
-                                onOpenLoginModal();
-                              } else {
-                                setShowCollectionsModal(true);
-                              }
-                            }}
-                            className="flex items-center justify-center font-bold text-[#3D5A6C] hover:bg-gray-100 rounded-2xl pl-3 p-1 transition"
-                            aria-label={isSaved ? "Saved" : "Save"}
-                            title={
-                              isSaved
-                                ? "Saved to collection"
-                                : "Save to collection"
-                            }
-                          >
-                            <svg
-                              xmlns="http://www.w3.org/2000/svg"
-                              fill="none"
-                              viewBox="0 0 24 24"
-                              strokeWidth={1.5}
-                              stroke="currentColor"
-                              className="w-6 h-6 mr-2"
-                            >
-                              <path
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                d="M17.593 3.322c1.1.128 1.907 1.077 1.907 2.185V21L12 17.25 4.5 21V5.507c0-1.108.806-2.057 1.907-2.185a48.507 48.507 0 0111.186 0z"
-                              />
-                            </svg>
-                          </button>
-                          <button
                             onClick={handleShare}
                             className="flex items-center justify-center text-[#3D5A6C] font-bold hover:bg-gray-100 rounded-2xl pl-2 p-1 transition"
                             aria-label="Share"
@@ -481,7 +412,7 @@ export default function SavedPostDetail({
                               viewBox="0 0 24 24"
                               strokeWidth={1.5}
                               stroke="currentColor"
-                              className="w-6 h-6 mr-2"
+                              className="w-8 h-8 mr-2"
                             >
                               <path
                                 strokeLinecap="round"
@@ -502,7 +433,7 @@ export default function SavedPostDetail({
                               viewBox="0 0 24 24"
                               strokeWidth={1.5}
                               stroke="currentColor"
-                              className="w-6 h-6 mr-2"
+                              className="w-8 h-8 mr-2"
                             >
                               <path
                                 strokeLinecap="round"
@@ -517,7 +448,7 @@ export default function SavedPostDetail({
                             aria-label="Remove"
                           >
                             <svg
-                              className="w-6 h-6 mr-2"
+                              className="w-8 h-8 mr-2"
                               fill="none"
                               stroke="currentColor"
                               viewBox="0 0 24 24"
@@ -533,7 +464,7 @@ export default function SavedPostDetail({
                         </div>
                         <Link
                           href={`/try-on/${post.id}`}
-                          className="flex items-center justify-center bg-[#D98B99] text-white text-lg font-bold hover:bg-[#C47C8A] rounded-2xl px-3 py-2 transition"
+                          className="flex items-center justify-center bg-[#D98B99] text-white text-xl font-bold hover:bg-[#C47C8A] rounded-2xl px-3 py-2 transition"
                           aria-label="Try On"
                           title="Try on this nail design"
                         >
@@ -728,35 +659,6 @@ export default function SavedPostDetail({
             <div className="flex flex-col p-6 md:p-8">
               <div className="flex flex-row md:pb-32 pb-8 w-full justify-between">
                 <div className="flex flex-row">
-                  <button
-                    onClick={() => {
-                      if (!user && onOpenLoginModal) {
-                        onOpenLoginModal();
-                      } else {
-                        setShowCollectionsModal(true);
-                      }
-                    }}
-                    className="flex items-center justify-center font-bold text-[#3D5A6C] hover:bg-gray-100 rounded-2xl pl-3 p-1 transition"
-                    aria-label={isSaved ? "Saved" : "Save"}
-                    title={
-                      isSaved ? "Saved to collection" : "Save to collection"
-                    }
-                  >
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      strokeWidth={1.5}
-                      stroke="currentColor"
-                      className="w-8 h-8 mr-2"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        d="M17.593 3.322c1.1.128 1.907 1.077 1.907 2.185V21L12 17.25 4.5 21V5.507c0-1.108.806-2.057 1.907-2.185a48.507 48.507 0 0111.186 0z"
-                      />
-                    </svg>
-                  </button>
                   <button
                     onClick={handleShare}
                     className="flex items-center justify-center text-[#3D5A6C] font-bold hover:bg-gray-100 rounded-2xl pl-2 p-1 transition"
