@@ -638,7 +638,7 @@ export default function TryOnPostDetail({
 
       {/* Desktop Layout: Original design */}
       <div className="hidden md:block container mx-auto px-4">
-        <div className="max-w-4xl mx-auto bg-white rounded-2xl shadow-xl overflow-hidden">
+        <div className="max-w-4xl mx-auto bg-white rounded-3xl shadow-xl overflow-hidden">
           <div className="grid grid-cols-1 md:grid-cols-2">
             <div className="relative w-full min-h-[400px] md:aspect-[4/5]">
               <Image
