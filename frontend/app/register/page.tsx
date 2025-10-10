@@ -107,7 +107,7 @@ export default function RegisterPage() {
               Missland
             </h1>
             <p className="text-lg text-white/80 text-shadow">
-              Discover and try on your next favorite style.
+              Embrace your lost beauty
             </p>
           </div>
         </div>
