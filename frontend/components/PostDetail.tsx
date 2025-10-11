@@ -5,10 +5,14 @@ import { Post } from "@/types";
 import Image from "next/image";
 import PostGrid from "./PostGrid";
 import { useAuth } from "@/context/AuthContext";
-import { useSearch } from "@/context/SearchContext";
+import { useSearchStore } from "@/stores/searchStore";
+import { useNavigationStore } from "@/stores/navigationStore";
+import { useRouter } from "next/navigation";
 import Link from "next/link";
 import SaveToCollectionModal from "./SaveToCollectionModal";
 import SearchInput from "./SearchInput";
+import api from "@/utils/api";
+import { PaginatedPostResponse } from "@/types";
 
 interface PostDetailProps {
   post: Post;
@@ -27,6 +31,7 @@ export default function PostDetail({
   onBack,
   onOpenLoginModal,
 }: PostDetailProps) {
+  const router = useRouter();
   const { user, collections, trackSearchQuery, showToastWithMessage } =
     useAuth();
   const {
@@ -35,7 +40,8 @@ export default function PostDetail({
     allCategories,
     activeCategory,
     setActiveCategory,
-  } = useSearch();
+  } = useSearchStore();
+  const { setStack } = useNavigationStore();
   const [showCollectionsModal, setShowCollectionsModal] = useState(false);
 
   const isSaved = useMemo(() => {
@@ -108,6 +114,25 @@ export default function PostDetail({
     setSearchTerm("");
   };
 
+  const handleSearchSubmit = async (query: string) => {
+    try {
+      await trackSearchQuery(query);
+      const response = await api.get<PaginatedPostResponse>(
+        user ? "/api/auth/posts/for-you/" : "/api/auth/posts/"
+      );
+      setStack([
+        {
+          type: "explore",
+          posts: response.data.results,
+          seed: String(response.data.seed ?? ""),
+        },
+      ]);
+      router.push("/");
+    } catch (error) {
+      console.error("Failed to fetch posts:", error);
+    }
+  };
+
   return (
     <>
       <SaveToCollectionModal
@@ -147,7 +172,7 @@ export default function PostDetail({
             placeholder="Search nails, styles..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            onSearchSubmit={trackSearchQuery}
+            onSearchSubmit={handleSearchSubmit}
             categories={allCategories}
             onCategoryClick={handleSuggestionClick}
             activeCategory={activeCategory}

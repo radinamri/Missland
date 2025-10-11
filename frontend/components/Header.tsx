@@ -2,17 +2,18 @@
 
 import Link from "next/link";
 import { useAuth } from "@/context/AuthContext";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { useState, useEffect } from "react";
 import SearchInput from "./SearchInput";
-import { useSearch } from "@/context/SearchContext";
-import { useNavigation } from "@/context/NavigationContext";
+import { useSearchStore } from "@/stores/searchStore";
+import { useNavigationStore } from "@/stores/navigationStore";
 import Icon from "@/public/icon";
 import api from "@/utils/api";
 import { PaginatedPostResponse } from "@/types";
 import Image from "next/image";
 
 export default function Header() {
+  const router = useRouter();
   const { user, logoutUser, trackSearchQuery } = useAuth();
   const {
     searchTerm,
@@ -20,8 +21,8 @@ export default function Header() {
     allCategories,
     activeCategory,
     setActiveCategory,
-  } = useSearch();
-  const { setStack } = useNavigation();
+  } = useSearchStore();
+  const { setStack } = useNavigationStore();
   const pathname = usePathname();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
@@ -48,7 +49,7 @@ export default function Header() {
           seed: String(response.data.seed ?? ""),
         },
       ]);
-      window.history.pushState({}, "", "/");
+      router.push("/");
     } catch (error) {
       console.error("Failed to fetch posts for explore page:", error);
     }
@@ -67,7 +68,7 @@ export default function Header() {
           seed: String(response.data.seed ?? ""),
         },
       ]);
-      window.history.pushState({}, "", "/");
+      router.push("/");
     } catch (error) {
       console.error("Failed to fetch posts for explore page:", error);
     }

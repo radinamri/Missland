@@ -2,7 +2,7 @@
 
 import { useState, useRef, useEffect } from "react";
 import SearchSuggestions from "./SearchSuggestions";
-import { useSearch } from "@/context/SearchContext";
+import { useSearchStore } from "@/stores/searchStore";
 
 interface SearchInputProps {
   value: string;
@@ -25,19 +25,12 @@ export default function SearchInput({
 }: SearchInputProps) {
   const [isFocused, setIsFocused] = useState(false);
   const searchRef = useRef<HTMLDivElement>(null);
-  const { setSearchTerm, setSearchHistory } = useSearch();
+  const { setSearchTerm, addToSearchHistory } = useSearchStore();
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === "Enter" && value.trim()) {
       onSearchSubmit(value);
-      // Add to search history (limit to 5 items, avoid duplicates)
-      setSearchHistory((prev: string[]) => {
-        const newHistory = [
-          value.trim(),
-          ...prev.filter((item: string) => item !== value.trim()),
-        ].slice(0, 5);
-        return newHistory;
-      });
+      addToSearchHistory(value);
       setIsFocused(false);
     }
     if (e.key === "Escape") {

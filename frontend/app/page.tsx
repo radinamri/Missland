@@ -1,20 +1,24 @@
+// app/page.tsx
 "use client";
 
 import { useEffect, useState, useMemo } from "react";
-import { Post, PaginatedPostResponse } from "@/types";
+import { usePathname, useRouter } from "next/navigation";
+import { Post, PaginatedPostResponse, NavigationState } from "@/types";
 import api from "@/utils/api";
 import { useAuth } from "@/context/AuthContext";
-import { useSearch } from "@/context/SearchContext";
-import { useNavigation } from "@/context/NavigationContext";
+import { useSearchStore } from "@/stores/searchStore";
+import { useNavigationStore } from "@/stores/navigationStore";
 import LoginModal from "@/components/LoginModal";
 import PostGrid from "@/components/PostGrid";
 import SignUpPopup from "@/components/SignUpPopup";
-import SearchInput from "@/components/SearchInput";
 import SaveToCollectionModal from "@/components/SaveToCollectionModal";
 import PostDetail from "@/components/PostDetail";
 import LoadingSpinner from "@/components/LoadingSpinner";
+import SearchInput from "@/components/SearchInput";
 
 export default function ExplorePage() {
+  const pathname = usePathname();
+  const router = useRouter();
   const [isLoading, setIsLoading] = useState(true);
   const {
     user,
@@ -30,47 +34,95 @@ export default function ExplorePage() {
     setAllCategories,
     activeCategory,
     setActiveCategory,
-  } = useSearch();
+  } = useSearchStore();
+  const { stack, handlePostClick, handleGoBack, setStack } =
+    useNavigationStore();
 
-  const { currentView, handlePostClick, handleGoBack, initializeFeed } =
-    useNavigation();
+  const currentView = stack[stack.length - 1] || null;
+  const isDetailView = currentView?.type === "detail";
 
   const [showLoginModal, setShowLoginModal] = useState(false);
   const [postToSave, setPostToSave] = useState<Post | null>(null);
   const [showCollectionsModal, setShowCollectionsModal] = useState(false);
   const [showSignUpPopup, setShowSignUpPopup] = useState(false);
 
+  // Initialize based on pathname (handles refresh on /post/[id])
   useEffect(() => {
-    const fetchInitialPosts = async () => {
-      if (currentView) {
-        setIsLoading(false);
-        return;
-      }
+    const init = async () => {
       setIsLoading(true);
       try {
-        const endpoint = user ? "/api/auth/posts/for-you/" : "/api/auth/posts/";
+        if (pathname.startsWith("/post/")) {
+          const postId = parseInt(pathname.split("/post/")[1], 10);
+          if (isNaN(postId)) throw new Error("Invalid post ID");
 
-        const response = await api.get<PaginatedPostResponse>(endpoint);
+          const [postRes, moreRes] = await Promise.all([
+            api.get<Post>(`/api/auth/posts/${postId}/`),
+            api.get<PaginatedPostResponse>(`/api/auth/posts/${postId}/more/`),
+          ]);
 
-        const allFetchedCategories = Array.from(
-          new Set(response.data.results.flatMap((post) => post.tags))
-        );
-        setAllCategories(allFetchedCategories);
+          const post = postRes.data;
+          const morePosts = moreRes.data.results;
 
-        initializeFeed({
-          type: "explore",
-          posts: response.data.results,
-          seed: String(response.data.seed ?? ""),
-        });
+          const categories = Array.from(
+            new Set([
+              ...(post.tags || []),
+              ...morePosts.flatMap((p) => p.tags || []),
+            ])
+          );
+          setAllCategories(categories);
+
+          // Initialize as detail view if not already in stack
+          setStack((prev) => {
+            if (prev.length === 0 || prev[prev.length - 1].type !== "detail") {
+              return [
+                { type: "explore" as const, posts: [], seed: "" }, // Placeholder base
+                {
+                  type: "detail",
+                  parentPost: post,
+                  posts: morePosts,
+                  seed: String(moreRes.data.seed ?? ""),
+                },
+              ];
+            }
+            return prev;
+          });
+        } else {
+          // Normal explore init if not already in explore
+          const endpoint = user
+            ? "/api/auth/posts/for-you/"
+            : "/api/auth/posts/";
+          const res = await api.get<PaginatedPostResponse>(endpoint);
+
+          const categories = Array.from(
+            new Set(res.data.results.flatMap((p) => p.tags))
+          );
+          setAllCategories(categories);
+
+          setStack((prev) => {
+            if (prev.length === 0 || prev[prev.length - 1].type !== "explore") {
+              return [
+                {
+                  type: "explore" as const,
+                  posts: res.data.results,
+                  seed: String(res.data.seed ?? ""),
+                },
+              ];
+            }
+            return prev;
+          });
+        }
       } catch (error) {
-        console.error("Failed to fetch posts:", error);
+        console.error("Failed to initialize:", error);
+        router.push("/"); // Fallback to explore
       } finally {
         setIsLoading(false);
       }
     };
-    fetchInitialPosts();
-  }, [user, initializeFeed, currentView, setAllCategories]);
 
+    init(); // Run on every pathname or stack change
+  }, [user, pathname, setAllCategories, setStack, router, stack]);
+
+  // Handle pending save post
   useEffect(() => {
     if (
       user &&
@@ -97,14 +149,33 @@ export default function ExplorePage() {
     }
   }, [user, currentView, isLoading, trackPostClick, showToastWithMessage]);
 
-  const handleGridPostClick = async (post: Post) => {
-    await trackPostClick(post.id);
-    handlePostClick(post);
-  };
+  // Handle scroll for signup popup
+  useEffect(() => {
+    const handleScroll = () => {
+      if (!user && window.scrollY > 400) {
+        setShowSignUpPopup(true);
+        window.removeEventListener("scroll", handleScroll);
+      }
+    };
+    if (!user) {
+      window.addEventListener("scroll", handleScroll);
+    }
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, [user]);
+
+  // Handle popstate for browser back/forward
+  useEffect(() => {
+    const handlePopState = () => {
+      setStack((prev: NavigationState[]) =>
+        prev.length > 1 ? prev.slice(0, -1) : prev
+      );
+    };
+    window.addEventListener("popstate", handlePopState);
+    return () => window.removeEventListener("popstate", handlePopState);
+  }, [setStack]);
 
   const filteredPosts = useMemo(() => {
     if (!currentView?.posts) return [];
-
     return currentView.posts.filter((post) => {
       const matchesCategory = activeCategory
         ? post.tags.includes(activeCategory)
@@ -119,19 +190,6 @@ export default function ExplorePage() {
       return matchesCategory && matchesSearch;
     });
   }, [currentView, activeCategory, searchTerm]);
-
-  useEffect(() => {
-    const handleScroll = () => {
-      if (!user && window.scrollY > 400) {
-        setShowSignUpPopup(true);
-        window.removeEventListener("scroll", handleScroll);
-      }
-    };
-    if (!user) {
-      window.addEventListener("scroll", handleScroll);
-    }
-    return () => window.removeEventListener("scroll", handleScroll);
-  }, [user]);
 
   const openSaveModal = (post: Post) => {
     if (!user) {
@@ -154,10 +212,9 @@ export default function ExplorePage() {
     setShowLoginModal(true);
   };
 
-  const isDetailView = currentView?.type === "detail";
-
   return (
-    <main className="p-4 md:p-8">
+    <main className={isDetailView ? "" : "p-4 md:p-8"}>
+      {/* Conditional padding */}
       <LoginModal
         isOpen={showLoginModal}
         onClose={() => setShowLoginModal(false)}
@@ -172,7 +229,6 @@ export default function ExplorePage() {
         onClose={() => setShowSignUpPopup(false)}
         onSwitchToLogin={handleSwitchToLogin}
       />
-
       <div className="mb-8">
         <div className="md:hidden">
           <SearchInput
@@ -186,7 +242,6 @@ export default function ExplorePage() {
           />
         </div>
       </div>
-
       {isLoading ? (
         <LoadingSpinner />
       ) : (
@@ -210,7 +265,10 @@ export default function ExplorePage() {
               posts={filteredPosts}
               variant="explore"
               onSave={openSaveModal}
-              onPostClick={handleGridPostClick}
+              onPostClick={async (post) => {
+                await trackPostClick(post.id);
+                handlePostClick(post);
+              }}
               isSaved={(p) =>
                 collections?.some((c) =>
                   (c.posts || []).some((cp) => cp.id === p.id)

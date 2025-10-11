@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useAuth } from "@/context/AuthContext";
 import { usePathname } from "next/navigation";
-import { useNavigation } from "@/context/NavigationContext";
+import { useNavigationStore } from "@/stores/navigationStore";
 import React from "react";
 
 // --- Icon Components ---
@@ -91,7 +91,7 @@ const ProfileIcon = ({ active }: { active: boolean }) => (
 export default function BottomNav() {
   const { user } = useAuth();
   const pathname = usePathname();
-  const { currentView } = useNavigation();
+  const { stack } = useNavigationStore();
 
   const navItems = [
     { href: "/", label: "Explore", icon: ExploreIcon },
@@ -106,7 +106,9 @@ export default function BottomNav() {
         {navItems.map((item) => {
           let isActive = false;
           if (item.href === "/") {
-            isActive = pathname === item.href || currentView?.type === "detail";
+            isActive =
+              pathname === item.href ||
+              (stack.length > 0 && stack[stack.length - 1].type === "detail");
           } else {
             isActive = pathname.startsWith(item.href);
           }

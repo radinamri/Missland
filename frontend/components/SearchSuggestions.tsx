@@ -1,6 +1,6 @@
 "use client";
 
-import { useSearch } from "@/context/SearchContext";
+import { useSearchStore } from "@/stores/searchStore";
 
 interface SearchSuggestionsProps {
   categories: string[];
@@ -15,7 +15,7 @@ export default function SearchSuggestions({
   activeCategory,
   onHistoryClick,
 }: SearchSuggestionsProps) {
-  const { searchHistory, clearSearchHistory } = useSearch();
+  const { searchHistory, clearSearchHistory } = useSearchStore();
 
   return (
     <div className="absolute top-full mt-2 w-full bg-white rounded-2xl shadow-lg p-6 animate-fade-in-down">

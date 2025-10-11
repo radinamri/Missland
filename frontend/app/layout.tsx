@@ -6,8 +6,6 @@ import { GoogleOAuthProvider } from "@react-oauth/google";
 import Header from "@/components/Header";
 import BottomNav from "@/components/BottomNav";
 import ClientLayout from "@/components/ClientLayout";
-import { SearchProvider } from "@/context/SearchContext";
-import { NavigationProvider } from "@/context/NavigationContext";
 import AppInitializer from "@/components/AppInitializer";
 
 const geistSans = Geist({
@@ -41,22 +39,18 @@ export default function RootLayout({
           }
         >
           <AuthProvider>
-            <SearchProvider>
-              <NavigationProvider>
-                <AppInitializer>
-                  <div className="fixed top-0 left-0 w-full h-screen bg-gradient-to-r from-pink-50 to-blue-50 -z-10" />
-                  <div className="relative min-h-screen">
-                    <div className="flex flex-col bg-transparent">
-                      <Header />
-                      <main className="flex-1">
-                        <ClientLayout>{children}</ClientLayout>
-                      </main>
-                      <BottomNav />
-                    </div>
-                  </div>
-                </AppInitializer>
-              </NavigationProvider>
-            </SearchProvider>
+            <AppInitializer>
+              <div className="fixed top-0 left-0 w-full h-screen bg-gradient-to-r from-pink-50 to-blue-50 -z-10" />
+              <div className="relative min-h-screen">
+                <div className="flex flex-col bg-transparent">
+                  <Header />
+                  <main className="flex-1">
+                    <ClientLayout>{children}</ClientLayout>
+                  </main>
+                  <BottomNav />
+                </div>
+              </div>
+            </AppInitializer>
           </AuthProvider>
         </GoogleOAuthProvider>
       </body>
