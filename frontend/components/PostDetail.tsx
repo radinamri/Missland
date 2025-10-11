@@ -6,13 +6,8 @@ import Image from "next/image";
 import PostGrid from "./PostGrid";
 import { useAuth } from "@/context/AuthContext";
 import { useSearchStore } from "@/stores/searchStore";
-import { useNavigationStore } from "@/stores/navigationStore";
-import { useRouter } from "next/navigation";
 import Link from "next/link";
 import SaveToCollectionModal from "./SaveToCollectionModal";
-import SearchInput from "./SearchInput";
-import api from "@/utils/api";
-import { PaginatedPostResponse } from "@/types";
 
 interface PostDetailProps {
   post: Post;
@@ -31,17 +26,8 @@ export default function PostDetail({
   onBack,
   onOpenLoginModal,
 }: PostDetailProps) {
-  const router = useRouter();
-  const { user, collections, trackSearchQuery, showToastWithMessage } =
-    useAuth();
-  const {
-    searchTerm,
-    setSearchTerm,
-    allCategories,
-    activeCategory,
-    setActiveCategory,
-  } = useSearchStore();
-  const { setStack } = useNavigationStore();
+  const { user, collections, showToastWithMessage } = useAuth();
+  const { searchTerm, activeCategory } = useSearchStore();
   const [showCollectionsModal, setShowCollectionsModal] = useState(false);
 
   const isSaved = useMemo(() => {
@@ -108,31 +94,6 @@ export default function PostDetail({
     }
   };
 
-  // Handle category click for SearchInput
-  const handleSuggestionClick = (category: string | null) => {
-    setActiveCategory(category);
-    setSearchTerm("");
-  };
-
-  const handleSearchSubmit = async (query: string) => {
-    try {
-      await trackSearchQuery(query);
-      const response = await api.get<PaginatedPostResponse>(
-        user ? "/api/auth/posts/for-you/" : "/api/auth/posts/"
-      );
-      setStack([
-        {
-          type: "explore",
-          posts: response.data.results,
-          seed: String(response.data.seed ?? ""),
-        },
-      ]);
-      router.push("/");
-    } catch (error) {
-      console.error("Failed to fetch posts:", error);
-    }
-  };
-
   return (
     <>
       <SaveToCollectionModal
@@ -165,19 +126,6 @@ export default function PostDetail({
             Back to explore
           </button>
         </header>
-
-        {/* SearchInput for mobile screens */}
-        <div className="mb-8 md:hidden">
-          <SearchInput
-            placeholder="Search nails, styles..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            onSearchSubmit={handleSearchSubmit}
-            categories={allCategories}
-            onCategoryClick={handleSuggestionClick}
-            activeCategory={activeCategory}
-          />
-        </div>
 
         <div className="w-full max-w-4xl mx-auto bg-white rounded-3xl shadow-xl overflow-hidden">
           <div className="md:hidden">

@@ -1,4 +1,3 @@
-// app/page.tsx
 "use client";
 
 import { useEffect, useState, useMemo } from "react";
@@ -14,27 +13,13 @@ import SignUpPopup from "@/components/SignUpPopup";
 import SaveToCollectionModal from "@/components/SaveToCollectionModal";
 import PostDetail from "@/components/PostDetail";
 import LoadingSpinner from "@/components/LoadingSpinner";
-import SearchInput from "@/components/SearchInput";
 
 export default function ExplorePage() {
   const pathname = usePathname();
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(true);
-  const {
-    user,
-    trackPostClick,
-    trackSearchQuery,
-    collections,
-    showToastWithMessage,
-  } = useAuth();
-  const {
-    searchTerm,
-    setSearchTerm,
-    allCategories,
-    setAllCategories,
-    activeCategory,
-    setActiveCategory,
-  } = useSearchStore();
+  const { user, trackPostClick, collections, showToastWithMessage } = useAuth();
+  const { searchTerm, setAllCategories, activeCategory } = useSearchStore();
   const { stack, handlePostClick, handleGoBack, setStack } =
     useNavigationStore();
 
@@ -202,11 +187,6 @@ export default function ExplorePage() {
     }
   };
 
-  const handleSuggestionClick = (category: string | null) => {
-    setActiveCategory(category);
-    setSearchTerm("");
-  };
-
   const handleSwitchToLogin = () => {
     setShowSignUpPopup(false);
     setShowLoginModal(true);
@@ -229,19 +209,6 @@ export default function ExplorePage() {
         onClose={() => setShowSignUpPopup(false)}
         onSwitchToLogin={handleSwitchToLogin}
       />
-      <div className="mb-8">
-        <div className="md:hidden">
-          <SearchInput
-            placeholder="Search nails, styles..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            onSearchSubmit={trackSearchQuery}
-            categories={allCategories}
-            onCategoryClick={handleSuggestionClick}
-            activeCategory={activeCategory}
-          />
-        </div>
-      </div>
       {isLoading ? (
         <LoadingSpinner />
       ) : (

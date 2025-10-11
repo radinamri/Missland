@@ -76,7 +76,7 @@ export default function Header() {
 
   return (
     <>
-      <header className="bg-white shadow-sm sticky top-0 z-30 h-20 flex items-center">
+      <header className="bg-white shadow-sm sticky top-0 z-30 h-auto flex flex-col items-center py-4 gap-4">
         <div className="flex items-center justify-between w-full md:px-8 px-4">
           {/* Left Side: Logo and Desktop Nav */}
           <div className="flex items-center space-x-4">
@@ -222,6 +222,20 @@ export default function Header() {
             </button>
           </div>
         </div>
+        {/* Search Input (Mobile Only on Homepage or PostDetail) */}
+        {(pathname === "/" || pathname.startsWith("/post/")) && (
+          <div className="md:hidden w-full px-4 pb-2">
+            <SearchInput
+              placeholder="Search nails, styles, colors..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              onSearchSubmit={handleSearchSubmit}
+              categories={allCategories}
+              onCategoryClick={handleSuggestionClick}
+              activeCategory={activeCategory}
+            />
+          </div>
+        )}
       </header>
 
       {/* Mobile Menu Panel */}
