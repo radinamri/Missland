@@ -106,7 +106,7 @@ export default function PostPage() {
   }
 
   return (
-    <div className="md:px-8 md:pt-12">
+    <div className="md:pt-10">
       <PostDetail
         post={data.post}
         morePosts={data.morePosts}
