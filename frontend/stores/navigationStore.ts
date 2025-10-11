@@ -36,6 +36,7 @@ export const useNavigationStore = create<NavigationStateStore>((set) => ({
       };
       set((state) => ({ stack: [...state.stack, newView] }));
       window.history.pushState({}, "", `/post/${post.id}`);
+      window.scrollTo(0, 0); // Scroll to top after navigation
     } catch (error) {
       console.error("Failed to fetch more posts:", error);
     }

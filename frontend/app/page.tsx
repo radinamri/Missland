@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useMemo } from "react";
+import { useEffect, useState, useMemo, useRef } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { Post, PaginatedPostResponse, NavigationState } from "@/types";
 import api from "@/utils/api";
@@ -31,6 +31,9 @@ export default function ExplorePage() {
   const [showCollectionsModal, setShowCollectionsModal] = useState(false);
   const [showSignUpPopup, setShowSignUpPopup] = useState(false);
 
+  // Ref to track the previous stack top for comparison
+  const prevStackTopRef = useRef<NavigationState | null>(null);
+
   // Initialize based on pathname (handles refresh on /post/[id])
   useEffect(() => {
     const init = async () => {
@@ -56,21 +59,43 @@ export default function ExplorePage() {
           );
           setAllCategories(categories);
 
-          // Initialize as detail view if not already in stack
-          setStack((prev) => {
-            if (prev.length === 0 || prev[prev.length - 1].type !== "detail") {
-              return [
-                { type: "explore" as const, posts: [], seed: "" }, // Placeholder base
-                {
-                  type: "detail",
-                  parentPost: post,
-                  posts: morePosts,
-                  seed: String(moreRes.data.seed ?? ""),
-                },
-              ];
-            }
-            return prev;
-          });
+          // Initialize or update detail view if post or stack top changed
+          const currentTop = stack[stack.length - 1];
+          if (
+            !prevStackTopRef.current ||
+            currentTop?.type !== "detail" ||
+            (currentTop?.type === "detail" &&
+              currentTop.parentPost &&
+              currentTop.parentPost.id !== post.id)
+          ) {
+            setStack((prev) => {
+              if (
+                prev.length === 0 ||
+                prev[prev.length - 1].type !== "detail"
+              ) {
+                return [
+                  { type: "explore" as const, posts: [], seed: "" }, // Placeholder base
+                  {
+                    type: "detail",
+                    parentPost: post,
+                    posts: morePosts,
+                    seed: String(moreRes.data.seed ?? ""),
+                  },
+                ];
+              }
+              return prev.map((view, index) =>
+                index === prev.length - 1
+                  ? {
+                      ...view,
+                      parentPost: post,
+                      posts: morePosts,
+                      seed: String(moreRes.data.seed ?? ""),
+                    }
+                  : view
+              );
+            });
+            prevStackTopRef.current = currentTop;
+          }
         } else {
           // Normal explore init if not already in explore
           const endpoint = user
