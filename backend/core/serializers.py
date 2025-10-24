@@ -85,7 +85,8 @@ class EmailChangeConfirmSerializer(serializers.Serializer):
 class PostSerializer(serializers.ModelSerializer):
     class Meta:
         model = Post
-        fields = ('id', 'title', 'image_url', 'width', 'height', 'tags', 'try_on_image_url')
+        fields = ('id', 'title', 'image_url', 'width', 'height', 'shape', 'pattern', 'size', 'colors',
+                  'try_on_image_url')
 
 
 class TryOnSerializer(serializers.ModelSerializer):

@@ -1,3 +1,5 @@
+# core/views.py
+
 import random
 import time
 from itertools import chain
@@ -8,6 +10,7 @@ from django.db.models import Q
 from django.utils.encoding import force_bytes, force_str
 from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
 from rest_framework import generics, status
+from rest_framework.pagination import PageNumberPagination
 from rest_framework.parsers import MultiPartParser, FormParser
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
@@ -23,7 +26,28 @@ from .serializers import (
     CollectionCreateSerializer, CollectionListSerializer, TryOnSerializer, PasswordResetRequestSerializer,
     PasswordResetConfirmSerializer
 )
+from .color_constants import COLOR_SIMPLIFICATION_MAP
 
+
+# --- HELPER FUNCTION ---
+def get_tags_from_post(post):
+    tags = []
+    if post.shape: tags.append(post.shape)
+    if post.pattern: tags.append(post.pattern)
+    if post.size: tags.append(post.size)
+    if post.colors and isinstance(post.colors, list):
+        tags.extend(post.colors)
+    return list(set(tags))
+
+
+# --- CORRECT ORDER: PAGINATION CLASS DEFINED FIRST ---
+class StandardResultsSetPagination(PageNumberPagination):
+    page_size = 20
+    page_size_query_param = 'page_size'
+    max_page_size = 100
+
+
+# --- AUTH & PROFILE VIEWS ---
 
 class UserRegistrationView(generics.CreateAPIView):
     serializer_class = UserRegistrationSerializer
@@ -51,12 +75,10 @@ class UserProfileView(generics.RetrieveUpdateAPIView):
     parser_classes = (MultiPartParser, FormParser)
 
     def get_serializer_class(self):
-        if self.request.method in ['PUT', 'PATCH']:
-            return UserProfileUpdateSerializer
+        if self.request.method in ['PUT', 'PATCH']: return UserProfileUpdateSerializer
         return UserProfileSerializer
 
-    def get_object(self):
-        return self.request.user
+    def get_object(self): return self.request.user
 
 
 class EmailChangeInitiateView(APIView):
@@ -101,36 +123,180 @@ class EmailChangeConfirmView(APIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
-class PostListView(generics.ListAPIView):
+class UserDeleteView(generics.GenericAPIView):
+    serializer_class = UserDeleteSerializer
+    permission_classes = [IsAuthenticated]
+
+    def delete(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        user = request.user
+        user.delete()
+        return Response({"detail": "Account deleted successfully."}, status=status.HTTP_204_NO_CONTENT)
+
+
+# --- POST & FEED VIEWS ---
+
+class FilteredPostListView(generics.ListAPIView):
+    serializer_class = PostSerializer
+    permission_classes = [AllowAny]
+    pagination_class = StandardResultsSetPagination
+
+    def get_queryset(self):
+        queryset = Post.objects.all()
+        query = self.request.query_params.get('q', None)
+        shape = self.request.query_params.get('shape', None)
+        pattern = self.request.query_params.get('pattern', None)
+        size = self.request.query_params.get('size', None)
+        color_query = self.request.query_params.get('color', None)
+        query_filters = Q()
+        if query: query_filters &= Q(title__icontains=query)
+        if shape: query_filters &= Q(shape__iexact=shape)
+        if pattern: query_filters &= Q(pattern__iexact=pattern)
+        if size: query_filters &= Q(size__iexact=size)
+        if color_query:
+            normalized_color = color_query.lower().replace(' ', '_')
+            base_color = COLOR_SIMPLIFICATION_MAP.get(normalized_color)
+            if base_color:
+                variants = [v for v, b in COLOR_SIMPLIFICATION_MAP.items() if b == base_color]
+                color_q = Q()
+                for v in variants: color_q |= Q(colors__contains=v)
+                query_filters &= color_q
+            else:
+                query_filters &= Q(colors__contains=normalized_color)
+        if query_filters:
+            return queryset.filter(query_filters).distinct().order_by('-created_at')
+        return queryset.order_by('-created_at')
+
+
+class ForYouPostListView(generics.ListAPIView):
+    serializer_class = PostSerializer
+    permission_classes = [IsAuthenticated]
+    pagination_class = StandardResultsSetPagination
+
+    def get_queryset(self):
+        user = self.request.user
+        try:
+            tag_scores = user.interest_profile.tag_scores
+            if not tag_scores: raise InterestProfile.DoesNotExist
+            all_posts = list(Post.objects.all())
+            scored_posts = []
+            for post in all_posts:
+                score = 0
+                post_tags = get_tags_from_post(post)
+                for tag in post_tags:
+                    score += tag_scores.get(tag, 0)
+                if score > 0:
+                    scored_posts.append({'post': post, 'score': score})
+            scored_posts.sort(key=lambda x: x['score'], reverse=True)
+            return [item['post'] for item in scored_posts]
+        except (InterestProfile.DoesNotExist, AttributeError):
+            return Post.objects.all().order_by('?')
+
+
+class MorePostsView(generics.ListAPIView):
+    serializer_class = PostSerializer
+    permission_classes = [AllowAny]
+
+    def get_queryset(self):
+        exclude_id = self.kwargs.get('post_id')
+        feed_size = 20
+        random.seed(int(time.time()))
+        try:
+            current_post = Post.objects.get(id=exclude_id)
+            q_objects = Q()
+            if current_post.shape: q_objects |= Q(shape=current_post.shape)
+            if current_post.pattern: q_objects |= Q(pattern=current_post.pattern)
+            if current_post.colors:
+                for color in current_post.colors: q_objects |= Q(colors__contains=color)
+            base_queryset = Post.objects.exclude(id=exclude_id)
+            if q_objects:
+                relevant_posts = list(base_queryset.filter(q_objects).distinct())
+                if len(relevant_posts) > 0:
+                    return random.sample(relevant_posts, min(len(relevant_posts), feed_size))
+            all_other_ids = list(base_queryset.values_list('id', flat=True))
+            return Post.objects.filter(id__in=random.sample(all_other_ids, min(len(all_other_ids), feed_size)))
+        except Post.DoesNotExist:
+            return Post.objects.none()
+
+    def list(self, request, *args, **kwargs):
+        queryset = self.get_queryset()
+        serializer = self.get_serializer(queryset, many=True)
+        return Response({'seed': int(time.time()), 'results': serializer.data})
+
+
+class PostDetailView(generics.RetrieveAPIView):
+    queryset = Post.objects.all()
+    serializer_class = PostSerializer
+    permission_classes = [AllowAny]
+
+
+class PostListView(generics.ListAPIView):  # This is likely a legacy/unused view but included for safety
     serializer_class = PostSerializer
     permission_classes = [AllowAny]
 
     def list(self, request, *args, **kwargs):
-        # 1. Get seed from query params, or generate a new one
-        seed_param = request.query_params.get('seed')
-        if seed_param:
-            seed = int(seed_param)
-        else:
-            seed = int(time.time())
-
-        # 2. Seed the random number generator to make the shuffle repeatable
+        seed = int(time.time())
         random.seed(seed)
-
-        # 3. Get all posts and shuffle them
         all_posts = list(Post.objects.all())
         random.shuffle(all_posts)
-
-        # 4. Take a slice for the feed size
-        feed_size = 40
-        paginated_posts = all_posts[:feed_size]
+        paginated_posts = all_posts[:40]
         serializer = self.get_serializer(paginated_posts, many=True)
+        return Response({'seed': seed, 'results': serializer.data})
 
-        # 5. Return the posts in the new format that the frontend expects
-        return Response({
-            'seed': seed,
-            'results': serializer.data
-        })
 
+# --- TRACKING VIEWS ---
+
+class TrackPostClickView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request, *args, **kwargs):
+        post_id = request.data.get('post_id')
+        try:
+            post = Post.objects.get(id=post_id)
+            profile, _ = InterestProfile.objects.get_or_create(user=request.user)
+            post_tags = get_tags_from_post(post)
+            for tag in post_tags:
+                profile.tag_scores[tag] = profile.tag_scores.get(tag, 0) + 0.1
+            profile.save()
+            return Response(status=status.HTTP_204_NO_CONTENT)
+        except Post.DoesNotExist:
+            return Response(status=status.HTTP_404_NOT_FOUND)
+
+
+class TrackSearchQueryView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request, *args, **kwargs):
+        query = request.data.get('query')
+        if not query: return Response({'detail': 'Query is required.'}, status=status.HTTP_400_BAD_REQUEST)
+        user = request.user
+        profile, created = InterestProfile.objects.get_or_create(user=user)
+        score_change = 0.5
+        for term in query.lower().split():
+            profile.tag_scores[term] = profile.tag_scores.get(term, 0) + score_change
+        profile.save()
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+class TrackTryOnView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request, *args, **kwargs):
+        post_id = request.data.get('post_id')
+        try:
+            post = Post.objects.get(id=post_id)
+            profile, _ = InterestProfile.objects.get_or_create(user=request.user)
+            post_tags = get_tags_from_post(post)
+            for tag in post_tags:
+                profile.tag_scores[tag] = profile.tag_scores.get(tag, 0) + 1.5
+            profile.save()
+            return Response(status=status.HTTP_204_NO_CONTENT)
+        except Post.DoesNotExist:
+            return Response(status=status.HTTP_404_NOT_FOUND)
+
+
+# --- ARTICLE, COLLECTION, and other specific views ---
 
 class ArticleListView(generics.ListAPIView):
     queryset = Article.objects.all()
@@ -145,224 +311,11 @@ class ArticleDetailView(generics.RetrieveAPIView):
     lookup_field = 'slug'
 
 
-class PostDetailView(generics.RetrieveAPIView):
-    queryset = Post.objects.all()
-    serializer_class = PostSerializer
-    permission_classes = [AllowAny]
-
-
-class UserDeleteView(generics.GenericAPIView):
-    serializer_class = UserDeleteSerializer
-    permission_classes = [IsAuthenticated]
-
-    def delete(self, request, *args, **kwargs):
-        serializer = self.get_serializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-        user = request.user
-        user.delete()
-        return Response({"detail": "Account deleted successfully."}, status=status.HTTP_204_NO_CONTENT)
-
-
-class MorePostsView(generics.ListAPIView):
-    serializer_class = PostSerializer
-    permission_classes = [AllowAny]
-
-    def list(self, request, *args, **kwargs):
-        exclude_id = self.kwargs.get('post_id')
-        feed_size = 20
-
-        # 1. Get seed from query params, or generate a new one if it's the first visit
-        seed_param = request.query_params.get('seed')
-        if seed_param:
-            seed = int(seed_param)
-        else:
-            # Use the current timestamp for a reasonably unique new seed
-            seed = int(time.time())
-
-        # 2. Seed the random number generator. This is the crucial step.
-        random.seed(seed)
-
-        # 3. Your existing logic for finding relevant posts
-        try:
-            current_post = Post.objects.get(id=exclude_id)
-            tags = current_post.tags
-            if tags and isinstance(tags, list):
-                all_other_posts = Post.objects.exclude(id=exclude_id)
-                relevant_posts = [post for post in all_other_posts if any(tag in post.tags for tag in tags)]
-
-                if len(relevant_posts) > 0:
-                    # This random sample is now DETERMINISTIC because of random.seed()
-                    queryset = random.sample(relevant_posts, min(len(relevant_posts), feed_size))
-                else:
-                    # Fallback if no relevant posts are found
-                    all_other_post_ids = list(Post.objects.exclude(id=exclude_id).values_list('id', flat=True))
-                    sample_size = min(len(all_other_post_ids), feed_size)
-                    random_ids = random.sample(all_other_post_ids, sample_size)
-                    queryset = Post.objects.filter(id__in=random_ids)
-            else:
-                raise Post.DoesNotExist
-
-        except Post.DoesNotExist:
-            # Fallback if the post somehow has no tags or doesn't exist
-            all_other_post_ids = list(Post.objects.exclude(id=exclude_id).values_list('id', flat=True))
-            sample_size = min(len(all_other_post_ids), feed_size)
-            random_ids = random.sample(all_other_post_ids, sample_size)
-            queryset = Post.objects.filter(id__in=random_ids)
-
-        serializer = self.get_serializer(queryset, many=True)
-
-        # 4. Return the posts AND the seed that was used to generate them
-        return Response({
-            'seed': seed,
-            'results': serializer.data
-        })
-
-
-class ForYouPostListView(generics.ListAPIView):
-    serializer_class = PostSerializer
-    permission_classes = [AllowAny]
-
-    # We now override the list method instead of get_queryset
-    def list(self, request, *args, **kwargs):
-        user = self.request.user
-        feed_size = 40
-
-        # Although the primary sorting isn't random, a seed is good for consistency
-        seed = int(time.time())
-
-        # Logic from your old get_queryset is moved here
-        if not user.is_authenticated or not hasattr(user, 'interest_profile') or not user.interest_profile.tag_scores:
-            # Fallback for users without a profile
-            posts = list(Post.objects.all().order_by('-created_at')[:feed_size])
-            random.shuffle(posts)  # Shuffle to provide variety
-
-            serializer = self.get_serializer(posts, many=True)
-            return Response({
-                'seed': seed,
-                'results': serializer.data
-            })
-
-        try:
-            profile = user.interest_profile
-            tag_scores = profile.tag_scores
-            if not tag_scores:
-                raise InterestProfile.DoesNotExist  # Treat empty scores as no profile
-
-            all_posts = list(Post.objects.all())
-            scored_posts = []
-            for post in all_posts:
-                relevance_score = 0
-                if isinstance(post.tags, list):
-                    for tag in post.tags:
-                        relevance_score += tag_scores.get(tag, 0)
-                if relevance_score > 0:
-                    scored_posts.append({'post': post, 'score': relevance_score})
-
-            scored_posts.sort(key=lambda x: x['score'], reverse=True)
-            personalized_posts = [item['post'] for item in scored_posts]
-
-            if len(personalized_posts) < feed_size:
-                existing_ids = [p.id for p in personalized_posts]
-                recent_posts = Post.objects.exclude(id__in=existing_ids).order_by('-created_at')
-                # Chain combines the personalized list with the recent ones
-                combined_posts = list(chain(personalized_posts, recent_posts))
-                final_posts = combined_posts[:feed_size]
-            else:
-                final_posts = personalized_posts[:feed_size]
-
-            serializer = self.get_serializer(final_posts, many=True)
-            # Return the data in the correct format
-            return Response({
-                'seed': seed,
-                'results': serializer.data
-            })
-
-        except InterestProfile.DoesNotExist:
-            # Fallback for users with no interest profile yet
-            posts = list(Post.objects.all().order_by('-created_at')[:feed_size])
-            random.shuffle(posts)
-            serializer = self.get_serializer(posts, many=True)
-            return Response({
-                'seed': seed,
-                'results': serializer.data
-            })
-
-
-class TrackPostClickView(APIView):
-    permission_classes = [IsAuthenticated]
-
-    def post(self, request, *args, **kwargs):
-        post_id = request.data.get('post_id')
-        if not post_id:
-            return Response({'detail': 'Post ID is required.'}, status=status.HTTP_400_BAD_REQUEST)
-        try:
-            post = Post.objects.get(id=post_id)
-            user = request.user
-            profile, created = InterestProfile.objects.get_or_create(user=user)
-            score_change = 0.1
-            if post.tags and isinstance(post.tags, list):
-                for tag in post.tags:
-                    if tag:
-                        current_score = profile.tag_scores.get(tag, 0)
-                        profile.tag_scores[tag] = current_score + score_change
-                profile.save()
-            return Response(status=status.HTTP_204_NO_CONTENT)
-        except Post.DoesNotExist:
-            return Response({'detail': 'Post not found.'}, status=status.HTTP_404_NOT_FOUND)
-
-
-class TrackSearchQueryView(APIView):
-    permission_classes = [IsAuthenticated]
-
-    def post(self, request, *args, **kwargs):
-        query = request.data.get('query')
-        if not query:
-            return Response({'detail': 'Query is required.'}, status=status.HTTP_400_BAD_REQUEST)
-        user = request.user
-        profile, created = InterestProfile.objects.get_or_create(user=user)
-        score_change = 0.5
-        search_terms = query.lower().split()
-        for term in search_terms:
-            if term in profile.tag_scores:
-                profile.tag_scores[term] += score_change
-            else:
-                profile.tag_scores[term] = score_change
-        profile.save()
-        return Response(status=status.HTTP_204_NO_CONTENT)
-
-
-class TrackTryOnView(APIView):
-    permission_classes = [IsAuthenticated]
-
-    def post(self, request, *args, **kwargs):
-        post_id = request.data.get('post_id')
-        if not post_id:
-            return Response({'detail': 'Post ID is required.'}, status=status.HTTP_400_BAD_REQUEST)
-        try:
-            post = Post.objects.get(id=post_id)
-            user = request.user
-            profile, created = InterestProfile.objects.get_or_create(user=user)
-
-            # A "Try On" is a strong signal, so we give it a higher score change
-            score_change = 1.5
-
-            if post.tags and isinstance(post.tags, list):
-                for tag in post.tags:
-                    if tag:
-                        current_score = profile.tag_scores.get(tag, 0)
-                        profile.tag_scores[tag] = current_score + score_change
-                profile.save()
-            return Response(status=status.HTTP_204_NO_CONTENT)
-        except Post.DoesNotExist:
-            return Response({'detail': 'Post not found.'}, status=status.HTTP_404_NOT_FOUND)
-
-
 class CollectionListView(generics.ListCreateAPIView):
     permission_classes = [IsAuthenticated]
 
     def get_serializer_class(self):
-        if self.request.method == 'POST':
-            return CollectionCreateSerializer
+        if self.request.method == 'POST': return CollectionCreateSerializer
         return CollectionListSerializer
 
     def get_queryset(self):
@@ -380,20 +333,14 @@ class CollectionDetailView(generics.RetrieveUpdateDestroyAPIView):
         return self.request.user.collections.all()
 
     def get_serializer_class(self):
-        # When updating (PUT or PATCH), use the simpler serializer
-        if self.request.method in ['PUT', 'PATCH']:
-            return CollectionCreateSerializer
-        # Otherwise, use the default detailed serializer
+        if self.request.method in ['PUT', 'PATCH']: return CollectionCreateSerializer
         return CollectionDetailSerializer
 
     def destroy(self, request, *args, **kwargs):
         instance = self.get_object()
         if instance.name == "All Posts":
-            return Response(
-                {"detail": "The default 'All Posts' collection cannot be deleted."},
-                status=status.HTTP_400_BAD_REQUEST
-            )
-        # If it's not the default collection, proceed with normal deletion
+            return Response({"detail": "The default 'All Posts' collection cannot be deleted."},
+                            status=status.HTTP_400_BAD_REQUEST)
         return super().destroy(request, *args, **kwargs)
 
 
@@ -410,11 +357,9 @@ class ManagePostInCollectionView(APIView):
             else:
                 collection.posts.add(post)
                 message = f'Post saved to {collection.name}.'
-            # Also manage the post in the user's default "All Posts" collection
             default_collection, _ = request.user.collections.get_or_create(name="All Posts")
             if default_collection.id != collection.id and post not in default_collection.posts.all():
                 default_collection.posts.add(post)
-
             return Response({'detail': message}, status=status.HTTP_200_OK)
         except Collection.DoesNotExist:
             return Response({'detail': 'Collection not found.'}, status=status.HTTP_404_NOT_FOUND)
@@ -425,7 +370,7 @@ class ManagePostInCollectionView(APIView):
 class PublicPostDetailView(generics.RetrieveAPIView):
     queryset = Post.objects.all()
     serializer_class = PostSerializer
-    permission_classes = [AllowAny]  # This makes it accessible to anyone
+    permission_classes = [AllowAny]
 
 
 class SaveTryOnView(APIView):
@@ -434,7 +379,6 @@ class SaveTryOnView(APIView):
     def post(self, request, post_id, *args, **kwargs):
         try:
             post = Post.objects.get(id=post_id)
-            # get_or_create prevents duplicate saves
             try_on, created = TryOn.objects.get_or_create(user=request.user, post=post)
             if created:
                 return Response({'detail': 'Saved to My Try-Ons.'}, status=status.HTTP_201_CREATED)
@@ -457,18 +401,11 @@ class DeleteTryOnView(APIView):
 
     def delete(self, request, try_on_id, *args, **kwargs):
         try:
-            # Find the specific try-on object that belongs to the current user
             try_on = request.user.try_ons.get(id=try_on_id)
             try_on.delete()
-            return Response(
-                {"detail": "Removed from My Try-Ons."},
-                status=status.HTTP_204_NO_CONTENT
-            )
+            return Response({"detail": "Removed from My Try-Ons."}, status=status.HTTP_204_NO_CONTENT)
         except TryOn.DoesNotExist:
-            return Response(
-                {"detail": "Try-on not found."},
-                status=status.HTTP_404_NOT_FOUND
-            )
+            return Response({"detail": "Try-on not found."}, status=status.HTTP_404_NOT_FOUND)
 
 
 class PasswordResetRequestView(APIView):
@@ -479,29 +416,17 @@ class PasswordResetRequestView(APIView):
         serializer = self.serializer_class(data=request.data)
         serializer.is_valid(raise_exception=True)
         email = serializer.validated_data['email']
-
         try:
             user = User.objects.get(email__iexact=email)
             uid = urlsafe_base64_encode(force_bytes(user.pk))
             token = default_token_generator.make_token(user)
             reset_link = f"{settings.CORS_ALLOWED_ORIGINS[0]}/reset-password?uid={uid}&token={token}"
-
-            # Send the email
-            send_mail(
-                'Reset Your Password for Misland',
-                f'Please click the link to reset your password: {reset_link}\nThis link will expire in 1 hour.',
-                'noreply@misland.com',
-                [email],
-                fail_silently=False,
-            )
+            send_mail('Reset Your Password for Misland', f'Please click the link to reset your password: {reset_link}',
+                      'noreply@misland.com', [email], fail_silently=False)
         except User.DoesNotExist:
-            # We don't want to reveal if a user exists or not
             pass
-
-        return Response(
-            {'detail': 'If an account with that email exists, a password reset link has been sent.'},
-            status=status.HTTP_200_OK
-        )
+        return Response({'detail': 'If an account with that email exists, a password reset link has been sent.'},
+                        status=status.HTTP_200_OK)
 
 
 class PasswordResetConfirmView(APIView):
@@ -511,17 +436,14 @@ class PasswordResetConfirmView(APIView):
     def post(self, request, *args, **kwargs):
         serializer = self.serializer_class(data=request.data)
         serializer.is_valid(raise_exception=True)
-
         uidb64 = serializer.validated_data['uid']
         token = serializer.validated_data['token']
         new_password = serializer.validated_data['new_password1']
-
         try:
             uid = force_str(urlsafe_base64_decode(uidb64))
             user = User.objects.get(pk=uid)
         except (TypeError, ValueError, OverflowError, User.DoesNotExist):
             user = None
-
         if user is not None and default_token_generator.check_token(user, token):
             user.set_password(new_password)
             user.save()

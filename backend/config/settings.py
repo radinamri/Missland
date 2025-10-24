@@ -89,8 +89,12 @@ WSGI_APPLICATION = 'config.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': 'missland_db',  # The name of the database you just created
+        'USER': 'radinamri',  # Your macOS username (from your terminal prompt)
+        'PASSWORD': '',  # Leave empty if you don't have a password set
+        'HOST': 'localhost',  # Or '127.0.0.1'
+        'PORT': '5432',  # Default PostgreSQL port
     }
 }
 

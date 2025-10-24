@@ -6,7 +6,7 @@ from django.conf import settings
 
 class User(AbstractUser):
     """
-    Custom User Model for NANA-AI.
+    Custom User Model for Missland.
 
     We use email as the primary identifier for authentication instead of username.
     A phone_number field is also added for OTP authentication.
@@ -52,18 +52,27 @@ class Collection(models.Model):
 
 class Post(models.Model):
     """
-    Represents a single nail or hair style post.
+    Represents a single nail or hair-style post with structured annotations.
     """
     title = models.CharField(max_length=200)
     image_url = models.URLField(max_length=500)
     width = models.IntegerField()
     height = models.IntegerField()
-    tags = models.JSONField(default=list, blank=True)
+
+    # --- NEW FIELDS BASED ON YOUR ANNOTATIONS ---
+    # Storing as CharFields. Use db_index=True for faster lookups.
+    shape = models.CharField(max_length=50, blank=True, db_index=True)
+    pattern = models.CharField(max_length=50, blank=True, db_index=True)
+    size = models.CharField(max_length=50, blank=True, db_index=True)
+
+    # Storing the list of colors in a JSONField is efficient for querying.
+    colors = models.JSONField(default=list, blank=True)
+
+    # REMOVED: The old tags field is no longer needed
+    # tags = models.JSONField(default=list, blank=True)
+
     created_at = models.DateTimeField(auto_now_add=True)
     try_on_image_url = models.URLField(max_length=500, blank=True)
-
-    # REMOVED: The old saved_by field is no longer needed
-    # saved_by = models.ManyToManyField(User, related_name='saved_posts', blank=True)
 
     def __str__(self):
         return self.title
@@ -102,6 +111,7 @@ class Article(models.Model):
 
 class InterestProfile(models.Model):
     """
+
     Stores a user's calculated interests based on their activity.
     """
     user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='interest_profile')
