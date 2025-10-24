@@ -71,7 +71,7 @@ export default function ExplorePage() {
   };
 
   return (
-    <main className="p-4 md:p-8">
+    <main className="p-4 md:p-8 pb-16">
       <div className="mx-auto">
         {isLoading ? (
           <LoadingSpinner />
