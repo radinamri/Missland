@@ -1,277 +1,166 @@
+// app/page.tsx
 "use client";
 
-import { useEffect, useState, useMemo, useRef } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { Post, PaginatedPostResponse, NavigationState } from "@/types";
 import api from "@/utils/api";
 import { useAuth } from "@/context/AuthContext";
 import { useSearchStore } from "@/stores/searchStore";
-import { useNavigationStore } from "@/stores/navigationStore";
-import LoginModal from "@/components/LoginModal";
+import { useNavigationStore } from "@/stores/navigationStore"; // Re-introduced for view management
 import PostGrid from "@/components/PostGrid";
-import SignUpPopup from "@/components/SignUpPopup";
-import SaveToCollectionModal from "@/components/SaveToCollectionModal";
 import PostDetail from "@/components/PostDetail";
 import LoadingSpinner from "@/components/LoadingSpinner";
+import InfiniteScroll from "react-infinite-scroll-component";
 
 export default function ExplorePage() {
-  const pathname = usePathname();
   const router = useRouter();
-  const [isLoading, setIsLoading] = useState(true);
-  const { user, trackPostClick, collections, showToastWithMessage } = useAuth();
-  const { searchTerm, setAllCategories, activeCategory } = useSearchStore();
-  const { stack, handlePostClick, handleGoBack, setStack } =
+  const { user, trackPostClick } = useAuth();
+  const { searchTerm, filters } = useSearchStore();
+
+  // --- RE-INTRODUCED: Navigation store is now the primary state manager ---
+  const { stack, setStack, handlePostClick, handleGoBack } =
     useNavigationStore();
 
-  const currentView = stack[stack.length - 1] || null;
+  const currentView = stack[stack.length - 1] || { type: "explore", posts: [] };
   const isDetailView = currentView?.type === "detail";
 
-  const [showLoginModal, setShowLoginModal] = useState(false);
-  const [postToSave, setPostToSave] = useState<Post | null>(null);
-  const [showCollectionsModal, setShowCollectionsModal] = useState(false);
-  const [showSignUpPopup, setShowSignUpPopup] = useState(false);
+  // Local state for pagination and loading status of the explore feed
+  const [page, setPage] = useState(1);
+  const [hasMore, setHasMore] = useState(true);
+  const [isLoading, setIsLoading] = useState(true);
 
-  // Ref to track the previous stack top for comparison
-  const prevStackTopRef = useRef<NavigationState | null>(null);
+  // --- MODIFIED: fetchPosts now updates the navigationStore directly ---
+  const fetchPosts = useCallback(
+    async (isNewSearch = false) => {
+      if (isNewSearch) {
+        setIsLoading(true);
+        window.scrollTo(0, 0);
+      }
 
-  // Initialize based on pathname (handles refresh on /post/[id])
-  useEffect(() => {
-    const init = async () => {
-      setIsLoading(true);
+      const params = new URLSearchParams();
+      if (searchTerm) params.append("q", searchTerm);
+      if (filters.shape) params.append("shape", filters.shape);
+      if (filters.pattern) params.append("pattern", filters.pattern);
+      if (filters.size) params.append("size", filters.size);
+      if (filters.color) params.append("color", filters.color);
+
+      const currentPage = isNewSearch ? 1 : page;
+      params.append("page", String(currentPage));
+
       try {
-        if (pathname.startsWith("/post/")) {
-          const postId = parseInt(pathname.split("/post/")[1], 10);
-          if (isNaN(postId)) throw new Error("Invalid post ID");
+        const response = await api.get<PaginatedPostResponse>(
+          `/api/auth/posts/filter/?${params.toString()}`
+        );
 
-          const [postRes, moreRes] = await Promise.all([
-            api.get<Post>(`/api/auth/posts/${postId}/`),
-            api.get<PaginatedPostResponse>(`/api/auth/posts/${postId}/more/`),
-          ]);
+        const newPosts = response.data.results;
 
-          const post = postRes.data;
-          const morePosts = moreRes.data.results;
-
-          const categories = Array.from(
-            new Set([
-              ...(post.tags || []),
-              ...morePosts.flatMap((p) => p.tags || []),
-            ])
-          );
-          setAllCategories(categories);
-
-          // Initialize or update detail view if post or stack top changed
-          const currentTop = stack[stack.length - 1];
-          if (
-            !prevStackTopRef.current ||
-            currentTop?.type !== "detail" ||
-            (currentTop?.type === "detail" &&
-              currentTop.parentPost &&
-              currentTop.parentPost.id !== post.id)
-          ) {
-            setStack((prev) => {
-              if (
-                prev.length === 0 ||
-                prev[prev.length - 1].type !== "detail"
-              ) {
-                return [
-                  { type: "explore" as const, posts: [], seed: "" }, // Placeholder base
-                  {
-                    type: "detail",
-                    parentPost: post,
-                    posts: morePosts,
-                    seed: String(moreRes.data.seed ?? ""),
-                  },
-                ];
-              }
-              return prev.map((view, index) =>
-                index === prev.length - 1
-                  ? {
-                      ...view,
-                      parentPost: post,
-                      posts: morePosts,
-                      seed: String(moreRes.data.seed ?? ""),
-                    }
-                  : view
-              );
-            });
-            prevStackTopRef.current = currentTop;
+        // Update the posts within the zustand store
+        setStack((prevStack) => {
+          const lastView = prevStack[prevStack.length - 1];
+          if (lastView && lastView.type === "explore") {
+            const updatedPosts = isNewSearch
+              ? newPosts
+              : [...lastView.posts, ...newPosts];
+            const newExploreView: NavigationState = {
+              ...lastView,
+              posts: updatedPosts,
+            };
+            return [...prevStack.slice(0, -1), newExploreView];
           }
-        } else {
-          // Normal explore init if not already in explore
-          const endpoint = user
-            ? "/api/auth/posts/for-you/"
-            : "/api/auth/posts/";
-          const res = await api.get<PaginatedPostResponse>(endpoint);
+          // If stack is empty or not in explore, initialize it
+          return [{ type: "explore", posts: newPosts, seed: "" }];
+        });
 
-          const categories = Array.from(
-            new Set(res.data.results.flatMap((p) => p.tags))
-          );
-          setAllCategories(categories);
-
-          setStack((prev) => {
-            if (prev.length === 0 || prev[prev.length - 1].type !== "explore") {
-              return [
-                {
-                  type: "explore" as const,
-                  posts: res.data.results,
-                  seed: String(res.data.seed ?? ""),
-                },
-              ];
-            }
-            return prev;
-          });
-        }
+        setHasMore(response.data.next !== null);
+        setPage(isNewSearch ? 2 : (prevPage) => prevPage + 1);
       } catch (error) {
-        console.error("Failed to initialize:", error);
-        router.push("/"); // Fallback to explore
+        console.error("Failed to fetch posts:", error);
+        setHasMore(false);
       } finally {
         setIsLoading(false);
       }
-    };
+    },
+    [searchTerm, filters, page, setStack]
+  );
 
-    init(); // Run on every pathname or stack change
-  }, [user, pathname, setAllCategories, setStack, router, stack]);
-
-  // Handle pending save post
+  // Effect to trigger a new search when filters or term change
   useEffect(() => {
-    if (
-      user &&
-      !isLoading &&
-      currentView?.posts &&
-      currentView.posts.length > 0
-    ) {
-      const pendingIdStr = localStorage.getItem("pendingSavePostId");
-      if (pendingIdStr) {
-        const postId = parseInt(pendingIdStr, 10);
-        const post = currentView.posts.find((p) => p.id === postId);
-        if (post) {
-          setPostToSave(post);
-          setShowCollectionsModal(true);
-          trackPostClick(post.id).catch(console.error);
-          showToastWithMessage("Now saving the post to your collection!");
-        } else {
-          showToastWithMessage(
-            "Post not available right now. Please try again."
-          );
-        }
-        localStorage.removeItem("pendingSavePostId");
-      }
-    }
-  }, [user, currentView, isLoading, trackPostClick, showToastWithMessage]);
+    const handler = setTimeout(() => {
+      fetchPosts(true);
+    }, 500);
 
-  // Handle scroll for signup popup
-  useEffect(() => {
-    const handleScroll = () => {
-      if (!user && window.scrollY > 400) {
-        setShowSignUpPopup(true);
-        window.removeEventListener("scroll", handleScroll);
-      }
-    };
-    if (!user) {
-      window.addEventListener("scroll", handleScroll);
-    }
-    return () => window.removeEventListener("scroll", handleScroll);
-  }, [user]);
+    return () => clearTimeout(handler);
+  }, [searchTerm, filters, fetchPosts]);
 
-  // Handle popstate for browser back/forward
+  // Effect to handle browser back/forward buttons
   useEffect(() => {
     const handlePopState = () => {
-      setStack((prev: NavigationState[]) =>
-        prev.length > 1 ? prev.slice(0, -1) : prev
-      );
+      // This is a simplified popstate, you might need more robust logic
+      // based on your exact URL structure management in handlePostClick
+      handleGoBack();
     };
     window.addEventListener("popstate", handlePopState);
     return () => window.removeEventListener("popstate", handlePopState);
-  }, [setStack]);
-
-  const filteredPosts = useMemo(() => {
-    if (!currentView?.posts) return [];
-    return currentView.posts.filter((post) => {
-      const matchesCategory = activeCategory
-        ? post.tags.includes(activeCategory)
-        : true;
-      const matchesSearch =
-        searchTerm.trim() === ""
-          ? true
-          : post.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            post.tags.some((tag) =>
-              tag.toLowerCase().includes(searchTerm.toLowerCase())
-            );
-      return matchesCategory && matchesSearch;
-    });
-  }, [currentView, activeCategory, searchTerm]);
-
-  const openSaveModal = (post: Post) => {
-    if (!user) {
-      localStorage.setItem("pendingSavePostId", post.id.toString());
-      setShowLoginModal(true);
-      showToastWithMessage("Please log in to save this post.");
-    } else {
-      setPostToSave(post);
-      setShowCollectionsModal(true);
-    }
-  };
-
-  const handleSwitchToLogin = () => {
-    setShowSignUpPopup(false);
-    setShowLoginModal(true);
-  };
+  }, [handleGoBack]);
 
   return (
     <main className={isDetailView ? "" : "p-4 md:p-8"}>
-      {/* Conditional padding */}
-      <LoginModal
-        isOpen={showLoginModal}
-        onClose={() => setShowLoginModal(false)}
-      />
-      <SaveToCollectionModal
-        isOpen={showCollectionsModal}
-        onClose={() => setShowCollectionsModal(false)}
-        postToSave={postToSave}
-      />
-      <SignUpPopup
-        show={showSignUpPopup}
-        onClose={() => setShowSignUpPopup(false)}
-        onSwitchToLogin={handleSwitchToLogin}
-      />
-      {isLoading ? (
+      {/* --- REMOVED: The on-page FilterPanel is now gone --- */}
+
+      {isLoading && currentView.posts.length === 0 ? (
         <LoadingSpinner />
       ) : (
         <>
-          {isDetailView && currentView.parentPost && (
+          {isDetailView && currentView.parentPost ? (
             <PostDetail
               post={currentView.parentPost}
-              morePosts={filteredPosts}
+              morePosts={currentView.posts}
               onMorePostClick={async (post) => {
                 await trackPostClick(post.id);
-                handlePostClick(post);
+                await handlePostClick(post);
               }}
-              onSave={openSaveModal}
               onBack={handleGoBack}
-              onOpenLoginModal={() => setShowLoginModal(true)}
-            />
-          )}
-
-          {!isDetailView && filteredPosts.length > 0 ? (
-            <PostGrid
-              posts={filteredPosts}
-              variant="explore"
-              onSave={openSaveModal}
-              onPostClick={async (post) => {
-                await trackPostClick(post.id);
-                handlePostClick(post);
+              onSave={() => {
+                /* Implement save logic if needed */
               }}
-              isSaved={(p) =>
-                collections?.some((c) =>
-                  (c.posts || []).some((cp) => cp.id === p.id)
-                ) ?? false
-              }
             />
-          ) : null}
+          ) : (
+            <div className="mx-auto">
+              <InfiniteScroll
+                dataLength={currentView.posts.length}
+                next={() => fetchPosts(false)}
+                hasMore={hasMore}
+                loader={<LoadingSpinner />}
+                endMessage={
+                  currentView.posts.length > 20 ? (
+                    <p style={{ textAlign: "center", marginTop: "20px" }}>
+                      <b>Yay! You have seen it all</b>
+                    </p>
+                  ) : null
+                }
+              >
+                <PostGrid
+                  posts={currentView.posts}
+                  variant="explore"
+                  onPostClick={async (post) => {
+                    await trackPostClick(post.id);
+                    await handlePostClick(post);
+                  }}
+                  // Other props like onSave can be wired up here
+                />
+              </InfiniteScroll>
 
-          {filteredPosts.length === 0 && !isDetailView && (
-            <div className="text-center py-20">
-              <p className="text-lg text-gray-500">No posts found.</p>
+              {!isLoading && currentView.posts.length === 0 && (
+                <div className="text-center py-20">
+                  <p className="text-lg text-gray-500">
+                    No posts found for your criteria.
+                  </p>
+                  <p className="text-sm text-gray-400">
+                    Try adjusting your filters or search term.
+                  </p>
+                </div>
+              )}
             </div>
           )}
         </>

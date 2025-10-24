@@ -8,7 +8,6 @@ import { Post, PaginatedPostResponse, NavigationState } from "@/types";
 import api from "@/utils/api";
 import { notFound } from "next/navigation";
 import LoadingSpinner from "@/components/LoadingSpinner";
-import { useSearchStore } from "@/stores/searchStore";
 import { useNavigationStore } from "@/stores/navigationStore";
 import { useAuth } from "@/context/AuthContext";
 
@@ -21,12 +20,12 @@ export default function PostPage() {
     morePosts: Post[];
   } | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const { setAllCategories } = useSearchStore();
   const { setStack, handlePostClick, handleGoBack } = useNavigationStore();
   const { user, trackPostClick, showToastWithMessage } = useAuth();
 
   useEffect(() => {
     async function getPostData() {
+      if (!postId) return;
       try {
         setIsLoading(true);
         const postPromise = api.get<Post>(`/api/auth/posts/${postId}/`);
@@ -39,40 +38,25 @@ export default function PostPage() {
           morePostsPromise,
         ]);
 
-        console.log("Post data:", postResponse.data);
-        console.log("More posts data:", morePostsResponse.data.results);
+        const post = postResponse.data;
+        const morePosts = morePostsResponse.data.results;
 
-        // Update allCategories with tags from post and morePosts
-        const allFetchedCategories = Array.from(
-          new Set([
-            ...(postResponse.data.tags || []),
-            ...morePostsResponse.data.results.flatMap(
-              (post) => post.tags || []
-            ),
-          ])
-        );
-        setAllCategories(allFetchedCategories);
+        // --- FIX: Logic using old 'tags' and 'setAllCategories' is removed ---
 
-        // Update navigation stack to include this post detail view
+        // Update navigation stack so the back button works correctly
         const newView: NavigationState = {
           type: "detail",
-          parentPost: postResponse.data,
-          posts: morePostsResponse.data.results,
+          parentPost: post,
+          posts: morePosts,
           seed: String(morePostsResponse.data.seed ?? ""),
         };
-        setStack((prev) => {
-          // Replace or append to stack to avoid duplicates
-          const baseStack: NavigationState[] =
-            prev.length === 0 || prev[0].type !== "explore"
-              ? [{ type: "explore" as const, posts: [], seed: "" }]
-              : prev.slice(0, 1);
-          return [...baseStack, newView];
-        });
+        setStack(() => [
+          // Create a base 'explore' layer for the back button
+          { type: "explore" as const, posts: [], seed: "" },
+          newView,
+        ]);
 
-        setData({
-          post: postResponse.data,
-          morePosts: morePostsResponse.data.results,
-        });
+        setData({ post, morePosts });
       } catch (error) {
         console.error("Failed to fetch post data for full page", error);
         setData(null);
@@ -81,10 +65,8 @@ export default function PostPage() {
       }
     }
 
-    if (postId) {
-      getPostData();
-    }
-  }, [postId, setAllCategories, setStack]);
+    getPostData();
+  }, [postId, setStack]);
 
   const openSaveModal = (post: Post) => {
     if (!user) {
@@ -92,8 +74,9 @@ export default function PostPage() {
       showToastWithMessage("Please log in to save this post.");
       router.push("/login");
     } else {
+      // The save modal logic is handled inside PostDetail, so we just need to trigger it
+      // This can be done by passing a function to PostDetail or letting it handle its own state
       showToastWithMessage("Opening save to collection modal.");
-      // Note: SaveToCollectionModal is handled in PostDetail
     }
   };
 
@@ -112,10 +95,11 @@ export default function PostPage() {
         morePosts={data.morePosts}
         onMorePostClick={async (post: Post) => {
           await trackPostClick(post.id);
-          await handlePostClick(post);
+          // For direct navigation, clicking a "more" post should navigate to its own page
+          router.push(`/post/${post.id}`);
         }}
         onSave={openSaveModal}
-        onBack={handleGoBack}
+        onBack={() => router.push("/")} // Go back to the main explore page
         onOpenLoginModal={() => router.push("/login")}
       />
     </div>

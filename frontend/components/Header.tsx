@@ -6,23 +6,14 @@ import { usePathname, useRouter } from "next/navigation";
 import { useState, useEffect } from "react";
 import SearchInput from "./SearchInput";
 import { useSearchStore } from "@/stores/searchStore";
-import { useNavigationStore } from "@/stores/navigationStore";
 import Icon from "@/public/icon";
-import api from "@/utils/api";
-import { PaginatedPostResponse } from "@/types";
 import Image from "next/image";
 
 export default function Header() {
   const router = useRouter();
-  const { user, logoutUser, trackSearchQuery } = useAuth();
-  const {
-    searchTerm,
-    setSearchTerm,
-    allCategories,
-    activeCategory,
-    setActiveCategory,
-  } = useSearchStore();
-  const { setStack } = useNavigationStore();
+  const { user, logoutUser } = useAuth();
+  const { trackSearchQuery } = useAuth();
+  const { searchTerm, setSearchTerm, addToSearchHistory } = useSearchStore();
   const pathname = usePathname();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
@@ -35,44 +26,18 @@ export default function Header() {
     { href: "/try-on", label: "Try-On" },
   ];
 
-  const handleSuggestionClick = async (category: string | null) => {
-    setActiveCategory(category);
-    setSearchTerm("");
-    try {
-      const response = await api.get<PaginatedPostResponse>(
-        user ? "/api/auth/posts/for-you/" : "/api/auth/posts/"
-      );
-      setStack([
-        {
-          type: "explore",
-          posts: response.data.results,
-          seed: String(response.data.seed ?? ""),
-        },
-      ]);
+  const handleSearchSubmit = async (query: string) => {
+    if (!query.trim()) return;
+    await trackSearchQuery(query);
+    addToSearchHistory(query);
+    // If we are not on the explore page, navigate there to see results.
+    // The page will automatically react to the updated searchTerm from the store.
+    if (pathname !== "/") {
       router.push("/");
-    } catch (error) {
-      console.error("Failed to fetch posts for explore page:", error);
     }
   };
 
-  const handleSearchSubmit = async (query: string) => {
-    try {
-      await trackSearchQuery(query);
-      const response = await api.get<PaginatedPostResponse>(
-        user ? "/api/auth/posts/for-you/" : "/api/auth/posts/"
-      );
-      setStack([
-        {
-          type: "explore",
-          posts: response.data.results,
-          seed: String(response.data.seed ?? ""),
-        },
-      ]);
-      router.push("/");
-    } catch (error) {
-      console.error("Failed to fetch posts for explore page:", error);
-    }
-  };
+  const showSearch = pathname === "/" || pathname.startsWith("/post/");
 
   return (
     <>
@@ -108,16 +73,14 @@ export default function Header() {
           </div>
 
           {/* Center: Search Input (Desktop Only on Homepage or PostDetail) */}
-          {(pathname === "/" || pathname.startsWith("/post/")) && (
+          {showSearch && (
             <div className="hidden md:block flex-grow mx-8 lg:mx-4">
               <SearchInput
-                placeholder="Search nails, styles, colors..."
+                placeholder="Search or filter nails..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 onSearchSubmit={handleSearchSubmit}
-                categories={allCategories}
-                onCategoryClick={handleSuggestionClick}
-                activeCategory={activeCategory}
+                showFilterPanelOnFocus={true}
               />
             </div>
           )}
@@ -223,16 +186,14 @@ export default function Header() {
           </div>
         </div>
         {/* Search Input (Mobile Only on Homepage or PostDetail) */}
-        {(pathname === "/" || pathname.startsWith("/post/")) && (
+        {showSearch && (
           <div className="md:hidden w-full px-4 pb-2">
             <SearchInput
-              placeholder="Search nails, styles, colors..."
+              placeholder="Search or filter nails..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               onSearchSubmit={handleSearchSubmit}
-              categories={allCategories}
-              onCategoryClick={handleSuggestionClick}
-              activeCategory={activeCategory}
+              showFilterPanelOnFocus={true}
             />
           </div>
         )}

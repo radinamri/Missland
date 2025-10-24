@@ -34,8 +34,11 @@ export interface Post {
   image_url: string;
   width: number;
   height: number;
-  tags: string[];
-  try_on_image_url: string;
+  shape: string;
+  pattern: string;
+  size: string;
+  colors: string[];
+  try_on_image_url?: string;
 }
 
 export interface TryOn {
@@ -45,8 +48,11 @@ export interface TryOn {
 }
 
 export interface PaginatedPostResponse {
-  seed?: number | string;
+  seed: string | number;
   results: Post[];
+  count?: number; // Total number of posts
+  next?: string | null; // URL for the next page
+  previous?: string | null; // URL for the previous page
 }
 
 export interface Collection {

@@ -27,7 +27,7 @@ export default function PostDetail({
   onOpenLoginModal,
 }: PostDetailProps) {
   const { user, collections, showToastWithMessage } = useAuth();
-  const { searchTerm, activeCategory } = useSearchStore();
+  const { searchTerm } = useSearchStore(); 
   const [showCollectionsModal, setShowCollectionsModal] = useState(false);
 
   const isSaved = useMemo(() => {
@@ -39,20 +39,22 @@ export default function PostDetail({
 
   // Filter morePosts based on searchTerm and activeCategory
   const filteredMorePosts = useMemo(() => {
-    return morePosts.filter((post) => {
-      const matchesCategory = activeCategory
-        ? post.tags.includes(activeCategory)
-        : true;
-      const matchesSearch =
-        searchTerm.trim() === ""
-          ? true
-          : post.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            post.tags.some((tag) =>
-              tag.toLowerCase().includes(searchTerm.toLowerCase())
-            );
-      return matchesCategory && matchesSearch;
+    const term = searchTerm.trim().toLowerCase();
+    if (!term) {
+      return morePosts; // If no search term, return all "morePosts"
+    }
+
+    return morePosts.filter((p) => {
+      // Check for matches in title, shape, pattern, or colors array
+      return (
+        p.title.toLowerCase().includes(term) ||
+        (p.shape && p.shape.toLowerCase().includes(term)) ||
+        (p.pattern && p.pattern.toLowerCase().includes(term)) ||
+        (p.colors &&
+          p.colors.some((color) => color.toLowerCase().includes(term)))
+      );
     });
-  }, [morePosts, activeCategory, searchTerm]);
+  }, [morePosts, searchTerm]);
 
   // Handle download
   const handleDownload = async () => {
@@ -242,16 +244,36 @@ export default function PostDetail({
                   Try On
                 </Link>
               </div>
-              <div className="flex flex-wrap gap-2">
-                {post.tags?.map((tag) => (
-                  <span
-                    key={tag}
-                    className="bg-gray-100 text-gray-600 text-sm font-medium px-3 py-1 rounded-md"
-                  >
-                    {tag}
-                  </span>
-                )) ?? (
-                  <p className="text-gray-500 text-sm">No tags available</p>
+              <div className="space-y-3">
+                <h3 className="font-semibold text-gray-700">Details:</h3>
+                <div className="flex flex-wrap gap-2">
+                  {post.shape && (
+                    <span className="bg-blue-100 text-blue-800 text-sm font-medium px-3 py-1 rounded-lg">
+                      Shape: {post.shape}
+                    </span>
+                  )}
+                  {post.pattern && (
+                    <span className="bg-green-100 text-green-800 text-sm font-medium px-3 py-1 rounded-lg">
+                      Pattern: {post.pattern}
+                    </span>
+                  )}
+                  {post.size && (
+                    <span className="bg-purple-100 text-purple-800 text-sm font-medium px-3 py-1 rounded-lg">
+                      Size: {post.size}
+                    </span>
+                  )}
+                </div>
+                {post.colors && post.colors.length > 0 && (
+                  <div className="flex flex-wrap gap-2">
+                    {post.colors.map((color) => (
+                      <span
+                        key={color}
+                        className="bg-gray-100 text-gray-600 text-sm font-medium px-3 py-1 rounded-lg"
+                      >
+                        {color}
+                      </span>
+                    ))}
+                  </div>
                 )}
               </div>
             </div>
@@ -528,16 +550,36 @@ export default function PostDetail({
                       <p className="text-sm text-gray-500">Curated Style</p>
                     </div>
                   </div>
-                  <div className="flex flex-wrap gap-2 pt-4">
-                    {post.tags?.map((tag) => (
-                      <span
-                        key={tag}
-                        className="bg-gray-100 text-gray-600 text-sm font-medium px-3 py-1 rounded-md"
-                      >
-                        {tag}
-                      </span>
-                    )) ?? (
-                      <p className="text-gray-500 text-sm">No tags available</p>
+                  <div className="space-y-3 pt-4">
+                    <h3 className="font-semibold text-gray-700">Details:</h3>
+                    <div className="flex flex-wrap gap-2">
+                      {post.shape && (
+                        <span className="bg-blue-100 text-blue-800 text-sm font-medium px-3 py-1 rounded-lg">
+                          Shape: {post.shape}
+                        </span>
+                      )}
+                      {post.pattern && (
+                        <span className="bg-green-100 text-green-800 text-sm font-medium px-3 py-1 rounded-lg">
+                          Pattern: {post.pattern}
+                        </span>
+                      )}
+                      {post.size && (
+                        <span className="bg-purple-100 text-purple-800 text-sm font-medium px-3 py-1 rounded-lg">
+                          Size: {post.size}
+                        </span>
+                      )}
+                    </div>
+                    {post.colors && post.colors.length > 0 && (
+                      <div className="flex flex-wrap gap-2">
+                        {post.colors.map((color) => (
+                          <span
+                            key={color}
+                            className="bg-gray-100 text-gray-600 text-sm font-medium px-3 py-1 rounded-lg"
+                          >
+                            {color}
+                          </span>
+                        ))}
+                      </div>
                     )}
                   </div>
                 </div>
