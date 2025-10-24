@@ -2,8 +2,7 @@
 "use client";
 
 import { useEffect, useState, useCallback } from "react";
-import { usePathname, useRouter } from "next/navigation";
-import { Post, PaginatedPostResponse, NavigationState } from "@/types";
+import { PaginatedPostResponse, NavigationState } from "@/types";
 import api from "@/utils/api";
 import { useAuth } from "@/context/AuthContext";
 import { useSearchStore } from "@/stores/searchStore";
@@ -14,8 +13,7 @@ import LoadingSpinner from "@/components/LoadingSpinner";
 import InfiniteScroll from "react-infinite-scroll-component";
 
 export default function ExplorePage() {
-  const router = useRouter();
-  const { user, trackPostClick } = useAuth();
+  const { trackPostClick } = useAuth();
   const { searchTerm, filters } = useSearchStore();
 
   // --- RE-INTRODUCED: Navigation store is now the primary state manager ---

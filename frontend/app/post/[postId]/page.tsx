@@ -20,7 +20,7 @@ export default function PostPage() {
     morePosts: Post[];
   } | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const { setStack, handlePostClick, handleGoBack } = useNavigationStore();
+  const { setStack } = useNavigationStore();
   const { user, trackPostClick, showToastWithMessage } = useAuth();
 
   useEffect(() => {
