@@ -4,10 +4,13 @@ import { useState, useMemo } from "react";
 import { Post } from "@/types";
 import Image from "next/image";
 import PostGrid from "./PostGrid";
+import Pagination from "./Pagination";
 import { useAuth } from "@/context/AuthContext";
 import { useSearchStore } from "@/stores/searchStore";
 import Link from "next/link";
 import SaveToCollectionModal from "./SaveToCollectionModal";
+
+const MORE_POSTS_PER_PAGE = 24;
 
 interface PostDetailProps {
   post: Post;
@@ -27,8 +30,10 @@ export default function PostDetail({
   onOpenLoginModal,
 }: PostDetailProps) {
   const { user, collections, showToastWithMessage } = useAuth();
-  const { searchTerm } = useSearchStore(); 
+  const { searchTerm } = useSearchStore();
   const [showCollectionsModal, setShowCollectionsModal] = useState(false);
+  const [morePostsPage, setMorePostsPage] = useState(1);
+  const totalMorePostsPages = Math.ceil(morePosts.length / MORE_POSTS_PER_PAGE);
 
   const isSaved = useMemo(() => {
     if (!user || !collections) return false;
@@ -37,24 +42,25 @@ export default function PostDetail({
     );
   }, [collections, post, user]);
 
-  // Filter morePosts based on searchTerm and activeCategory
-  const filteredMorePosts = useMemo(() => {
+  const paginatedMorePosts = useMemo(() => {
+    // First, filter by the search term
     const term = searchTerm.trim().toLowerCase();
-    if (!term) {
-      return morePosts; // If no search term, return all "morePosts"
-    }
+    const filtered = term
+      ? morePosts.filter(
+          (p) =>
+            p.title.toLowerCase().includes(term) ||
+            (p.shape && p.shape.toLowerCase().includes(term)) ||
+            (p.pattern && p.pattern.toLowerCase().includes(term)) ||
+            (p.colors &&
+              p.colors.some((color) => color.toLowerCase().includes(term)))
+        )
+      : morePosts;
 
-    return morePosts.filter((p) => {
-      // Check for matches in title, shape, pattern, or colors array
-      return (
-        p.title.toLowerCase().includes(term) ||
-        (p.shape && p.shape.toLowerCase().includes(term)) ||
-        (p.pattern && p.pattern.toLowerCase().includes(term)) ||
-        (p.colors &&
-          p.colors.some((color) => color.toLowerCase().includes(term)))
-      );
-    });
-  }, [morePosts, searchTerm]);
+    // Then, slice the filtered array for the current page
+    const startIndex = (morePostsPage - 1) * MORE_POSTS_PER_PAGE;
+    const endIndex = startIndex + MORE_POSTS_PER_PAGE;
+    return filtered.slice(startIndex, endIndex);
+  }, [morePosts, searchTerm, morePostsPage]);
 
   // Handle download
   const handleDownload = async () => {
@@ -265,9 +271,9 @@ export default function PostDetail({
                 </div>
                 {post.colors && post.colors.length > 0 && (
                   <div className="flex flex-wrap gap-2">
-                    {post.colors.map((color) => (
+                    {post.colors.map((color, index) => (
                       <span
-                        key={color}
+                        key={`${color}-${index}`}
                         className="bg-gray-100 text-gray-600 text-sm font-medium px-3 py-1 rounded-lg"
                       >
                         {color}
@@ -571,9 +577,9 @@ export default function PostDetail({
                     </div>
                     {post.colors && post.colors.length > 0 && (
                       <div className="flex flex-wrap gap-2">
-                        {post.colors.map((color) => (
+                        {post.colors.map((color, index) => (
                           <span
-                            key={color}
+                            key={`${color}-${index}`}
                             className="bg-gray-100 text-gray-600 text-sm font-medium px-3 py-1 rounded-lg"
                           >
                             {color}
@@ -591,18 +597,28 @@ export default function PostDetail({
           <h2 className="text-2xl font-bold text-gray-800 mb-6 text-center">
             More to explore
           </h2>
-          {filteredMorePosts.length > 0 ? (
-            <PostGrid
-              posts={filteredMorePosts}
-              variant="explore"
-              onPostClick={onMorePostClick}
-              onSave={onSave}
-              isSaved={(p) =>
-                collections?.some((c) =>
-                  (c.posts || []).some((cp) => cp.id === p.id)
-                ) ?? false
-              }
-            />
+          {paginatedMorePosts.length > 0 ? (
+            <>
+              <PostGrid
+                posts={paginatedMorePosts}
+                variant="explore"
+                onPostClick={onMorePostClick}
+                onSave={onSave}
+                isSaved={(p) =>
+                  collections?.some((c) =>
+                    (c.posts || []).some((cp) => cp.id === p.id)
+                  ) ?? false
+                }
+              />
+              {/* Add the pagination component if there's more than one page */}
+              {totalMorePostsPages > 1 && (
+                <Pagination
+                  currentPage={morePostsPage}
+                  totalPages={totalMorePostsPages}
+                  onPageChange={(page) => setMorePostsPage(page)}
+                />
+              )}
+            </>
           ) : (
             <p className="text-center text-gray-500">No more posts available</p>
           )}

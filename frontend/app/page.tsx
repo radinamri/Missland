@@ -2,39 +2,29 @@
 "use client";
 
 import { useEffect, useState, useCallback } from "react";
-import { PaginatedPostResponse, NavigationState } from "@/types";
+import { Post, PaginatedPostResponse } from "@/types";
 import api from "@/utils/api";
-import { useAuth } from "@/context/AuthContext";
 import { useSearchStore } from "@/stores/searchStore";
-import { useNavigationStore } from "@/stores/navigationStore"; // Re-introduced for view management
 import PostGrid from "@/components/PostGrid";
-import PostDetail from "@/components/PostDetail";
 import LoadingSpinner from "@/components/LoadingSpinner";
-import InfiniteScroll from "react-infinite-scroll-component";
+import Pagination from "@/components/Pagination"; // Import our new component
+
+const POSTS_PER_PAGE = 48; // Set our desired page size
 
 export default function ExplorePage() {
-  const { trackPostClick } = useAuth();
   const { searchTerm, filters } = useSearchStore();
 
-  // --- RE-INTRODUCED: Navigation store is now the primary state manager ---
-  const { stack, setStack, handlePostClick, handleGoBack } =
-    useNavigationStore();
-
-  const currentView = stack[stack.length - 1] || { type: "explore", posts: [] };
-  const isDetailView = currentView?.type === "detail";
-
-  // Local state for pagination and loading status of the explore feed
-  const [page, setPage] = useState(1);
-  const [hasMore, setHasMore] = useState(true);
+  const [posts, setPosts] = useState<Post[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
-  // --- MODIFIED: fetchPosts now updates the navigationStore directly ---
+  // --- NEW STATE FOR PAGINATION ---
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(0);
+
   const fetchPosts = useCallback(
-    async (isNewSearch = false) => {
-      if (isNewSearch) {
-        setIsLoading(true);
-        window.scrollTo(0, 0);
-      }
+    async (pageToFetch: number) => {
+      setIsLoading(true);
+      window.scrollTo(0, 0); // Scroll to top on every page change
 
       const params = new URLSearchParams();
       if (searchTerm) params.append("q", searchTerm);
@@ -43,126 +33,72 @@ export default function ExplorePage() {
       if (filters.size) params.append("size", filters.size);
       if (filters.color) params.append("color", filters.color);
 
-      const currentPage = isNewSearch ? 1 : page;
-      params.append("page", String(currentPage));
+      params.append("page", String(pageToFetch));
+      params.append("page_size", String(POSTS_PER_PAGE));
 
       try {
         const response = await api.get<PaginatedPostResponse>(
           `/api/auth/posts/filter/?${params.toString()}`
         );
 
-        const newPosts = response.data.results;
-
-        // Update the posts within the zustand store
-        setStack((prevStack) => {
-          const lastView = prevStack[prevStack.length - 1];
-          if (lastView && lastView.type === "explore") {
-            const updatedPosts = isNewSearch
-              ? newPosts
-              : [...lastView.posts, ...newPosts];
-            const newExploreView: NavigationState = {
-              ...lastView,
-              posts: updatedPosts,
-            };
-            return [...prevStack.slice(0, -1), newExploreView];
-          }
-          // If stack is empty or not in explore, initialize it
-          return [{ type: "explore", posts: newPosts, seed: "" }];
-        });
-
-        setHasMore(response.data.next !== null);
-        setPage(isNewSearch ? 2 : (prevPage) => prevPage + 1);
+        setPosts(response.data.results);
+        // Calculate total pages based on the count from the API
+        setTotalPages(Math.ceil((response.data.count || 0) / POSTS_PER_PAGE));
       } catch (error) {
         console.error("Failed to fetch posts:", error);
-        setHasMore(false);
+        setPosts([]);
+        setTotalPages(0);
       } finally {
         setIsLoading(false);
       }
     },
-    [searchTerm, filters, page, setStack]
+    [searchTerm, filters]
   );
 
-  // Effect to trigger a new search when filters or term change
+  // Effect to trigger a new search when filters or term change (resets to page 1)
   useEffect(() => {
     const handler = setTimeout(() => {
-      fetchPosts(true);
+      setCurrentPage(1); // Reset to the first page for any new search
+      fetchPosts(1);
     }, 500);
-
     return () => clearTimeout(handler);
   }, [searchTerm, filters, fetchPosts]);
 
-  // Effect to handle browser back/forward buttons
-  useEffect(() => {
-    const handlePopState = () => {
-      // This is a simplified popstate, you might need more robust logic
-      // based on your exact URL structure management in handlePostClick
-      handleGoBack();
-    };
-    window.addEventListener("popstate", handlePopState);
-    return () => window.removeEventListener("popstate", handlePopState);
-  }, [handleGoBack]);
+  // Handler for the Pagination component
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
+    fetchPosts(page);
+  };
 
   return (
-    <main className={isDetailView ? "" : "p-4 md:p-8"}>
-      {/* --- REMOVED: The on-page FilterPanel is now gone --- */}
-
-      {isLoading && currentView.posts.length === 0 ? (
-        <LoadingSpinner />
-      ) : (
-        <>
-          {isDetailView && currentView.parentPost ? (
-            <PostDetail
-              post={currentView.parentPost}
-              morePosts={currentView.posts}
-              onMorePostClick={async (post) => {
-                await trackPostClick(post.id);
-                await handlePostClick(post);
-              }}
-              onBack={handleGoBack}
-              onSave={() => {
-                /* Implement save logic if needed */
-              }}
-            />
-          ) : (
-            <div className="mx-auto">
-              <InfiniteScroll
-                dataLength={currentView.posts.length}
-                next={() => fetchPosts(false)}
-                hasMore={hasMore}
-                loader={<LoadingSpinner />}
-                endMessage={
-                  currentView.posts.length > 20 ? (
-                    <p style={{ textAlign: "center", marginTop: "20px" }}>
-                      <b>Yay! You have seen it all</b>
-                    </p>
-                  ) : null
-                }
-              >
-                <PostGrid
-                  posts={currentView.posts}
-                  variant="explore"
-                  onPostClick={async (post) => {
-                    await trackPostClick(post.id);
-                    await handlePostClick(post);
-                  }}
-                  // Other props like onSave can be wired up here
+    <main className="p-4 md:p-8">
+      <div className="mx-auto">
+        {isLoading ? (
+          <LoadingSpinner />
+        ) : (
+          <>
+            {posts.length > 0 ? (
+              <>
+                <PostGrid posts={posts} variant="explore" />
+                <Pagination
+                  currentPage={currentPage}
+                  totalPages={totalPages}
+                  onPageChange={handlePageChange}
                 />
-              </InfiniteScroll>
-
-              {!isLoading && currentView.posts.length === 0 && (
-                <div className="text-center py-20">
-                  <p className="text-lg text-gray-500">
-                    No posts found for your criteria.
-                  </p>
-                  <p className="text-sm text-gray-400">
-                    Try adjusting your filters or search term.
-                  </p>
-                </div>
-              )}
-            </div>
-          )}
-        </>
-      )}
+              </>
+            ) : (
+              <div className="text-center py-20">
+                <p className="text-lg text-gray-500">
+                  No posts found for your criteria.
+                </p>
+                <p className="text-sm text-gray-400">
+                  Try adjusting your filters.
+                </p>
+              </div>
+            )}
+          </>
+        )}
+      </div>
     </main>
   );
 }
