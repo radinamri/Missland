@@ -42,7 +42,7 @@ def get_tags_from_post(post):
 
 # --- CORRECT ORDER: PAGINATION CLASS DEFINED FIRST ---
 class StandardResultsSetPagination(PageNumberPagination):
-    page_size = 20
+    page_size = 48
     page_size_query_param = 'page_size'
     max_page_size = 100
 
