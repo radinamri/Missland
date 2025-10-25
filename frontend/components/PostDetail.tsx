@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { Post } from "@/types";
 import Image from "next/image";
 import PostGrid from "./PostGrid";
@@ -34,6 +34,10 @@ export default function PostDetail({
   const [showCollectionsModal, setShowCollectionsModal] = useState(false);
   const [morePostsPage, setMorePostsPage] = useState(1);
   const totalMorePostsPages = Math.ceil(morePosts.length / MORE_POSTS_PER_PAGE);
+
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [post.id]);
 
   const isSaved = useMemo(() => {
     if (!user || !collections) return false;
