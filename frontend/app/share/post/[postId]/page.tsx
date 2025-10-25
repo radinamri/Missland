@@ -20,15 +20,17 @@ export default function SharePage() {
   const [showCollectionsModal, setShowCollectionsModal] = useState(false);
   const [showLoginModal, setShowLoginModal] = useState(false);
   const timeoutId = useRef<NodeJS.Timeout | null>(null);
+  const [hasInteractedOrPopupShown, setHasInteractedOrPopupShown] =
+    useState(false);
 
   useEffect(() => {
     if (postId) {
-      // Fetch post data
       api
         .get<Post>(`/api/public/posts/${postId}/`)
         .then((response) => setPost(response.data))
-        .catch(() => router.push("/")); // Redirect home if post not found
+        .catch(() => router.push("/"));
     }
+    window.scrollTo(0, 0);
   }, [postId, router]);
 
   useEffect(() => {
@@ -46,44 +48,45 @@ export default function SharePage() {
     }
   }, [user, post, trackPostClick, showToastWithMessage]);
 
-  // Auto-show LoginModal for unauthenticated users after 5 seconds
   useEffect(() => {
-    if (!user && post && !showLoginModal && !showCollectionsModal) {
+    // Only run the timer if the user is not logged in, the post is loaded,
+    // AND there has been no previous interaction or popup shown.
+    if (!user && post && !hasInteractedOrPopupShown) {
       const id = setTimeout(() => {
         setShowLoginModal(true);
-      }, 5000); // 5 seconds delay
-      timeoutId.current = id; // Store timeout ID in ref
+        setHasInteractedOrPopupShown(true); // Set the flag to true so this never runs again.
+      }, 5000);
+      timeoutId.current = id;
     }
 
-    // Cleanup timeout on unmount or when conditions change
     return () => {
       if (timeoutId.current) {
         clearTimeout(timeoutId.current);
       }
     };
-  }, [user, post, showLoginModal, showCollectionsModal]);
+    // The dependency array is simplified to use the new flag.
+  }, [user, post, hasInteractedOrPopupShown]);
 
   const handleSaveToCollection = () => {
     if (!user || !post) {
       localStorage.setItem("pendingSavePostId", postId);
       setShowLoginModal(true);
       showToastWithMessage("Please log in to save this post.");
-      if (timeoutId.current) {
-        clearTimeout(timeoutId.current); // Clear timeout on interaction
-      }
+      if (timeoutId.current) clearTimeout(timeoutId.current);
       return;
     }
     setShowCollectionsModal(true);
     trackPostClick(post.id).catch(console.error);
-    if (timeoutId.current) {
-      clearTimeout(timeoutId.current); // Clear timeout on interaction
-    }
+    if (timeoutId.current) clearTimeout(timeoutId.current);
   };
 
   const handleInteraction = () => {
+    // If the user interacts with the page in any way, clear the timer...
     if (timeoutId.current) {
-      clearTimeout(timeoutId.current); // Clear timeout on any interaction
+      clearTimeout(timeoutId.current);
     }
+    // ...and set the flag to true, permanently disabling the auto-popup.
+    setHasInteractedOrPopupShown(true);
   };
 
   if (!post) {
@@ -92,9 +95,9 @@ export default function SharePage() {
 
   return (
     <div
-      className="px-4 md:px-8 pt-6 pb-8 md:pt-12"
-      onClick={handleInteraction} // Clear timeout on any click
-      onTouchStart={handleInteraction} // Clear timeout on touch for mobile
+      className="px-4 md:px-8 pt-6 pb-24 md:pt-22"
+      onClick={handleInteraction}
+      onTouchStart={handleInteraction}
     >
       <LoginModal
         isOpen={showLoginModal}
@@ -106,10 +109,10 @@ export default function SharePage() {
         postToSave={post}
       />
       <div className="w-full max-w-4xl mx-auto bg-white rounded-3xl shadow-xl overflow-hidden">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-0">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-0">
           <div className="relative w-full aspect-[4/5]">
             <Image
-              src={post.try_on_image_url}
+              src={post.try_on_image_url || post.image_url}
               alt={`Try-on result for ${post.title}`}
               fill
               style={{ objectFit: "cover" }}
@@ -131,20 +134,41 @@ export default function SharePage() {
                   <p className="text-sm text-gray-500">Curated Style</p>
                 </div>
               </div>
-              <div className="flex flex-wrap gap-2 pt-4">
-                {post.tags?.map((tag) => (
-                  <span
-                    key={tag}
-                    className="bg-gray-100 text-gray-600 text-sm font-medium px-3 py-1 rounded-md"
-                  >
-                    {tag}
-                  </span>
-                )) ?? (
-                  <p className="text-gray-500 text-sm">No tags available</p>
+              <div className="space-y-3 pt-4">
+                <h3 className="font-semibold text-gray-700">Details:</h3>
+                <div className="flex flex-wrap gap-2">
+                  {post.shape && (
+                    <span className="bg-blue-100 text-blue-800 text-sm font-medium px-3 py-1 rounded-lg">
+                      Shape: {post.shape}
+                    </span>
+                  )}
+                  {post.pattern && (
+                    <span className="bg-green-100 text-green-800 text-sm font-medium px-3 py-1 rounded-lg">
+                      Pattern: {post.pattern}
+                    </span>
+                  )}
+                  {post.size && (
+                    <span className="bg-purple-100 text-purple-800 text-sm font-medium px-3 py-1 rounded-lg">
+                      Size: {post.size}
+                    </span>
+                  )}
+                </div>
+                {post.colors && post.colors.length > 0 && (
+                  <div className="flex flex-wrap gap-2">
+                    {post.colors.map((color, index) => (
+                      <span
+                        key={`${color}-${index}`}
+                        className="bg-gray-100 text-gray-600 text-sm font-medium px-3 py-1 rounded-lg"
+                      >
+                        {color}
+                      </span>
+                    ))}
+                  </div>
                 )}
               </div>
             </div>
-            <div className="flex flex-col items-center justify-center space-y-2 mt-16">
+
+            <div className="flex flex-col items-center justify-center space-y-2 mt-8 md:mt-16">
               <Link
                 href={`/try-on/${post.id}`}
                 className="w-full text-center bg-[#3D5A6C] text-white font-bold py-3 px-6 rounded-xl hover:bg-[#314A5A] transition"
