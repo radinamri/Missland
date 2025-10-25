@@ -206,7 +206,7 @@ export default function PostDetail({
                   </button>
                   <button
                     onClick={handleDownload}
-                    className="flex items-center justify-center text-[#3D5A6C] font-bold hover:bg-gray-100 rounded-2xl pl-2.5 p-1 transition"
+                    className="flex items-center justify-center text-[#3D5A6C] font-bold hover:bg-gray-100 rounded-2xl pl-2 pr-3 p-2 transition"
                     aria-label="Download"
                     title="Download image"
                   >
