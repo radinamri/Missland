@@ -5,7 +5,7 @@ from .views import (
     PostDetailView, UserDeleteView, MorePostsView, ForYouPostListView,
     TrackPostClickView, TrackSearchQueryView, TrackTryOnView, CollectionListView,
     CollectionDetailView, ManagePostInCollectionView, SaveTryOnView, MyTryOnsListView,
-    DeleteTryOnView, PasswordResetRequestView, PasswordResetConfirmView, FilteredPostListView
+    DeleteTryOnView, PasswordResetRequestView, PasswordResetConfirmView, FilteredPostListView, FilterSuggestionsView
 )
 from dj_rest_auth.views import PasswordChangeView
 
@@ -26,6 +26,7 @@ urlpatterns = [
     # Posts & Feeds
     path('posts/', PostListView.as_view(), name='post-list'),
     path('posts/filter/', FilteredPostListView.as_view(), name='post-filter'),
+    path('posts/filter-suggestions/', FilterSuggestionsView.as_view(), name='filter-suggestions'),
     path('posts/for-you/', ForYouPostListView.as_view(), name='for-you-post-list'),
     path('posts/<int:pk>/', PostDetailView.as_view(), name='post-detail'),
     path('posts/<int:post_id>/more/', MorePostsView.as_view(), name='more-posts'),

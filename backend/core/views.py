@@ -450,3 +450,19 @@ class PasswordResetConfirmView(APIView):
             return Response({'detail': 'Password has been reset successfully.'}, status=status.HTTP_200_OK)
         else:
             return Response({'detail': 'The reset link is invalid or has expired.'}, status=status.HTTP_400_BAD_REQUEST)
+
+
+class FilterSuggestionsView(APIView):
+    """
+    Provides a static list of curated filter suggestions for the frontend.
+    """
+    permission_classes = [AllowAny]
+
+    def get(self, request, *args, **kwargs):
+        suggestions = {
+            "shapes": ["almond", "stiletto", "square", "coffin"],
+            "patterns": ["french", "ombre", "solid", "glitter"],
+            "sizes": ["short", "medium", "long"],
+            "colors": ['red', 'pink', 'orange', 'yellow', 'green', 'blue', 'purple', 'brown', 'gray', 'black', 'white']
+        }
+        return Response(suggestions)
