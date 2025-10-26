@@ -8,14 +8,26 @@ import SearchInput from "./SearchInput";
 import { useSearchStore } from "@/stores/searchStore";
 import Icon from "@/public/icon";
 import Image from "next/image";
+import FilterBar from "./FilterBar";
 
 export default function Header() {
   const router = useRouter();
   const { user, logoutUser } = useAuth();
   const { trackSearchQuery } = useAuth();
-  const { searchTerm, setSearchTerm, addToSearchHistory } = useSearchStore();
+  const {
+    searchTerm,
+    setSearchTerm,
+    addToSearchHistory,
+    showFilterBar,
+    setShowFilterBar,
+    fetchFilterSuggestions,
+  } = useSearchStore();
   const pathname = usePathname();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+
+  useEffect(() => {
+    fetchFilterSuggestions();
+  }, [fetchFilterSuggestions]);
 
   useEffect(() => {
     setIsMobileMenuOpen(false);
@@ -32,9 +44,15 @@ export default function Header() {
     addToSearchHistory(query);
     // If we are not on the explore page, navigate there to see results.
     // The page will automatically react to the updated searchTerm from the store.
+    setShowFilterBar(true);
     if (pathname !== "/") {
       router.push("/");
     }
+  };
+
+  const handleSearchClear = () => {
+    setSearchTerm("");
+    setShowFilterBar(false); // Hide the bar when search is cleared
   };
 
   const showSearch = pathname === "/" || pathname.startsWith("/post/");
@@ -80,6 +98,7 @@ export default function Header() {
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 onSearchSubmit={handleSearchSubmit}
+                onClear={handleSearchClear}
                 showFilterPanelOnFocus={true}
               />
             </div>
@@ -193,10 +212,12 @@ export default function Header() {
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               onSearchSubmit={handleSearchSubmit}
+              onClear={handleSearchClear}
               showFilterPanelOnFocus={true}
             />
           </div>
         )}
+        {showFilterBar && <FilterBar />}
       </header>
 
       {/* Mobile Menu Panel */}

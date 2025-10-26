@@ -1,8 +1,14 @@
-// stores/searchStore.ts
-
 import { create } from "zustand";
+import api from "@/utils/api";
 
-// Define the structure for our new filters
+// Define the structure for filter suggestions
+interface FilterSuggestions {
+  shapes: string[];
+  patterns: string[];
+  sizes: string[];
+  colors: string[];
+}
+
 interface Filters {
   shape: string | null;
   pattern: string | null;
@@ -13,14 +19,16 @@ interface Filters {
 interface SearchState {
   searchTerm: string;
   setSearchTerm: (term: string) => void;
-  // New filter state
   filters: Filters;
   setFilter: (filterName: keyof Filters, value: string | null) => void;
   resetFilters: () => void;
-  // We can keep history
   searchHistory: string[];
   addToSearchHistory: (term: string) => void;
   clearSearchHistory: () => void;
+  showFilterBar: boolean;
+  setShowFilterBar: (show: boolean) => void;
+  filterSuggestions: FilterSuggestions | null;
+  fetchFilterSuggestions: () => Promise<void>;
 }
 
 const initialFilters: Filters = {
@@ -30,22 +38,20 @@ const initialFilters: Filters = {
   color: null,
 };
 
-// We remove the persist middleware for now to avoid conflicts during development
-export const useSearchStore = create<SearchState>((set) => ({
+export const useSearchStore = create<SearchState>((set, get) => ({
   searchTerm: "",
   setSearchTerm: (term) => set({ searchTerm: term }),
-
   filters: initialFilters,
   setFilter: (filterName, value) =>
     set((state) => ({
       filters: {
         ...state.filters,
-        [filterName]: value,
+        // If clicking the same filter again, deactivate it
+        [filterName]: state.filters[filterName] === value ? null : value,
       },
     })),
-  resetFilters: () => set({ filters: initialFilters, searchTerm: "" }),
-
-  searchHistory: [], // You can add back `persist` later if you wish
+  resetFilters: () => set({ filters: initialFilters, searchTerm: "" }), // `showFilterBar` is handled separately
+  searchHistory: [],
   addToSearchHistory: (term) =>
     set((state) => {
       if (!term.trim()) return {};
@@ -56,4 +62,19 @@ export const useSearchStore = create<SearchState>((set) => ({
       return { searchHistory: newHistory };
     }),
   clearSearchHistory: () => set({ searchHistory: [] }),
+  showFilterBar: false,
+  setShowFilterBar: (show) => set({ showFilterBar: show }),
+  filterSuggestions: null,
+  fetchFilterSuggestions: async () => {
+    // Prevent re-fetching if data already exists
+    if (get().filterSuggestions) return;
+    try {
+      const response = await api.get<FilterSuggestions>(
+        "/api/auth/posts/filter-suggestions/"
+      );
+      set({ filterSuggestions: response.data });
+    } catch (error) {
+      console.error("Failed to fetch filter suggestions:", error);
+    }
+  },
 }));
