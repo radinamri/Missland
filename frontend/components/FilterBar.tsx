@@ -33,21 +33,44 @@ export default function FilterBar() {
 
   // Combine all suggestions into a single array for rendering
   const allSuggestions = [
-    ...filterSuggestions.shapes.map((s) => ({ type: "shape", value: s })),
-    ...filterSuggestions.patterns.map((p) => ({ type: "pattern", value: p })),
-    ...filterSuggestions.sizes.map((s) => ({ type: "size", value: s })),
-    ...filterSuggestions.colors.map((c) => ({ type: "color", value: c })),
+    ...filterSuggestions.shapes.map((value) => ({
+      type: "shape" as const,
+      value,
+    })),
+    ...filterSuggestions.patterns.map((value) => ({
+      type: "pattern" as const,
+      value,
+    })),
+    ...filterSuggestions.sizes.map((value) => ({
+      type: "size" as const,
+      value,
+    })),
+    ...filterSuggestions.colors.map((value) => ({
+      type: "color" as const,
+      value,
+    })),
   ];
+
+  const activePills = allSuggestions.filter(
+    (pill) => filters[pill.type] === pill.value
+  );
+  const inactivePills = allSuggestions.filter(
+    (pill) => filters[pill.type] !== pill.value
+  );
+  const sortedPills = [...activePills, ...inactivePills];
 
   return (
     <div className="w-full bg-white">
       <div className="flex items-center space-x-3 overflow-x-auto px-4 md:px-8 no-scrollbar">
-        {allSuggestions.map(({ type, value }) => (
+        {sortedPills.map(({ type, value }) => (
           <FilterPill
             key={`${type}-${value}`}
             label={value.charAt(0).toUpperCase() + value.slice(1)}
-            isActive={filters[type as keyof typeof filters] === value}
-            onClick={() => setFilter(type as keyof typeof filters, value)}
+            isActive={filters[type] === value}
+            // The onClick logic is already perfect. The store handles toggling the filter on/off.
+            // When the filter is turned off, this component will re-render, and the pill
+            // will automatically move back into the `inactivePills` group.
+            onClick={() => setFilter(type, value)}
           />
         ))}
       </div>
