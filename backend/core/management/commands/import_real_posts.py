@@ -18,7 +18,7 @@ class Command(BaseCommand):
         hex_map = {
             'red': 'f87171', 'pink': 'f9a8d4', 'orange': 'fb923c', 'yellow': 'facc15',
             'green': '34d399', 'blue': '60a5fa', 'purple': 'c084fc', 'brown': 'd2b48c',
-            'gray': '9ca3af', 'black': '1f2937', 'white': 'f9fafb'
+            'gray': '9ca3af', 'black': '1f2937', 'white': 'f9fafb', 'cream': 'fef3c7', 'turquoise': '2dd4bf'
         }
 
         self.stdout.write(self.style.WARNING('Deleting all existing posts...'))

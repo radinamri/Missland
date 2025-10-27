@@ -15,7 +15,7 @@ class Command(BaseCommand):
 
         # --- Define our categories for realistic data ---
         shapes = ['almond', 'stiletto', 'square', 'coffin', 'round', 'oval']
-        patterns = ['french', 'ombre', 'solid', 'glitter', 'marbled', 'abstract', 'floral']
+        patterns = ['french', 'ombre', 'solid', 'glitter', 'marbled', 'abstract', 'floral', 'gradient', 'glossy']
         sizes = ['short', 'medium', 'long', 'extra_long']
 
         # Use the detailed color variants from your map as the source
