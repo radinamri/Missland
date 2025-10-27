@@ -5,24 +5,32 @@ import { useState, useRef, useEffect } from "react";
 import { useSearchStore } from "@/stores/searchStore";
 import { FiChevronDown } from "react-icons/fi";
 
-// Filter options remain the same
 const filterOptions = {
-  shapes: ["almond", "stiletto", "square", "coffin", "round", "oval"],
-  patterns: ["french", "ombre", "solid", "glitter", "marbled", "abstract"],
-  sizes: ["short", "medium", "long", "extra_long"],
+  // 1. Shape: The most fundamental choice. Ordered from classic/popular to more dramatic.
+  shapes: ["square", "almond", "coffin", "stiletto"],
+
+  // 2. Color: The next most common filter. Ordered by a pseudo-spectral wheel, followed by neutrals.
   colors: [
     "red",
     "pink",
     "orange",
     "yellow",
     "green",
+    "turquoise",
     "blue",
     "purple",
+    "cream",
     "brown",
+    "white",
     "gray",
     "black",
-    "white",
   ],
+
+  // 3. Pattern/Finish: Key stylistic choices. Ordered by popularity and type (patterns vs. finishes).
+  patterns: ["french", "ombre", "glossy", "matte", "mixed"],
+
+  // 4. Size: A practical filter. Ordered in natural progression.
+  sizes: ["short", "medium", "long"],
 };
 
 const colorHexMap: { [key: string]: string } = {
@@ -37,6 +45,8 @@ const colorHexMap: { [key: string]: string } = {
   gray: "#9ca3af",
   black: "#1f2937",
   white: "#f1f5f9",
+  cream: "#fef3c7",
+  turquoise: "#2dd4bf",
 };
 
 // A reusable dropdown component for our filters
@@ -130,12 +140,18 @@ export default function FilterPanel() {
 
   return (
     <div className="space-y-4">
-      <div className="grid grid-cols-2 gap-3">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
         <FilterDropdown
           name="Shape"
           options={filterOptions.shapes}
           selectedValue={filters.shape}
           onSelect={(val) => setFilter("shape", val)}
+        />
+        <FilterDropdown
+          name="Color"
+          options={filterOptions.colors}
+          selectedValue={filters.color}
+          onSelect={(val) => setFilter("color", val)}
         />
         <FilterDropdown
           name="Pattern"
@@ -148,12 +164,6 @@ export default function FilterPanel() {
           options={filterOptions.sizes}
           selectedValue={filters.size}
           onSelect={(val) => setFilter("size", val)}
-        />
-        <FilterDropdown
-          name="Color"
-          options={filterOptions.colors}
-          selectedValue={filters.color}
-          onSelect={(val) => setFilter("color", val)}
         />
       </div>
       <button
