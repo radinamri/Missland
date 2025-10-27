@@ -203,7 +203,7 @@
       "shape": "almond",
       "shape_confidence": 0.7495420674482981,
       "shape_source": "ground_truth",
-      "pattern": "french_tips",
+      "pattern": "french",
       "pattern_confidence": 0.4788875679175059,
       "pattern_source": "predicted",
       "colors": [
@@ -459,7 +459,7 @@
       "shape": "almond",
       "shape_confidence": 0.9694583813349406,
       "shape_source": "ground_truth",
-      "pattern": "french_tips",
+      "pattern": "french",
       "pattern_confidence": 0.47083820899327594,
       "pattern_source": "predicted",
       "colors": [
@@ -1915,7 +1915,7 @@
       "shape": "almond",
       "shape_confidence": 0.7651662429173788,
       "shape_source": "predicted",
-      "pattern": "french_tips",
+      "pattern": "french",
       "pattern_confidence": 0.4487234552701314,
       "pattern_source": "ground_truth",
       "colors": [
@@ -1947,7 +1947,7 @@
       "shape": "square",
       "shape_confidence": 0.7258415023485819,
       "shape_source": "predicted",
-      "pattern": "french_tips",
+      "pattern": "french",
       "pattern_confidence": 0.5609157482782999,
       "pattern_source": "ground_truth",
       "colors": [
@@ -1963,7 +1963,7 @@
       "shape": "almond",
       "shape_confidence": 0.5795805851618449,
       "shape_source": "predicted",
-      "pattern": "french_tips",
+      "pattern": "french",
       "pattern_confidence": 0.46792884667714435,
       "pattern_source": "ground_truth",
       "colors": [
@@ -2043,7 +2043,7 @@
       "shape": "almond",
       "shape_confidence": 0.8534295757611593,
       "shape_source": "predicted",
-      "pattern": "french_tips",
+      "pattern": "french",
       "pattern_confidence": 0.4150870144367218,
       "pattern_source": "ground_truth",
       "colors": [
@@ -2059,7 +2059,7 @@
       "shape": "square",
       "shape_confidence": 0.7067186633745829,
       "shape_source": "predicted",
-      "pattern": "french_tips",
+      "pattern": "french",
       "pattern_confidence": 0.4620077113310496,
       "pattern_source": "ground_truth",
       "colors": [
@@ -2075,7 +2075,7 @@
       "shape": "almond",
       "shape_confidence": 0.943726102511088,
       "shape_source": "predicted",
-      "pattern": "french_tips",
+      "pattern": "french",
       "pattern_confidence": 0.4678007165590922,
       "pattern_source": "ground_truth",
       "colors": [
@@ -2091,7 +2091,7 @@
       "shape": "almond",
       "shape_confidence": 0.5535282989343008,
       "shape_source": "predicted",
-      "pattern": "french_tips",
+      "pattern": "french",
       "pattern_confidence": 0.5026983022689819,
       "pattern_source": "ground_truth",
       "colors": [
@@ -2123,7 +2123,7 @@
       "shape": "almond",
       "shape_confidence": 0.9682514468828837,
       "shape_source": "predicted",
-      "pattern": "french_tips",
+      "pattern": "french",
       "pattern_confidence": 0.44422874848047894,
       "pattern_source": "ground_truth",
       "colors": [
@@ -2139,7 +2139,7 @@
       "shape": "square",
       "shape_confidence": 0.7024133801460266,
       "shape_source": "predicted",
-      "pattern": "french_tips",
+      "pattern": "french",
       "pattern_confidence": 0.4074617326259613,
       "pattern_source": "ground_truth",
       "colors": [
@@ -2155,7 +2155,7 @@
       "shape": "almond",
       "shape_confidence": 0.6604363222916921,
       "shape_source": "predicted",
-      "pattern": "french_tips",
+      "pattern": "french",
       "pattern_confidence": 0.3857066829999288,
       "pattern_source": "ground_truth",
       "colors": [
@@ -2171,7 +2171,7 @@
       "shape": "almond",
       "shape_confidence": 0.895222544670105,
       "shape_source": "predicted",
-      "pattern": "french_tips",
+      "pattern": "french",
       "pattern_confidence": 0.4784031907717387,
       "pattern_source": "ground_truth",
       "colors": [
@@ -2187,7 +2187,7 @@
       "shape": "stiletto",
       "shape_confidence": 0.6972685058911642,
       "shape_source": "predicted",
-      "pattern": "french_tips",
+      "pattern": "french",
       "pattern_confidence": 0.42910754680633545,
       "pattern_source": "ground_truth",
       "colors": [
@@ -2203,7 +2203,7 @@
       "shape": "almond",
       "shape_confidence": 0.8356794118881226,
       "shape_source": "predicted",
-      "pattern": "french_tips",
+      "pattern": "french",
       "pattern_confidence": 0.5088832676410675,
       "pattern_source": "ground_truth",
       "colors": [
@@ -2219,7 +2219,7 @@
       "shape": "square",
       "shape_confidence": 0.6123976111412048,
       "shape_source": "predicted",
-      "pattern": "french_tips",
+      "pattern": "french",
       "pattern_confidence": 0.400331974029541,
       "pattern_source": "ground_truth",
       "colors": [
@@ -2235,7 +2235,7 @@
       "shape": "almond",
       "shape_confidence": 0.8303761879603068,
       "shape_source": "predicted",
-      "pattern": "french_tips",
+      "pattern": "french",
       "pattern_confidence": 0.48977744579315186,
       "pattern_source": "ground_truth",
       "colors": [
@@ -2267,7 +2267,7 @@
       "shape": "square",
       "shape_confidence": 0.887475589911143,
       "shape_source": "predicted",
-      "pattern": "french_tips",
+      "pattern": "french",
       "pattern_confidence": 0.3637765347957611,
       "pattern_source": "ground_truth",
       "colors": [
@@ -2299,7 +2299,7 @@
       "shape": "almond",
       "shape_confidence": 0.9880488713582357,
       "shape_source": "predicted",
-      "pattern": "french_tips",
+      "pattern": "french",
       "pattern_confidence": 0.5031396150588989,
       "pattern_source": "ground_truth",
       "colors": [
@@ -2315,7 +2315,7 @@
       "shape": "almond",
       "shape_confidence": 0.8888868689537048,
       "shape_source": "predicted",
-      "pattern": "french_tips",
+      "pattern": "french",
       "pattern_confidence": 0.33534638086954754,
       "pattern_source": "ground_truth",
       "colors": [
@@ -2331,7 +2331,7 @@
       "shape": "square",
       "shape_confidence": 0.629877120256424,
       "shape_source": "predicted",
-      "pattern": "french_tips",
+      "pattern": "french",
       "pattern_confidence": 0.39094991485277814,
       "pattern_source": "ground_truth",
       "colors": [
@@ -2347,7 +2347,7 @@
       "shape": "almond",
       "shape_confidence": 0.5296353399753571,
       "shape_source": "predicted",
-      "pattern": "french_tips",
+      "pattern": "french",
       "pattern_confidence": 0.510015587011973,
       "pattern_source": "ground_truth",
       "colors": [
@@ -2363,7 +2363,7 @@
       "shape": "square",
       "shape_confidence": 0.7922725677490234,
       "shape_source": "predicted",
-      "pattern": "french_tips",
+      "pattern": "french",
       "pattern_confidence": 0.2915152311325073,
       "pattern_source": "ground_truth",
       "colors": [
@@ -2379,7 +2379,7 @@
       "shape": "almond",
       "shape_confidence": 0.7308362921079,
       "shape_source": "predicted",
-      "pattern": "french_tips",
+      "pattern": "french",
       "pattern_confidence": 0.5103003283341726,
       "pattern_source": "ground_truth",
       "colors": [
@@ -2395,7 +2395,7 @@
       "shape": "almond",
       "shape_confidence": 0.9659769336382548,
       "shape_source": "predicted",
-      "pattern": "french_tips",
+      "pattern": "french",
       "pattern_confidence": 0.3839946885903676,
       "pattern_source": "ground_truth",
       "colors": [
@@ -2411,7 +2411,7 @@
       "shape": "almond",
       "shape_confidence": 0.7151191830635071,
       "shape_source": "predicted",
-      "pattern": "french_tips",
+      "pattern": "french",
       "pattern_confidence": 0.4158317645390828,
       "pattern_source": "ground_truth",
       "colors": [
@@ -2427,7 +2427,7 @@
       "shape": "square",
       "shape_confidence": 0.620897909005483,
       "shape_source": "predicted",
-      "pattern": "french_tips",
+      "pattern": "french",
       "pattern_confidence": 0.36647560199101764,
       "pattern_source": "ground_truth",
       "colors": [
@@ -2443,7 +2443,7 @@
       "shape": "almond",
       "shape_confidence": 0.925333042939504,
       "shape_source": "predicted",
-      "pattern": "french_tips",
+      "pattern": "french",
       "pattern_confidence": 0.5388726989428202,
       "pattern_source": "ground_truth",
       "colors": [
@@ -2491,7 +2491,7 @@
       "shape": "almond",
       "shape_confidence": 0.8461542924245199,
       "shape_source": "predicted",
-      "pattern": "french_tips",
+      "pattern": "french",
       "pattern_confidence": 0.44948214292526245,
       "pattern_source": "ground_truth",
       "colors": [
@@ -2507,7 +2507,7 @@
       "shape": "almond",
       "shape_confidence": 0.6223783691724142,
       "shape_source": "predicted",
-      "pattern": "french_tips",
+      "pattern": "french",
       "pattern_confidence": 0.4253881673018138,
       "pattern_source": "ground_truth",
       "colors": [
@@ -2523,7 +2523,7 @@
       "shape": "square",
       "shape_confidence": 0.8378844857215881,
       "shape_source": "predicted",
-      "pattern": "french_tips",
+      "pattern": "french",
       "pattern_confidence": 0.40411871671676636,
       "pattern_source": "ground_truth",
       "colors": [
@@ -2539,7 +2539,7 @@
       "shape": "almond",
       "shape_confidence": 0.8178418676058451,
       "shape_source": "predicted",
-      "pattern": "french_tips",
+      "pattern": "french",
       "pattern_confidence": 0.46845627824465436,
       "pattern_source": "ground_truth",
       "colors": [
@@ -2555,7 +2555,7 @@
       "shape": "stiletto",
       "shape_confidence": 0.6281931598981222,
       "shape_source": "predicted",
-      "pattern": "french_tips",
+      "pattern": "french",
       "pattern_confidence": 0.3587250808874766,
       "pattern_source": "ground_truth",
       "colors": [
@@ -2571,7 +2571,7 @@
       "shape": "square",
       "shape_confidence": 0.7121071219444275,
       "shape_source": "predicted",
-      "pattern": "french_tips",
+      "pattern": "french",
       "pattern_confidence": 0.4374639888604482,
       "pattern_source": "ground_truth",
       "colors": [
@@ -2587,7 +2587,7 @@
       "shape": "almond",
       "shape_confidence": 0.9004695812861124,
       "shape_source": "predicted",
-      "pattern": "french_tips",
+      "pattern": "french",
       "pattern_confidence": 0.49713100989659625,
       "pattern_source": "ground_truth",
       "colors": [
@@ -2603,7 +2603,7 @@
       "shape": "square",
       "shape_confidence": 0.45151711503664654,
       "shape_source": "predicted",
-      "pattern": "french_tips",
+      "pattern": "french",
       "pattern_confidence": 0.49782199660936993,
       "pattern_source": "ground_truth",
       "colors": [
@@ -2651,7 +2651,7 @@
       "shape": "almond",
       "shape_confidence": 0.5546957850456238,
       "shape_source": "predicted",
-      "pattern": "french_tips",
+      "pattern": "french",
       "pattern_confidence": 0.5030693809191386,
       "pattern_source": "ground_truth",
       "colors": [
@@ -2683,7 +2683,7 @@
       "shape": "square",
       "shape_confidence": 0.6626840233802795,
       "shape_source": "predicted",
-      "pattern": "french_tips",
+      "pattern": "french",
       "pattern_confidence": 0.584842324256897,
       "pattern_source": "ground_truth",
       "colors": [
@@ -2699,7 +2699,7 @@
       "shape": "square",
       "shape_confidence": 0.7836329936981201,
       "shape_source": "predicted",
-      "pattern": "french_tips",
+      "pattern": "french",
       "pattern_confidence": 0.4625778595606486,
       "pattern_source": "ground_truth",
       "colors": [
@@ -2715,7 +2715,7 @@
       "shape": "square",
       "shape_confidence": 0.7553037206331888,
       "shape_source": "predicted",
-      "pattern": "french_tips",
+      "pattern": "french",
       "pattern_confidence": 0.351044903198878,
       "pattern_source": "ground_truth",
       "colors": [
@@ -2731,7 +2731,7 @@
       "shape": "almond",
       "shape_confidence": 0.8921547134717306,
       "shape_source": "predicted",
-      "pattern": "french_tips",
+      "pattern": "french",
       "pattern_confidence": 0.42485475540161133,
       "pattern_source": "ground_truth",
       "colors": [
@@ -2747,7 +2747,7 @@
       "shape": "square",
       "shape_confidence": 0.5240129828453064,
       "shape_source": "predicted",
-      "pattern": "french_tips",
+      "pattern": "french",
       "pattern_confidence": 0.570684810479482,
       "pattern_source": "ground_truth",
       "colors": [
@@ -2763,7 +2763,7 @@
       "shape": "almond",
       "shape_confidence": 0.5217214922110239,
       "shape_source": "predicted",
-      "pattern": "french_tips",
+      "pattern": "french",
       "pattern_confidence": 0.41782323519388836,
       "pattern_source": "ground_truth",
       "colors": [
@@ -2779,7 +2779,7 @@
       "shape": "almond",
       "shape_confidence": 0.6179602642854055,
       "shape_source": "predicted",
-      "pattern": "french_tips",
+      "pattern": "french",
       "pattern_confidence": 0.3318280478318532,
       "pattern_source": "ground_truth",
       "colors": [
@@ -2795,7 +2795,7 @@
       "shape": "almond",
       "shape_confidence": 0.536674290895462,
       "shape_source": "predicted",
-      "pattern": "french_tips",
+      "pattern": "french",
       "pattern_confidence": 0.36127790808677673,
       "pattern_source": "ground_truth",
       "colors": [
@@ -2827,7 +2827,7 @@
       "shape": "almond",
       "shape_confidence": 0.9683334430058798,
       "shape_source": "predicted",
-      "pattern": "french_tips",
+      "pattern": "french",
       "pattern_confidence": 0.3164600729942322,
       "pattern_source": "ground_truth",
       "colors": [
@@ -2843,7 +2843,7 @@
       "shape": "almond",
       "shape_confidence": 0.6561532219250997,
       "shape_source": "predicted",
-      "pattern": "french_tips",
+      "pattern": "french",
       "pattern_confidence": 0.36541227499643963,
       "pattern_source": "ground_truth",
       "colors": [
@@ -2859,7 +2859,7 @@
       "shape": "square",
       "shape_confidence": 0.6975205938021342,
       "shape_source": "predicted",
-      "pattern": "french_tips",
+      "pattern": "french",
       "pattern_confidence": 0.3516380389531453,
       "pattern_source": "ground_truth",
       "colors": [
@@ -2875,7 +2875,7 @@
       "shape": "square",
       "shape_confidence": 0.592195192972819,
       "shape_source": "predicted",
-      "pattern": "french_tips",
+      "pattern": "french",
       "pattern_confidence": 0.30728967984517414,
       "pattern_source": "ground_truth",
       "colors": [
@@ -2891,7 +2891,7 @@
       "shape": "almond",
       "shape_confidence": 0.6607241829236349,
       "shape_source": "predicted",
-      "pattern": "french_tips",
+      "pattern": "french",
       "pattern_confidence": 0.3964998622735341,
       "pattern_source": "ground_truth",
       "colors": [
@@ -2907,7 +2907,7 @@
       "shape": "square",
       "shape_confidence": 0.9679289062817892,
       "shape_source": "predicted",
-      "pattern": "french_tips",
+      "pattern": "french",
       "pattern_confidence": 0.43192988634109497,
       "pattern_source": "ground_truth",
       "colors": [
@@ -2923,7 +2923,7 @@
       "shape": "coffin",
       "shape_confidence": 0.5595440367857615,
       "shape_source": "predicted",
-      "pattern": "french_tips",
+      "pattern": "french",
       "pattern_confidence": 0.5583058794339498,
       "pattern_source": "ground_truth",
       "colors": [
@@ -2939,7 +2939,7 @@
       "shape": "almond",
       "shape_confidence": 0.7186284065246582,
       "shape_source": "predicted",
-      "pattern": "french_tips",
+      "pattern": "french",
       "pattern_confidence": 0.3352332015832265,
       "pattern_source": "ground_truth",
       "colors": [
@@ -2971,7 +2971,7 @@
       "shape": "almond",
       "shape_confidence": 0.7651657660802206,
       "shape_source": "predicted",
-      "pattern": "french_tips",
+      "pattern": "french",
       "pattern_confidence": 0.48254767060279846,
       "pattern_source": "ground_truth",
       "colors": [
@@ -3003,7 +3003,7 @@
       "shape": "square",
       "shape_confidence": 0.8455817302068075,
       "shape_source": "predicted",
-      "pattern": "french_tips",
+      "pattern": "french",
       "pattern_confidence": 0.6613235076268514,
       "pattern_source": "ground_truth",
       "colors": [
@@ -3019,7 +3019,7 @@
       "shape": "almond",
       "shape_confidence": 0.7309536536534628,
       "shape_source": "predicted",
-      "pattern": "french_tips",
+      "pattern": "french",
       "pattern_confidence": 0.3432503441969554,
       "pattern_source": "ground_truth",
       "colors": [
@@ -3035,7 +3035,7 @@
       "shape": "square",
       "shape_confidence": 0.6833924651145935,
       "shape_source": "predicted",
-      "pattern": "french_tips",
+      "pattern": "french",
       "pattern_confidence": 0.4175924062728882,
       "pattern_source": "ground_truth",
       "colors": [
@@ -3051,7 +3051,7 @@
       "shape": "almond",
       "shape_confidence": 0.6929013927777609,
       "shape_source": "predicted",
-      "pattern": "french_tips",
+      "pattern": "french",
       "pattern_confidence": 0.29760637879371643,
       "pattern_source": "ground_truth",
       "colors": [
@@ -3067,7 +3067,7 @@
       "shape": "almond",
       "shape_confidence": 0.8126547535260519,
       "shape_source": "predicted",
-      "pattern": "french_tips",
+      "pattern": "french",
       "pattern_confidence": 0.5085673828919729,
       "pattern_source": "ground_truth",
       "colors": [
@@ -3083,7 +3083,7 @@
       "shape": "almond",
       "shape_confidence": 0.9287902315457662,
       "shape_source": "predicted",
-      "pattern": "french_tips",
+      "pattern": "french",
       "pattern_confidence": 0.46193792422612506,
       "pattern_source": "ground_truth",
       "colors": [
@@ -3099,7 +3099,7 @@
       "shape": "almond",
       "shape_confidence": 0.6796030501524607,
       "shape_source": "predicted",
-      "pattern": "french_tips",
+      "pattern": "french",
       "pattern_confidence": 0.5992039839426676,
       "pattern_source": "ground_truth",
       "colors": [
@@ -3115,7 +3115,7 @@
       "shape": "almond",
       "shape_confidence": 0.7169763445854187,
       "shape_source": "predicted",
-      "pattern": "french_tips",
+      "pattern": "french",
       "pattern_confidence": 0.48239490389823914,
       "pattern_source": "ground_truth",
       "colors": [
@@ -3131,7 +3131,7 @@
       "shape": "almond",
       "shape_confidence": 0.7370270391305288,
       "shape_source": "predicted",
-      "pattern": "french_tips",
+      "pattern": "french",
       "pattern_confidence": 0.36144662896792096,
       "pattern_source": "ground_truth",
       "colors": [
@@ -3147,7 +3147,7 @@
       "shape": "almond",
       "shape_confidence": 0.49560995896657306,
       "shape_source": "predicted",
-      "pattern": "french_tips",
+      "pattern": "french",
       "pattern_confidence": 0.4587450921535492,
       "pattern_source": "ground_truth",
       "colors": [
@@ -3179,7 +3179,7 @@
       "shape": "stiletto",
       "shape_confidence": 0.5816826124986013,
       "shape_source": "predicted",
-      "pattern": "french_tips",
+      "pattern": "french",
       "pattern_confidence": 0.2988499502340953,
       "pattern_source": "ground_truth",
       "colors": [
@@ -3211,7 +3211,7 @@
       "shape": "square",
       "shape_confidence": 0.4528969923655192,
       "shape_source": "predicted",
-      "pattern": "french_tips",
+      "pattern": "french",
       "pattern_confidence": 0.5153218905131022,
       "pattern_source": "ground_truth",
       "colors": [
@@ -3227,7 +3227,7 @@
       "shape": "almond",
       "shape_confidence": 0.8623766104380289,
       "shape_source": "predicted",
-      "pattern": "french_tips",
+      "pattern": "french",
       "pattern_confidence": 0.5140957434972128,
       "pattern_source": "ground_truth",
       "colors": [
@@ -3243,7 +3243,7 @@
       "shape": "square",
       "shape_confidence": 0.7455514470736185,
       "shape_source": "predicted",
-      "pattern": "french_tips",
+      "pattern": "french",
       "pattern_confidence": 0.4294026891390483,
       "pattern_source": "ground_truth",
       "colors": [
@@ -3259,7 +3259,7 @@
       "shape": "almond",
       "shape_confidence": 0.940795103708903,
       "shape_source": "predicted",
-      "pattern": "french_tips",
+      "pattern": "french",
       "pattern_confidence": 0.5739714304606119,
       "pattern_source": "ground_truth",
       "colors": [
@@ -3275,7 +3275,7 @@
       "shape": "almond",
       "shape_confidence": 0.6322881182034811,
       "shape_source": "predicted",
-      "pattern": "french_tips",
+      "pattern": "french",
       "pattern_confidence": 0.3503796656926473,
       "pattern_source": "ground_truth",
       "colors": [
@@ -3291,7 +3291,7 @@
       "shape": "coffin",
       "shape_confidence": 0.7397787173589071,
       "shape_source": "predicted",
-      "pattern": "french_tips",
+      "pattern": "french",
       "pattern_confidence": 0.3508045971393585,
       "pattern_source": "ground_truth",
       "colors": [
@@ -3307,7 +3307,7 @@
       "shape": "almond",
       "shape_confidence": 0.8481218616167704,
       "shape_source": "predicted",
-      "pattern": "french_tips",
+      "pattern": "french",
       "pattern_confidence": 0.32397300998369855,
       "pattern_source": "ground_truth",
       "colors": [
@@ -3323,7 +3323,7 @@
       "shape": "almond",
       "shape_confidence": 0.6318717996279398,
       "shape_source": "predicted",
-      "pattern": "french_tips",
+      "pattern": "french",
       "pattern_confidence": 0.3864993453025818,
       "pattern_source": "ground_truth",
       "colors": [
@@ -3355,7 +3355,7 @@
       "shape": "stiletto",
       "shape_confidence": 0.834804097811381,
       "shape_source": "predicted",
-      "pattern": "french_tips",
+      "pattern": "french",
       "pattern_confidence": 0.452632208665212,
       "pattern_source": "ground_truth",
       "colors": [
@@ -3371,7 +3371,7 @@
       "shape": "square",
       "shape_confidence": 0.6125726501146952,
       "shape_source": "predicted",
-      "pattern": "french_tips",
+      "pattern": "french",
       "pattern_confidence": 0.5231177310148875,
       "pattern_source": "ground_truth",
       "colors": [
@@ -3387,7 +3387,7 @@
       "shape": "almond",
       "shape_confidence": 0.8225892980893453,
       "shape_source": "predicted",
-      "pattern": "french_tips",
+      "pattern": "french",
       "pattern_confidence": 0.3744753698507945,
       "pattern_source": "ground_truth",
       "colors": [
@@ -3403,7 +3403,7 @@
       "shape": "almond",
       "shape_confidence": 0.869514266649882,
       "shape_source": "predicted",
-      "pattern": "french_tips",
+      "pattern": "french",
       "pattern_confidence": 0.5369089245796204,
       "pattern_source": "ground_truth",
       "colors": [
@@ -3419,7 +3419,7 @@
       "shape": "almond",
       "shape_confidence": 0.7220911582310995,
       "shape_source": "predicted",
-      "pattern": "french_tips",
+      "pattern": "french",
       "pattern_confidence": 0.38557862242062885,
       "pattern_source": "ground_truth",
       "colors": [
@@ -3435,7 +3435,7 @@
       "shape": "square",
       "shape_confidence": 0.72117680311203,
       "shape_source": "predicted",
-      "pattern": "french_tips",
+      "pattern": "french",
       "pattern_confidence": 0.7003414233525594,
       "pattern_source": "ground_truth",
       "colors": [
@@ -3451,7 +3451,7 @@
       "shape": "stiletto",
       "shape_confidence": 0.5330331524213155,
       "shape_source": "predicted",
-      "pattern": "french_tips",
+      "pattern": "french",
       "pattern_confidence": 0.4892435371875763,
       "pattern_source": "ground_truth",
       "colors": [
@@ -3467,7 +3467,7 @@
       "shape": "almond",
       "shape_confidence": 0.97422327597936,
       "shape_source": "predicted",
-      "pattern": "french_tips",
+      "pattern": "french",
       "pattern_confidence": 0.5009913841883341,
       "pattern_source": "ground_truth",
       "colors": [
@@ -3483,7 +3483,7 @@
       "shape": "almond",
       "shape_confidence": 0.6546893318494161,
       "shape_source": "predicted",
-      "pattern": "french_tips",
+      "pattern": "french",
       "pattern_confidence": 0.40478620926539105,
       "pattern_source": "ground_truth",
       "colors": [
@@ -3499,7 +3499,7 @@
       "shape": "coffin",
       "shape_confidence": 0.6441469788551331,
       "shape_source": "predicted",
-      "pattern": "french_tips",
+      "pattern": "french",
       "pattern_confidence": 0.5867822468280792,
       "pattern_source": "ground_truth",
       "colors": [
@@ -3531,7 +3531,7 @@
       "shape": "almond",
       "shape_confidence": 0.7995273073514303,
       "shape_source": "predicted",
-      "pattern": "french_tips",
+      "pattern": "french",
       "pattern_confidence": 0.5681760609149933,
       "pattern_source": "ground_truth",
       "colors": [
@@ -3547,7 +3547,7 @@
       "shape": "square",
       "shape_confidence": 0.5311466157436371,
       "shape_source": "predicted",
-      "pattern": "french_tips",
+      "pattern": "french",
       "pattern_confidence": 0.4697014590104421,
       "pattern_source": "ground_truth",
       "colors": [
@@ -3563,7 +3563,7 @@
       "shape": "almond",
       "shape_confidence": 0.7595333854357401,
       "shape_source": "predicted",
-      "pattern": "french_tips",
+      "pattern": "french",
       "pattern_confidence": 0.5716557204723358,
       "pattern_source": "ground_truth",
       "colors": [
@@ -3579,7 +3579,7 @@
       "shape": "almond",
       "shape_confidence": 0.6919191678365072,
       "shape_source": "predicted",
-      "pattern": "french_tips",
+      "pattern": "french",
       "pattern_confidence": 0.5709943274656931,
       "pattern_source": "ground_truth",
       "colors": [
@@ -3595,7 +3595,7 @@
       "shape": "square",
       "shape_confidence": 0.5436312854290009,
       "shape_source": "predicted",
-      "pattern": "french_tips",
+      "pattern": "french",
       "pattern_confidence": 0.3503697117169698,
       "pattern_source": "ground_truth",
       "colors": [
@@ -3611,7 +3611,7 @@
       "shape": "almond",
       "shape_confidence": 0.8136115074157715,
       "shape_source": "predicted",
-      "pattern": "french_tips",
+      "pattern": "french",
       "pattern_confidence": 0.3626302381356557,
       "pattern_source": "ground_truth",
       "colors": [
@@ -3627,7 +3627,7 @@
       "shape": "square",
       "shape_confidence": 0.7004040877024332,
       "shape_source": "predicted",
-      "pattern": "french_tips",
+      "pattern": "french",
       "pattern_confidence": 0.4062163531780243,
       "pattern_source": "ground_truth",
       "colors": [
@@ -3643,7 +3643,7 @@
       "shape": "almond",
       "shape_confidence": 0.7614805400371552,
       "shape_source": "predicted",
-      "pattern": "french_tips",
+      "pattern": "french",
       "pattern_confidence": 0.4320695598920186,
       "pattern_source": "ground_truth",
       "colors": [
@@ -3659,7 +3659,7 @@
       "shape": "almond",
       "shape_confidence": 0.891558845837911,
       "shape_source": "predicted",
-      "pattern": "french_tips",
+      "pattern": "french",
       "pattern_confidence": 0.4134766658147176,
       "pattern_source": "ground_truth",
       "colors": [
@@ -3675,7 +3675,7 @@
       "shape": "almond",
       "shape_confidence": 0.6493177910645803,
       "shape_source": "predicted",
-      "pattern": "french_tips",
+      "pattern": "french",
       "pattern_confidence": 0.35292405883471173,
       "pattern_source": "ground_truth",
       "colors": [
@@ -3707,7 +3707,7 @@
       "shape": "stiletto",
       "shape_confidence": 0.7643597722053528,
       "shape_source": "predicted",
-      "pattern": "french_tips",
+      "pattern": "french",
       "pattern_confidence": 0.44025800625483197,
       "pattern_source": "ground_truth",
       "colors": [
@@ -3723,7 +3723,7 @@
       "shape": "almond",
       "shape_confidence": 0.6918591260910034,
       "shape_source": "predicted",
-      "pattern": "french_tips",
+      "pattern": "french",
       "pattern_confidence": 0.3996835748354594,
       "pattern_source": "ground_truth",
       "colors": [
@@ -3739,7 +3739,7 @@
       "shape": "stiletto",
       "shape_confidence": 0.547538697719574,
       "shape_source": "predicted",
-      "pattern": "french_tips",
+      "pattern": "french",
       "pattern_confidence": 0.47600701451301575,
       "pattern_source": "ground_truth",
       "colors": [
@@ -3755,7 +3755,7 @@
       "shape": "stiletto",
       "shape_confidence": 0.4899803400039673,
       "shape_source": "predicted",
-      "pattern": "french_tips",
+      "pattern": "french",
       "pattern_confidence": 0.41273743907610577,
       "pattern_source": "ground_truth",
       "colors": [
@@ -3803,7 +3803,7 @@
       "shape": "square",
       "shape_confidence": 0.4566257695357005,
       "shape_source": "predicted",
-      "pattern": "french_tips",
+      "pattern": "french",
       "pattern_confidence": 0.41730718811353046,
       "pattern_source": "ground_truth",
       "colors": [
@@ -3819,7 +3819,7 @@
       "shape": "almond",
       "shape_confidence": 0.6909306049346924,
       "shape_source": "predicted",
-      "pattern": "french_tips",
+      "pattern": "french",
       "pattern_confidence": 0.6289731860160828,
       "pattern_source": "ground_truth",
       "colors": [
@@ -3835,7 +3835,7 @@
       "shape": "almond",
       "shape_confidence": 0.6277915934721628,
       "shape_source": "ground_truth",
-      "pattern": "french_tips",
+      "pattern": "french",
       "pattern_confidence": 0.5767667492230734,
       "pattern_source": "predicted",
       "colors": [
@@ -3851,7 +3851,7 @@
       "shape": "almond",
       "shape_confidence": 0.5891186594963074,
       "shape_source": "predicted",
-      "pattern": "french_tips",
+      "pattern": "french",
       "pattern_confidence": 0.3465166886647542,
       "pattern_source": "ground_truth",
       "colors": [
@@ -3883,7 +3883,7 @@
       "shape": "almond",
       "shape_confidence": 0.7171865900357565,
       "shape_source": "predicted",
-      "pattern": "french_tips",
+      "pattern": "french",
       "pattern_confidence": 0.4302394688129425,
       "pattern_source": "ground_truth",
       "colors": [
@@ -3899,7 +3899,7 @@
       "shape": "square",
       "shape_confidence": 0.5679825146993002,
       "shape_source": "predicted",
-      "pattern": "french_tips",
+      "pattern": "french",
       "pattern_confidence": 0.3256632188955943,
       "pattern_source": "ground_truth",
       "colors": [
@@ -3915,7 +3915,7 @@
       "shape": "almond",
       "shape_confidence": 0.8893553415934244,
       "shape_source": "predicted",
-      "pattern": "french_tips",
+      "pattern": "french",
       "pattern_confidence": 0.8197959462801615,
       "pattern_source": "ground_truth",
       "colors": [
@@ -3931,7 +3931,7 @@
       "shape": "square",
       "shape_confidence": 0.5393682817618052,
       "shape_source": "predicted",
-      "pattern": "french_tips",
+      "pattern": "french",
       "pattern_confidence": 0.39656882484753925,
       "pattern_source": "ground_truth",
       "colors": [
@@ -3947,7 +3947,7 @@
       "shape": "coffin",
       "shape_confidence": 0.5259545842806498,
       "shape_source": "predicted",
-      "pattern": "french_tips",
+      "pattern": "french",
       "pattern_confidence": 0.5051215489705404,
       "pattern_source": "ground_truth",
       "colors": [
@@ -3963,7 +3963,7 @@
       "shape": "square",
       "shape_confidence": 0.7313143610954285,
       "shape_source": "predicted",
-      "pattern": "french_tips",
+      "pattern": "french",
       "pattern_confidence": 0.45704250534375507,
       "pattern_source": "ground_truth",
       "colors": [
@@ -3979,7 +3979,7 @@
       "shape": "square",
       "shape_confidence": 0.7040393153826395,
       "shape_source": "predicted",
-      "pattern": "french_tips",
+      "pattern": "french",
       "pattern_confidence": 0.3525555431842804,
       "pattern_source": "ground_truth",
       "colors": [
@@ -3995,7 +3995,7 @@
       "shape": "square",
       "shape_confidence": 0.8967827161153158,
       "shape_source": "predicted",
-      "pattern": "french_tips",
+      "pattern": "french",
       "pattern_confidence": 0.7663852771123251,
       "pattern_source": "ground_truth",
       "colors": [
@@ -4027,7 +4027,7 @@
       "shape": "stiletto",
       "shape_confidence": 0.6568809449672699,
       "shape_source": "predicted",
-      "pattern": "french_tips",
+      "pattern": "french",
       "pattern_confidence": 0.4098507761955261,
       "pattern_source": "ground_truth",
       "colors": [
@@ -4059,7 +4059,7 @@
       "shape": "square",
       "shape_confidence": 0.5284879406293234,
       "shape_source": "predicted",
-      "pattern": "french_tips",
+      "pattern": "french",
       "pattern_confidence": 0.556146502494812,
       "pattern_source": "ground_truth",
       "colors": [
@@ -4075,7 +4075,7 @@
       "shape": "square",
       "shape_confidence": 0.9560437003771464,
       "shape_source": "predicted",
-      "pattern": "french_tips",
+      "pattern": "french",
       "pattern_confidence": 0.783416211605072,
       "pattern_source": "ground_truth",
       "colors": [
@@ -4107,7 +4107,7 @@
       "shape": "almond",
       "shape_confidence": 0.9588983456293741,
       "shape_source": "predicted",
-      "pattern": "french_tips",
+      "pattern": "french",
       "pattern_confidence": 0.38961437344551086,
       "pattern_source": "ground_truth",
       "colors": [
@@ -4123,7 +4123,7 @@
       "shape": "square",
       "shape_confidence": 0.5559306939442953,
       "shape_source": "predicted",
-      "pattern": "french_tips",
+      "pattern": "french",
       "pattern_confidence": 0.365859717130661,
       "pattern_source": "ground_truth",
       "colors": [
@@ -4139,7 +4139,7 @@
       "shape": "square",
       "shape_confidence": 0.919638971487681,
       "shape_source": "predicted",
-      "pattern": "french_tips",
+      "pattern": "french",
       "pattern_confidence": 0.5938621660073599,
       "pattern_source": "ground_truth",
       "colors": [
@@ -4155,7 +4155,7 @@
       "shape": "stiletto",
       "shape_confidence": 0.5883097350597382,
       "shape_source": "predicted",
-      "pattern": "french_tips",
+      "pattern": "french",
       "pattern_confidence": 0.48663925131162006,
       "pattern_source": "ground_truth",
       "colors": [
@@ -4171,7 +4171,7 @@
       "shape": "square",
       "shape_confidence": 0.840944508711497,
       "shape_source": "predicted",
-      "pattern": "french_tips",
+      "pattern": "french",
       "pattern_confidence": 0.36687861879666644,
       "pattern_source": "ground_truth",
       "colors": [
@@ -4187,7 +4187,7 @@
       "shape": "square",
       "shape_confidence": 0.7380532026290894,
       "shape_source": "predicted",
-      "pattern": "french_tips",
+      "pattern": "french",
       "pattern_confidence": 0.3628084758917491,
       "pattern_source": "ground_truth",
       "colors": [
@@ -4203,7 +4203,7 @@
       "shape": "square",
       "shape_confidence": 0.7977065841356913,
       "shape_source": "predicted",
-      "pattern": "french_tips",
+      "pattern": "french",
       "pattern_confidence": 0.5906283060709635,
       "pattern_source": "ground_truth",
       "colors": [
@@ -4251,7 +4251,7 @@
       "shape": "almond",
       "shape_confidence": 0.9737974802652994,
       "shape_source": "predicted",
-      "pattern": "french_tips",
+      "pattern": "french",
       "pattern_confidence": 0.37925683458646137,
       "pattern_source": "ground_truth",
       "colors": [
@@ -4283,7 +4283,7 @@
       "shape": "almond",
       "shape_confidence": 0.7513552705446879,
       "shape_source": "predicted",
-      "pattern": "french_tips",
+      "pattern": "french",
       "pattern_confidence": 0.37425408760706586,
       "pattern_source": "ground_truth",
       "colors": [
@@ -4299,7 +4299,7 @@
       "shape": "stiletto",
       "shape_confidence": 0.5643744766712189,
       "shape_source": "predicted",
-      "pattern": "french_tips",
+      "pattern": "french",
       "pattern_confidence": 0.47626455624898273,
       "pattern_source": "ground_truth",
       "colors": [
@@ -4315,7 +4315,7 @@
       "shape": "square",
       "shape_confidence": 0.8002559045950571,
       "shape_source": "predicted",
-      "pattern": "french_tips",
+      "pattern": "french",
       "pattern_confidence": 0.6538150807221731,
       "pattern_source": "ground_truth",
       "colors": [
@@ -4331,7 +4331,7 @@
       "shape": "square",
       "shape_confidence": 0.865848700205485,
       "shape_source": "predicted",
-      "pattern": "french_tips",
+      "pattern": "french",
       "pattern_confidence": 0.7163583437601725,
       "pattern_source": "ground_truth",
       "colors": [
@@ -4347,7 +4347,7 @@
       "shape": "almond",
       "shape_confidence": 0.8024206161499023,
       "shape_source": "predicted",
-      "pattern": "french_tips",
+      "pattern": "french",
       "pattern_confidence": 0.6554684241612753,
       "pattern_source": "ground_truth",
       "colors": [
@@ -4379,7 +4379,7 @@
       "shape": "almond",
       "shape_confidence": 0.7525038719177246,
       "shape_source": "predicted",
-      "pattern": "french_tips",
+      "pattern": "french",
       "pattern_confidence": 0.460265576839447,
       "pattern_source": "ground_truth",
       "colors": [
@@ -4411,7 +4411,7 @@
       "shape": "square",
       "shape_confidence": 0.782960573832194,
       "shape_source": "predicted",
-      "pattern": "french_tips",
+      "pattern": "french",
       "pattern_confidence": 0.6564795076847076,
       "pattern_source": "ground_truth",
       "colors": [
@@ -4427,7 +4427,7 @@
       "shape": "coffin",
       "shape_confidence": 0.5889849563439687,
       "shape_source": "predicted",
-      "pattern": "french_tips",
+      "pattern": "french",
       "pattern_confidence": 0.38316090901692706,
       "pattern_source": "ground_truth",
       "colors": [
@@ -4443,7 +4443,7 @@
       "shape": "square",
       "shape_confidence": 0.8356832265853882,
       "shape_source": "predicted",
-      "pattern": "french_tips",
+      "pattern": "french",
       "pattern_confidence": 0.31406982739766437,
       "pattern_source": "ground_truth",
       "colors": [
@@ -4459,7 +4459,7 @@
       "shape": "square",
       "shape_confidence": 0.7984230518341064,
       "shape_source": "predicted",
-      "pattern": "french_tips",
+      "pattern": "french",
       "pattern_confidence": 0.7190093398094177,
       "pattern_source": "ground_truth",
       "colors": [
@@ -4475,7 +4475,7 @@
       "shape": "square",
       "shape_confidence": 0.9384183486302694,
       "shape_source": "predicted",
-      "pattern": "french_tips",
+      "pattern": "french",
       "pattern_confidence": 0.5166032115618387,
       "pattern_source": "ground_truth",
       "colors": [
@@ -4491,7 +4491,7 @@
       "shape": "square",
       "shape_confidence": 0.7172387440999349,
       "shape_source": "predicted",
-      "pattern": "french_tips",
+      "pattern": "french",
       "pattern_confidence": 0.4204890529314677,
       "pattern_source": "ground_truth",
       "colors": [
@@ -4507,7 +4507,7 @@
       "shape": "square",
       "shape_confidence": 0.9710360765457153,
       "shape_source": "predicted",
-      "pattern": "french_tips",
+      "pattern": "french",
       "pattern_confidence": 0.4968263804912567,
       "pattern_source": "ground_truth",
       "colors": [
@@ -4523,7 +4523,7 @@
       "shape": "square",
       "shape_confidence": 0.7733013232549032,
       "shape_source": "predicted",
-      "pattern": "french_tips",
+      "pattern": "french",
       "pattern_confidence": 0.4345005452632904,
       "pattern_source": "ground_truth",
       "colors": [
@@ -4539,7 +4539,7 @@
       "shape": "square",
       "shape_confidence": 0.9681303898493449,
       "shape_source": "predicted",
-      "pattern": "french_tips",
+      "pattern": "french",
       "pattern_confidence": 0.6593605081240336,
       "pattern_source": "ground_truth",
       "colors": [
@@ -4555,7 +4555,7 @@
       "shape": "almond",
       "shape_confidence": 0.7329610288143158,
       "shape_source": "predicted",
-      "pattern": "french_tips",
+      "pattern": "french",
       "pattern_confidence": 0.43155986070632935,
       "pattern_source": "ground_truth",
       "colors": [
@@ -4587,7 +4587,7 @@
       "shape": "almond",
       "shape_confidence": 0.8770021200180054,
       "shape_source": "predicted",
-      "pattern": "french_tips",
+      "pattern": "french",
       "pattern_confidence": 0.48830756545066833,
       "pattern_source": "ground_truth",
       "colors": [
@@ -4603,7 +4603,7 @@
       "shape": "almond",
       "shape_confidence": 0.773091584444046,
       "shape_source": "predicted",
-      "pattern": "french_tips",
+      "pattern": "french",
       "pattern_confidence": 0.6629751523335775,
       "pattern_source": "ground_truth",
       "colors": [
@@ -4619,7 +4619,7 @@
       "shape": "square",
       "shape_confidence": 0.8446124792098999,
       "shape_source": "predicted",
-      "pattern": "french_tips",
+      "pattern": "french",
       "pattern_confidence": 0.42413939038912457,
       "pattern_source": "ground_truth",
       "colors": [
@@ -4635,7 +4635,7 @@
       "shape": "square",
       "shape_confidence": 0.9142602284749349,
       "shape_source": "predicted",
-      "pattern": "french_tips",
+      "pattern": "french",
       "pattern_confidence": 0.4500820537408193,
       "pattern_source": "ground_truth",
       "colors": [
@@ -4651,7 +4651,7 @@
       "shape": "square",
       "shape_confidence": 0.8947428266207377,
       "shape_source": "predicted",
-      "pattern": "french_tips",
+      "pattern": "french",
       "pattern_confidence": 0.6777290304501852,
       "pattern_source": "ground_truth",
       "colors": [
@@ -4667,7 +4667,7 @@
       "shape": "almond",
       "shape_confidence": 0.8000020980834961,
       "shape_source": "predicted",
-      "pattern": "french_tips",
+      "pattern": "french",
       "pattern_confidence": 0.33266104261080426,
       "pattern_source": "ground_truth",
       "colors": [
@@ -4683,7 +4683,7 @@
       "shape": "square",
       "shape_confidence": 0.7012178301811218,
       "shape_source": "predicted",
-      "pattern": "french_tips",
+      "pattern": "french",
       "pattern_confidence": 0.5356816748778025,
       "pattern_source": "ground_truth",
       "colors": [
@@ -4715,7 +4715,7 @@
       "shape": "square",
       "shape_confidence": 0.565314531326294,
       "shape_source": "predicted",
-      "pattern": "french_tips",
+      "pattern": "french",
       "pattern_confidence": 0.44909730553627014,
       "pattern_source": "ground_truth",
       "colors": [
@@ -4731,7 +4731,7 @@
       "shape": "square",
       "shape_confidence": 0.8041843771934509,
       "shape_source": "predicted",
-      "pattern": "french_tips",
+      "pattern": "french",
       "pattern_confidence": 0.3527992069721222,
       "pattern_source": "ground_truth",
       "colors": [
@@ -4763,7 +4763,7 @@
       "shape": "square",
       "shape_confidence": 0.8193523287773132,
       "shape_source": "predicted",
-      "pattern": "french_tips",
+      "pattern": "french",
       "pattern_confidence": 0.4249175389607747,
       "pattern_source": "ground_truth",
       "colors": [
@@ -4779,7 +4779,7 @@
       "shape": "almond",
       "shape_confidence": 0.6085893511772156,
       "shape_source": "predicted",
-      "pattern": "french_tips",
+      "pattern": "french",
       "pattern_confidence": 0.49540042877197266,
       "pattern_source": "ground_truth",
       "colors": [
@@ -4795,7 +4795,7 @@
       "shape": "square",
       "shape_confidence": 0.6753188868363699,
       "shape_source": "predicted",
-      "pattern": "french_tips",
+      "pattern": "french",
       "pattern_confidence": 0.5012674132982889,
       "pattern_source": "ground_truth",
       "colors": [
@@ -4811,7 +4811,7 @@
       "shape": "square",
       "shape_confidence": 0.8496129314104716,
       "shape_source": "predicted",
-      "pattern": "french_tips",
+      "pattern": "french",
       "pattern_confidence": 0.5539496143658956,
       "pattern_source": "ground_truth",
       "colors": [
@@ -4827,7 +4827,7 @@
       "shape": "square",
       "shape_confidence": 0.6091774503389994,
       "shape_source": "predicted",
-      "pattern": "french_tips",
+      "pattern": "french",
       "pattern_confidence": 0.36784104506174725,
       "pattern_source": "ground_truth",
       "colors": [
@@ -4843,7 +4843,7 @@
       "shape": "almond",
       "shape_confidence": 0.5141388575236002,
       "shape_source": "predicted",
-      "pattern": "french_tips",
+      "pattern": "french",
       "pattern_confidence": 0.5021564662456512,
       "pattern_source": "ground_truth",
       "colors": [
@@ -4859,7 +4859,7 @@
       "shape": "almond",
       "shape_confidence": 0.985508402188619,
       "shape_source": "predicted",
-      "pattern": "french_tips",
+      "pattern": "french",
       "pattern_confidence": 0.5237126251061758,
       "pattern_source": "ground_truth",
       "colors": [
@@ -4891,7 +4891,7 @@
       "shape": "almond",
       "shape_confidence": 0.8418139020601908,
       "shape_source": "predicted",
-      "pattern": "french_tips",
+      "pattern": "french",
       "pattern_confidence": 0.3565952281157176,
       "pattern_source": "ground_truth",
       "colors": [
@@ -4907,7 +4907,7 @@
       "shape": "almond",
       "shape_confidence": 0.897095799446106,
       "shape_source": "predicted",
-      "pattern": "french_tips",
+      "pattern": "french",
       "pattern_confidence": 0.3918783664703369,
       "pattern_source": "ground_truth",
       "colors": [
@@ -4939,7 +4939,7 @@
       "shape": "square",
       "shape_confidence": 0.8173620700836182,
       "shape_source": "predicted",
-      "pattern": "french_tips",
+      "pattern": "french",
       "pattern_confidence": 0.5047346750895182,
       "pattern_source": "ground_truth",
       "colors": [
@@ -4955,7 +4955,7 @@
       "shape": "square",
       "shape_confidence": 0.9242129325866699,
       "shape_source": "predicted",
-      "pattern": "french_tips",
+      "pattern": "french",
       "pattern_confidence": 0.390519658724467,
       "pattern_source": "ground_truth",
       "colors": [
@@ -4971,7 +4971,7 @@
       "shape": "square",
       "shape_confidence": 0.7129283547401428,
       "shape_source": "predicted",
-      "pattern": "french_tips",
+      "pattern": "french",
       "pattern_confidence": 0.5793054600556692,
       "pattern_source": "ground_truth",
       "colors": [
@@ -4987,7 +4987,7 @@
       "shape": "almond",
       "shape_confidence": 0.6775133311748505,
       "shape_source": "predicted",
-      "pattern": "french_tips",
+      "pattern": "french",
       "pattern_confidence": 0.40335017442703247,
       "pattern_source": "ground_truth",
       "colors": [
@@ -5003,7 +5003,7 @@
       "shape": "almond",
       "shape_confidence": 0.7698547840118408,
       "shape_source": "predicted",
-      "pattern": "french_tips",
+      "pattern": "french",
       "pattern_confidence": 0.4670713047186534,
       "pattern_source": "ground_truth",
       "colors": [
@@ -5099,7 +5099,7 @@
       "shape": "almond",
       "shape_confidence": 0.7134633660316467,
       "shape_source": "ground_truth",
-      "pattern": "french_tips",
+      "pattern": "french",
       "pattern_confidence": 0.2901347875595093,
       "pattern_source": "predicted",
       "colors": [
@@ -5163,7 +5163,7 @@
       "shape": "almond",
       "shape_confidence": 0.8971647222836813,
       "shape_source": "predicted",
-      "pattern": "french_tips",
+      "pattern": "french",
       "pattern_confidence": 0.5518034795920054,
       "pattern_source": "ground_truth",
       "colors": [
@@ -5659,7 +5659,7 @@
       "shape": "square",
       "shape_confidence": 0.7606275180975596,
       "shape_source": "predicted",
-      "pattern": "french_tips",
+      "pattern": "french",
       "pattern_confidence": 0.5165969431400299,
       "pattern_source": "ground_truth",
       "colors": [
@@ -5771,7 +5771,7 @@
       "shape": "square",
       "shape_confidence": 0.5862208108107249,
       "shape_source": "predicted",
-      "pattern": "french_tips",
+      "pattern": "french",
       "pattern_confidence": 0.3817121585210164,
       "pattern_source": "ground_truth",
       "colors": [
@@ -6523,7 +6523,7 @@
       "shape": "square",
       "shape_confidence": 0.7738136053085327,
       "shape_source": "predicted",
-      "pattern": "french_tips",
+      "pattern": "french",
       "pattern_confidence": 0.6216362118721008,
       "pattern_source": "ground_truth",
       "colors": [
@@ -9643,7 +9643,7 @@
       "shape": "almond",
       "shape_confidence": 0.7169247468312582,
       "shape_source": "predicted",
-      "pattern": "french_tips",
+      "pattern": "french",
       "pattern_confidence": 0.3150033454100291,
       "pattern_source": "ground_truth",
       "colors": [
@@ -9659,7 +9659,7 @@
       "shape": "almond",
       "shape_confidence": 0.8661689360936483,
       "shape_source": "predicted",
-      "pattern": "french_tips",
+      "pattern": "french",
       "pattern_confidence": 0.3820618987083435,
       "pattern_source": "ground_truth",
       "colors": [
@@ -9723,7 +9723,7 @@
       "shape": "square",
       "shape_confidence": 0.560137947400411,
       "shape_source": "predicted",
-      "pattern": "french_tips",
+      "pattern": "french",
       "pattern_confidence": 0.33280858397483826,
       "pattern_source": "ground_truth",
       "colors": [
@@ -9755,7 +9755,7 @@
       "shape": "almond",
       "shape_confidence": 0.8077106873194376,
       "shape_source": "predicted",
-      "pattern": "french_tips",
+      "pattern": "french",
       "pattern_confidence": 0.4609077076117198,
       "pattern_source": "ground_truth",
       "colors": [
@@ -11755,7 +11755,7 @@
       "shape": "square",
       "shape_confidence": 0.6147422790527344,
       "shape_source": "predicted",
-      "pattern": "french_tips",
+      "pattern": "french",
       "pattern_confidence": 0.4751435915629069,
       "pattern_source": "ground_truth",
       "colors": [
@@ -12059,7 +12059,7 @@
       "shape": "almond",
       "shape_confidence": 0.6688816150029501,
       "shape_source": "predicted",
-      "pattern": "french_tips",
+      "pattern": "french",
       "pattern_confidence": 0.4289204478263855,
       "pattern_source": "ground_truth",
       "colors": [
@@ -12219,7 +12219,7 @@
       "shape": "almond",
       "shape_confidence": 0.522122879823049,
       "shape_source": "predicted",
-      "pattern": "french_tips",
+      "pattern": "french",
       "pattern_confidence": 0.400033434232076,
       "pattern_source": "ground_truth",
       "colors": [
@@ -12251,7 +12251,7 @@
       "shape": "almond",
       "shape_confidence": 0.7201772530873617,
       "shape_source": "predicted",
-      "pattern": "french_tips",
+      "pattern": "french",
       "pattern_confidence": 0.5068268577257792,
       "pattern_source": "ground_truth",
       "colors": [
@@ -12859,7 +12859,7 @@
       "shape": "square",
       "shape_confidence": 0.48056121667226154,
       "shape_source": "predicted",
-      "pattern": "french_tips",
+      "pattern": "french",
       "pattern_confidence": 0.3773383895556132,
       "pattern_source": "predicted",
       "colors": [
@@ -13435,7 +13435,7 @@
       "shape": "square",
       "shape_confidence": 0.9348682959874471,
       "shape_source": "predicted",
-      "pattern": "french_tips",
+      "pattern": "french",
       "pattern_confidence": 0.7387159665425619,
       "pattern_source": "predicted",
       "colors": [
@@ -13451,7 +13451,7 @@
       "shape": "square",
       "shape_confidence": 0.5873260299364725,
       "shape_source": "predicted",
-      "pattern": "french_tips",
+      "pattern": "french",
       "pattern_confidence": 0.3066713909308116,
       "pattern_source": "predicted",
       "colors": [
@@ -13547,7 +13547,7 @@
       "shape": "almond",
       "shape_confidence": 0.5981211364269257,
       "shape_source": "predicted",
-      "pattern": "french_tips",
+      "pattern": "french",
       "pattern_confidence": 0.3721187810103099,
       "pattern_source": "predicted",
       "colors": [
@@ -13835,7 +13835,7 @@
       "shape": "square",
       "shape_confidence": 0.6346975465615591,
       "shape_source": "predicted",
-      "pattern": "french_tips",
+      "pattern": "french",
       "pattern_confidence": 0.4150937894980113,
       "pattern_source": "predicted",
       "colors": [
@@ -14283,7 +14283,7 @@
       "shape": "square",
       "shape_confidence": 0.9004786213239034,
       "shape_source": "predicted",
-      "pattern": "french_tips",
+      "pattern": "french",
       "pattern_confidence": 0.46952395637830097,
       "pattern_source": "predicted",
       "colors": [
@@ -14299,7 +14299,7 @@
       "shape": "square",
       "shape_confidence": 0.8131888310114542,
       "shape_source": "predicted",
-      "pattern": "french_tips",
+      "pattern": "french",
       "pattern_confidence": 0.46751319368680316,
       "pattern_source": "predicted",
       "colors": [
@@ -14315,7 +14315,7 @@
       "shape": "square",
       "shape_confidence": 0.8239654501279196,
       "shape_source": "predicted",
-      "pattern": "french_tips",
+      "pattern": "french",
       "pattern_confidence": 0.30655885736147565,
       "pattern_source": "predicted",
       "colors": [
@@ -14555,7 +14555,7 @@
       "shape": "square",
       "shape_confidence": 0.5184479256470998,
       "shape_source": "predicted",
-      "pattern": "french_tips",
+      "pattern": "french",
       "pattern_confidence": 0.5031833449999491,
       "pattern_source": "predicted",
       "colors": [
@@ -14779,7 +14779,7 @@
       "shape": "almond",
       "shape_confidence": 0.6955277522404989,
       "shape_source": "predicted",
-      "pattern": "french_tips",
+      "pattern": "french",
       "pattern_confidence": 0.37833980719248456,
       "pattern_source": "predicted",
       "colors": [
@@ -14795,7 +14795,7 @@
       "shape": "stiletto",
       "shape_confidence": 0.7382051547368368,
       "shape_source": "predicted",
-      "pattern": "french_tips",
+      "pattern": "french",
       "pattern_confidence": 0.33531156182289124,
       "pattern_source": "predicted",
       "colors": [
@@ -15147,7 +15147,7 @@
       "shape": "square",
       "shape_confidence": 0.65579687555631,
       "shape_source": "predicted",
-      "pattern": "french_tips",
+      "pattern": "french",
       "pattern_confidence": 0.4058149456977844,
       "pattern_source": "ground_truth",
       "colors": [
@@ -15179,7 +15179,7 @@
       "shape": "stiletto",
       "shape_confidence": 0.3902003268400828,
       "shape_source": "predicted",
-      "pattern": "french_tips",
+      "pattern": "french",
       "pattern_confidence": 0.4957497219244639,
       "pattern_source": "ground_truth",
       "colors": [
@@ -15211,7 +15211,7 @@
       "shape": "square",
       "shape_confidence": 0.6704681118329366,
       "shape_source": "predicted",
-      "pattern": "french_tips",
+      "pattern": "french",
       "pattern_confidence": 0.32981497049331665,
       "pattern_source": "ground_truth",
       "colors": [
@@ -15531,7 +15531,7 @@
       "shape": "square",
       "shape_confidence": 0.49861034750938416,
       "shape_source": "predicted",
-      "pattern": "french_tips",
+      "pattern": "french",
       "pattern_confidence": 0.39237163464228314,
       "pattern_source": "ground_truth",
       "colors": [
@@ -15595,7 +15595,7 @@
       "shape": "stiletto",
       "shape_confidence": 0.8779142300287882,
       "shape_source": "predicted",
-      "pattern": "french_tips",
+      "pattern": "french",
       "pattern_confidence": 0.4054811894893646,
       "pattern_source": "ground_truth",
       "colors": [
@@ -15627,7 +15627,7 @@
       "shape": "almond",
       "shape_confidence": 0.6765472491582235,
       "shape_source": "predicted",
-      "pattern": "french_tips",
+      "pattern": "french",
       "pattern_confidence": 0.31606367230415344,
       "pattern_source": "predicted",
       "colors": [
@@ -15787,7 +15787,7 @@
       "shape": "square",
       "shape_confidence": 0.8112537662188212,
       "shape_source": "predicted",
-      "pattern": "french_tips",
+      "pattern": "french",
       "pattern_confidence": 0.5693027377128601,
       "pattern_source": "predicted",
       "colors": [
@@ -15803,7 +15803,7 @@
       "shape": "square",
       "shape_confidence": 0.8881702621777853,
       "shape_source": "predicted",
-      "pattern": "french_tips",
+      "pattern": "french",
       "pattern_confidence": 0.3552619218826294,
       "pattern_source": "predicted",
       "colors": [
@@ -16139,7 +16139,7 @@
       "shape": "square",
       "shape_confidence": 0.8450498779614767,
       "shape_source": "predicted",
-      "pattern": "french_tips",
+      "pattern": "french",
       "pattern_confidence": 0.49656449755032855,
       "pattern_source": "predicted",
       "colors": [
@@ -16779,7 +16779,7 @@
       "shape": "square",
       "shape_confidence": 0.65579687555631,
       "shape_source": "predicted",
-      "pattern": "french_tips",
+      "pattern": "french",
       "pattern_confidence": 0.4058149456977844,
       "pattern_source": "ground_truth",
       "colors": [
@@ -17147,7 +17147,7 @@
       "shape": "almond",
       "shape_confidence": 0.7689821720123291,
       "shape_source": "predicted",
-      "pattern": "french_tips",
+      "pattern": "french",
       "pattern_confidence": 0.3337128162384033,
       "pattern_source": "predicted",
       "colors": [
@@ -17243,7 +17243,7 @@
       "shape": "almond",
       "shape_confidence": 0.7689821720123291,
       "shape_source": "predicted",
-      "pattern": "french_tips",
+      "pattern": "french",
       "pattern_confidence": 0.3337128162384033,
       "pattern_source": "predicted",
       "colors": [
@@ -17403,7 +17403,7 @@
       "shape": "square",
       "shape_confidence": 0.6754861772060394,
       "shape_source": "predicted",
-      "pattern": "french_tips",
+      "pattern": "french",
       "pattern_confidence": 0.41322433948516846,
       "pattern_source": "predicted",
       "colors": [
@@ -17483,7 +17483,7 @@
       "shape": "almond",
       "shape_confidence": 0.7201772530873617,
       "shape_source": "predicted",
-      "pattern": "french_tips",
+      "pattern": "french",
       "pattern_confidence": 0.5068268577257792,
       "pattern_source": "ground_truth",
       "colors": [
@@ -17515,7 +17515,7 @@
       "shape": "almond",
       "shape_confidence": 0.820213516553243,
       "shape_source": "predicted",
-      "pattern": "french_tips",
+      "pattern": "french",
       "pattern_confidence": 0.32152488827705383,
       "pattern_source": "predicted",
       "colors": [
@@ -17739,7 +17739,7 @@
       "shape": "almond",
       "shape_confidence": 0.720525324344635,
       "shape_source": "predicted",
-      "pattern": "french_tips",
+      "pattern": "french",
       "pattern_confidence": 0.6225539445877075,
       "pattern_source": "predicted",
       "colors": [
@@ -17755,7 +17755,7 @@
       "shape": "almond",
       "shape_confidence": 0.8065263827641805,
       "shape_source": "predicted",
-      "pattern": "french_tips",
+      "pattern": "french",
       "pattern_confidence": 0.39791248242060345,
       "pattern_source": "predicted",
       "colors": [
@@ -17947,7 +17947,7 @@
       "shape": "coffin",
       "shape_confidence": 0.5325643519560496,
       "shape_source": "predicted",
-      "pattern": "french_tips",
+      "pattern": "french",
       "pattern_confidence": 0.3711269597212474,
       "pattern_source": "predicted",
       "colors": [
@@ -18171,7 +18171,7 @@
       "shape": "almond",
       "shape_confidence": 0.504065583149592,
       "shape_source": "predicted",
-      "pattern": "french_tips",
+      "pattern": "french",
       "pattern_confidence": 0.5912626385688782,
       "pattern_source": "predicted",
       "colors": [
@@ -18187,7 +18187,7 @@
       "shape": "almond",
       "shape_confidence": 0.7085802753766378,
       "shape_source": "predicted",
-      "pattern": "french_tips",
+      "pattern": "french",
       "pattern_confidence": 0.4237509071826935,
       "pattern_source": "ground_truth",
       "colors": [
@@ -18235,7 +18235,7 @@
       "shape": "coffin",
       "shape_confidence": 0.524409164985021,
       "shape_source": "predicted",
-      "pattern": "french_tips",
+      "pattern": "french",
       "pattern_confidence": 0.390178104241689,
       "pattern_source": "predicted",
       "colors": [
@@ -18475,7 +18475,7 @@
       "shape": "almond",
       "shape_confidence": 0.6669184664885203,
       "shape_source": "predicted",
-      "pattern": "french_tips",
+      "pattern": "french",
       "pattern_confidence": 0.32991936802864075,
       "pattern_source": "predicted",
       "colors": [
@@ -18603,7 +18603,7 @@
       "shape": "coffin",
       "shape_confidence": 0.45231523116429645,
       "shape_source": "predicted",
-      "pattern": "french_tips",
+      "pattern": "french",
       "pattern_confidence": 0.41237849990526837,
       "pattern_source": "predicted",
       "colors": [
@@ -18635,7 +18635,7 @@
       "shape": "almond",
       "shape_confidence": 0.723157266775767,
       "shape_source": "predicted",
-      "pattern": "french_tips",
+      "pattern": "french",
       "pattern_confidence": 0.3016318678855896,
       "pattern_source": "predicted",
       "colors": [
@@ -18779,7 +18779,7 @@
       "shape": "almond",
       "shape_confidence": 0.49990612268447876,
       "shape_source": "predicted",
-      "pattern": "french_tips",
+      "pattern": "french",
       "pattern_confidence": 0.3647070328394572,
       "pattern_source": "predicted",
       "colors": [
@@ -18907,7 +18907,7 @@
       "shape": "square",
       "shape_confidence": 0.5157778064409891,
       "shape_source": "predicted",
-      "pattern": "french_tips",
+      "pattern": "french",
       "pattern_confidence": 0.5523821910222372,
       "pattern_source": "predicted",
       "colors": [
@@ -18923,7 +18923,7 @@
       "shape": "almond",
       "shape_confidence": 0.7751796444257101,
       "shape_source": "predicted",
-      "pattern": "french_tips",
+      "pattern": "french",
       "pattern_confidence": 0.45512105027834576,
       "pattern_source": "ground_truth",
       "colors": [
@@ -19035,7 +19035,7 @@
       "shape": "square",
       "shape_confidence": 0.8986549377441406,
       "shape_source": "predicted",
-      "pattern": "french_tips",
+      "pattern": "french",
       "pattern_confidence": 0.23849651217460632,
       "pattern_source": "ground_truth",
       "colors": [
@@ -19083,7 +19083,7 @@
       "shape": "square",
       "shape_confidence": 0.5603422522544861,
       "shape_source": "predicted",
-      "pattern": "french_tips",
+      "pattern": "french",
       "pattern_confidence": 0.3237079580624898,
       "pattern_source": "ground_truth",
       "colors": [
@@ -19195,7 +19195,7 @@
       "shape": "almond",
       "shape_confidence": 0.6822674870491028,
       "shape_source": "ground_truth",
-      "pattern": "french_tips",
+      "pattern": "french",
       "pattern_confidence": 0.37084073821703595,
       "pattern_source": "predicted",
       "colors": [
@@ -19419,7 +19419,7 @@
       "shape": "almond",
       "shape_confidence": 0.7085472742716471,
       "shape_source": "predicted",
-      "pattern": "french_tips",
+      "pattern": "french",
       "pattern_confidence": 0.38827136158943176,
       "pattern_source": "predicted",
       "colors": [
@@ -19675,7 +19675,7 @@
       "shape": "square",
       "shape_confidence": 0.5659523010253906,
       "shape_source": "predicted",
-      "pattern": "french_tips",
+      "pattern": "french",
       "pattern_confidence": 0.30003008246421814,
       "pattern_source": "predicted",
       "colors": [
@@ -20091,7 +20091,7 @@
       "shape": "square",
       "shape_confidence": 0.6923666795094808,
       "shape_source": "predicted",
-      "pattern": "french_tips",
+      "pattern": "french",
       "pattern_confidence": 0.34234679738680523,
       "pattern_source": "predicted",
       "colors": [
@@ -20107,7 +20107,7 @@
       "shape": "square",
       "shape_confidence": 0.8048493464787801,
       "shape_source": "predicted",
-      "pattern": "french_tips",
+      "pattern": "french",
       "pattern_confidence": 0.3466259737809499,
       "pattern_source": "predicted",
       "colors": [
@@ -20555,7 +20555,7 @@
       "shape": "square",
       "shape_confidence": 0.48799075682957965,
       "shape_source": "predicted",
-      "pattern": "french_tips",
+      "pattern": "french",
       "pattern_confidence": 0.39159438014030457,
       "pattern_source": "ground_truth",
       "colors": [
@@ -20619,7 +20619,7 @@
       "shape": "coffin",
       "shape_confidence": 0.6565800607204437,
       "shape_source": "predicted",
-      "pattern": "french_tips",
+      "pattern": "french",
       "pattern_confidence": 0.3682962954044342,
       "pattern_source": "predicted",
       "colors": [
@@ -20859,7 +20859,7 @@
       "shape": "almond",
       "shape_confidence": 0.5454235176245371,
       "shape_source": "predicted",
-      "pattern": "french_tips",
+      "pattern": "french",
       "pattern_confidence": 0.4373222788174947,
       "pattern_source": "predicted",
       "colors": [
@@ -21211,7 +21211,7 @@
       "shape": "square",
       "shape_confidence": 0.3958016137282054,
       "shape_source": "predicted",
-      "pattern": "french_tips",
+      "pattern": "french",
       "pattern_confidence": 0.437224547068278,
       "pattern_source": "ground_truth",
       "colors": [
@@ -21227,7 +21227,7 @@
       "shape": "almond",
       "shape_confidence": 0.8192486961682638,
       "shape_source": "predicted",
-      "pattern": "french_tips",
+      "pattern": "french",
       "pattern_confidence": 0.4173853397369385,
       "pattern_source": "ground_truth",
       "colors": [
@@ -21323,7 +21323,7 @@
       "shape": "square",
       "shape_confidence": 0.7663255532582601,
       "shape_source": "predicted",
-      "pattern": "french_tips",
+      "pattern": "french",
       "pattern_confidence": 0.43710051973660785,
       "pattern_source": "ground_truth",
       "colors": [
@@ -21339,7 +21339,7 @@
       "shape": "almond",
       "shape_confidence": 0.436359167098999,
       "shape_source": "predicted",
-      "pattern": "french_tips",
+      "pattern": "french",
       "pattern_confidence": 0.6906513770421346,
       "pattern_source": "ground_truth",
       "colors": [
@@ -21563,7 +21563,7 @@
       "shape": "almond",
       "shape_confidence": 0.7670142650604248,
       "shape_source": "predicted",
-      "pattern": "french_tips",
+      "pattern": "french",
       "pattern_confidence": 0.30274303754170734,
       "pattern_source": "ground_truth",
       "colors": [
@@ -21579,7 +21579,7 @@
       "shape": "square",
       "shape_confidence": 0.6427558064460754,
       "shape_source": "predicted",
-      "pattern": "french_tips",
+      "pattern": "french",
       "pattern_confidence": 0.33596179882685345,
       "pattern_source": "ground_truth",
       "colors": [
@@ -21595,7 +21595,7 @@
       "shape": "square",
       "shape_confidence": 0.8629066149393717,
       "shape_source": "predicted",
-      "pattern": "french_tips",
+      "pattern": "french",
       "pattern_confidence": 0.30926779905955,
       "pattern_source": "ground_truth",
       "colors": [
@@ -21915,7 +21915,7 @@
       "shape": "square",
       "shape_confidence": 0.6657964785893759,
       "shape_source": "predicted",
-      "pattern": "french_tips",
+      "pattern": "french",
       "pattern_confidence": 0.33450015385945636,
       "pattern_source": "predicted",
       "colors": [
@@ -22603,7 +22603,7 @@
       "shape": "stiletto",
       "shape_confidence": 0.9220298329989115,
       "shape_source": "predicted",
-      "pattern": "french_tips",
+      "pattern": "french",
       "pattern_confidence": 0.48315057158470154,
       "pattern_source": "ground_truth",
       "colors": [
@@ -22667,7 +22667,7 @@
       "shape": "square",
       "shape_confidence": 0.794019897778829,
       "shape_source": "predicted",
-      "pattern": "french_tips",
+      "pattern": "french",
       "pattern_confidence": 0.39438052972157794,
       "pattern_source": "predicted",
       "colors": [
@@ -22763,7 +22763,7 @@
       "shape": "coffin",
       "shape_confidence": 0.5962031284968058,
       "shape_source": "predicted",
-      "pattern": "french_tips",
+      "pattern": "french",
       "pattern_confidence": 0.34396273891131085,
       "pattern_source": "predicted",
       "colors": [
@@ -23339,7 +23339,7 @@
       "shape": "square",
       "shape_confidence": 0.6651397546132406,
       "shape_source": "predicted",
-      "pattern": "french_tips",
+      "pattern": "french",
       "pattern_confidence": 0.31022849678993225,
       "pattern_source": "predicted",
       "colors": [
@@ -24187,7 +24187,7 @@
       "shape": "square",
       "shape_confidence": 0.5217421154181162,
       "shape_source": "predicted",
-      "pattern": "french_tips",
+      "pattern": "french",
       "pattern_confidence": 0.38098886609077454,
       "pattern_source": "predicted",
       "colors": [
@@ -24427,7 +24427,7 @@
       "shape": "almond",
       "shape_confidence": 0.9734047452608744,
       "shape_source": "predicted",
-      "pattern": "french_tips",
+      "pattern": "french",
       "pattern_confidence": 0.36732637882232666,
       "pattern_source": "predicted",
       "colors": [
@@ -24539,7 +24539,7 @@
       "shape": "square",
       "shape_confidence": 0.7258757849534353,
       "shape_source": "predicted",
-      "pattern": "french_tips",
+      "pattern": "french",
       "pattern_confidence": 0.45316608746846515,
       "pattern_source": "predicted",
       "colors": [
@@ -24683,7 +24683,7 @@
       "shape": "almond",
       "shape_confidence": 0.920815130074819,
       "shape_source": "predicted",
-      "pattern": "french_tips",
+      "pattern": "french",
       "pattern_confidence": 0.3420258065064748,
       "pattern_source": "predicted",
       "colors": [
@@ -24763,7 +24763,7 @@
       "shape": "coffin",
       "shape_confidence": 0.542450745900472,
       "shape_source": "predicted",
-      "pattern": "french_tips",
+      "pattern": "french",
       "pattern_confidence": 0.2982050081094106,
       "pattern_source": "predicted",
       "colors": [
@@ -24827,7 +24827,7 @@
       "shape": "almond",
       "shape_confidence": 0.656246413787206,
       "shape_source": "ground_truth",
-      "pattern": "french_tips",
+      "pattern": "french",
       "pattern_confidence": 0.4108164111773173,
       "pattern_source": "predicted",
       "colors": [
@@ -25035,7 +25035,7 @@
       "shape": "almond",
       "shape_confidence": 0.9689867297808329,
       "shape_source": "predicted",
-      "pattern": "french_tips",
+      "pattern": "french",
       "pattern_confidence": 0.5482725501060486,
       "pattern_source": "predicted",
       "colors": [
@@ -25563,7 +25563,7 @@
       "shape": "almond",
       "shape_confidence": 0.7292885879675547,
       "shape_source": "predicted",
-      "pattern": "french_tips",
+      "pattern": "french",
       "pattern_confidence": 0.40887786944707233,
       "pattern_source": "ground_truth",
       "colors": [
@@ -25579,7 +25579,7 @@
       "shape": "almond",
       "shape_confidence": 0.8734509746233622,
       "shape_source": "predicted",
-      "pattern": "french_tips",
+      "pattern": "french",
       "pattern_confidence": 0.39130757252375287,
       "pattern_source": "ground_truth",
       "colors": [
@@ -25643,7 +25643,7 @@
       "shape": "coffin",
       "shape_confidence": 0.6005624334017435,
       "shape_source": "ground_truth",
-      "pattern": "french_tips",
+      "pattern": "french",
       "pattern_confidence": 0.40274275342623395,
       "pattern_source": "predicted",
       "colors": [
@@ -25771,7 +25771,7 @@
       "shape": "almond",
       "shape_confidence": 0.6963502963383993,
       "shape_source": "predicted",
-      "pattern": "french_tips",
+      "pattern": "french",
       "pattern_confidence": 0.5122780700524648,
       "pattern_source": "ground_truth",
       "colors": [
@@ -25787,7 +25787,7 @@
       "shape": "square",
       "shape_confidence": 0.6707359055678049,
       "shape_source": "predicted",
-      "pattern": "french_tips",
+      "pattern": "french",
       "pattern_confidence": 0.44187065958976746,
       "pattern_source": "ground_truth",
       "colors": [
@@ -25819,7 +25819,7 @@
       "shape": "square",
       "shape_confidence": 0.717244416475296,
       "shape_source": "predicted",
-      "pattern": "french_tips",
+      "pattern": "french",
       "pattern_confidence": 0.40367506941159564,
       "pattern_source": "ground_truth",
       "colors": [
@@ -25835,7 +25835,7 @@
       "shape": "square",
       "shape_confidence": 0.7306646903355917,
       "shape_source": "predicted",
-      "pattern": "french_tips",
+      "pattern": "french",
       "pattern_confidence": 0.5090257426102957,
       "pattern_source": "ground_truth",
       "colors": [
@@ -25867,7 +25867,7 @@
       "shape": "almond",
       "shape_confidence": 0.7014435132344564,
       "shape_source": "predicted",
-      "pattern": "french_tips",
+      "pattern": "french",
       "pattern_confidence": 0.4097243746121724,
       "pattern_source": "ground_truth",
       "colors": [
@@ -25931,7 +25931,7 @@
       "shape": "coffin",
       "shape_confidence": 0.6940165162086487,
       "shape_source": "ground_truth",
-      "pattern": "french_tips",
+      "pattern": "french",
       "pattern_confidence": 0.6267409125963846,
       "pattern_source": "ground_truth",
       "colors": [
@@ -25947,7 +25947,7 @@
       "shape": "square",
       "shape_confidence": 0.6165229082107544,
       "shape_source": "predicted",
-      "pattern": "french_tips",
+      "pattern": "french",
       "pattern_confidence": 0.3859871029853821,
       "pattern_source": "ground_truth",
       "colors": [
@@ -25963,7 +25963,7 @@
       "shape": "coffin",
       "shape_confidence": 0.5039255817731222,
       "shape_source": "predicted",
-      "pattern": "french_tips",
+      "pattern": "french",
       "pattern_confidence": 0.4858211278915405,
       "pattern_source": "ground_truth",
       "colors": [
@@ -25979,7 +25979,7 @@
       "shape": "square",
       "shape_confidence": 0.8188844124476115,
       "shape_source": "predicted",
-      "pattern": "french_tips",
+      "pattern": "french",
       "pattern_confidence": 0.4659302731355031,
       "pattern_source": "ground_truth",
       "colors": [
@@ -25995,7 +25995,7 @@
       "shape": "square",
       "shape_confidence": 0.6952474415302277,
       "shape_source": "predicted",
-      "pattern": "french_tips",
+      "pattern": "french",
       "pattern_confidence": 0.44373077154159546,
       "pattern_source": "ground_truth",
       "colors": [
@@ -26027,7 +26027,7 @@
       "shape": "square",
       "shape_confidence": 0.8139997720718384,
       "shape_source": "predicted",
-      "pattern": "french_tips",
+      "pattern": "french",
       "pattern_confidence": 0.3538198570410411,
       "pattern_source": "predicted",
       "colors": [
@@ -26043,7 +26043,7 @@
       "shape": "square",
       "shape_confidence": 0.555227001508077,
       "shape_source": "predicted",
-      "pattern": "french_tips",
+      "pattern": "french",
       "pattern_confidence": 0.2990755538145701,
       "pattern_source": "predicted",
       "colors": [
@@ -26187,7 +26187,7 @@
       "shape": "almond",
       "shape_confidence": 0.7898915608723959,
       "shape_source": "predicted",
-      "pattern": "french_tips",
+      "pattern": "french",
       "pattern_confidence": 0.4008629620075226,
       "pattern_source": "ground_truth",
       "colors": [
@@ -26203,7 +26203,7 @@
       "shape": "coffin",
       "shape_confidence": 0.48210150996843976,
       "shape_source": "predicted",
-      "pattern": "french_tips",
+      "pattern": "french",
       "pattern_confidence": 0.3714367945988973,
       "pattern_source": "ground_truth",
       "colors": [
@@ -26491,7 +26491,7 @@
       "shape": "almond",
       "shape_confidence": 0.541997363169988,
       "shape_source": "predicted",
-      "pattern": "french_tips",
+      "pattern": "french",
       "pattern_confidence": 0.5707757671674093,
       "pattern_source": "ground_truth",
       "colors": [
@@ -26507,7 +26507,7 @@
       "shape": "coffin",
       "shape_confidence": 0.5730032523473104,
       "shape_source": "predicted",
-      "pattern": "french_tips",
+      "pattern": "french",
       "pattern_confidence": 0.3761488199234009,
       "pattern_source": "ground_truth",
       "colors": [
@@ -26523,7 +26523,7 @@
       "shape": "coffin",
       "shape_confidence": 0.772089421749115,
       "shape_source": "predicted",
-      "pattern": "french_tips",
+      "pattern": "french",
       "pattern_confidence": 0.5234821240107218,
       "pattern_source": "ground_truth",
       "colors": [
@@ -26747,7 +26747,7 @@
       "shape": "almond",
       "shape_confidence": 0.8726938764254252,
       "shape_source": "predicted",
-      "pattern": "french_tips",
+      "pattern": "french",
       "pattern_confidence": 0.40577513972918194,
       "pattern_source": "ground_truth",
       "colors": [
@@ -26827,7 +26827,7 @@
       "shape": "coffin",
       "shape_confidence": 0.5573423604170481,
       "shape_source": "predicted",
-      "pattern": "french_tips",
+      "pattern": "french",
       "pattern_confidence": 0.39700546860694885,
       "pattern_source": "ground_truth",
       "colors": [
@@ -26843,7 +26843,7 @@
       "shape": "almond",
       "shape_confidence": 0.6447901725769043,
       "shape_source": "predicted",
-      "pattern": "french_tips",
+      "pattern": "french",
       "pattern_confidence": 0.589990238348643,
       "pattern_source": "ground_truth",
       "colors": [
@@ -26859,7 +26859,7 @@
       "shape": "almond",
       "shape_confidence": 0.8793431123097738,
       "shape_source": "predicted",
-      "pattern": "french_tips",
+      "pattern": "french",
       "pattern_confidence": 0.45292917887369794,
       "pattern_source": "ground_truth",
       "colors": [
@@ -26875,7 +26875,7 @@
       "shape": "coffin",
       "shape_confidence": 0.5771125753720602,
       "shape_source": "predicted",
-      "pattern": "french_tips",
+      "pattern": "french",
       "pattern_confidence": 0.422247846921285,
       "pattern_source": "ground_truth",
       "colors": [
@@ -26891,7 +26891,7 @@
       "shape": "stiletto",
       "shape_confidence": 0.5774249235788981,
       "shape_source": "predicted",
-      "pattern": "french_tips",
+      "pattern": "french",
       "pattern_confidence": 0.45536526044209796,
       "pattern_source": "ground_truth",
       "colors": [
@@ -26923,7 +26923,7 @@
       "shape": "stiletto",
       "shape_confidence": 0.6382444500923157,
       "shape_source": "predicted",
-      "pattern": "french_tips",
+      "pattern": "french",
       "pattern_confidence": 0.3794216513633728,
       "pattern_source": "ground_truth",
       "colors": [
@@ -26955,7 +26955,7 @@
       "shape": "square",
       "shape_confidence": 0.7734757463137308,
       "shape_source": "predicted",
-      "pattern": "french_tips",
+      "pattern": "french",
       "pattern_confidence": 0.3837766150633494,
       "pattern_source": "ground_truth",
       "colors": [
@@ -27707,7 +27707,7 @@
       "shape": "square",
       "shape_confidence": 0.7523966431617737,
       "shape_source": "predicted",
-      "pattern": "french_tips",
+      "pattern": "french",
       "pattern_confidence": 0.3500850995381673,
       "pattern_source": "ground_truth",
       "colors": [
@@ -28459,7 +28459,7 @@
       "shape": "almond",
       "shape_confidence": 0.7493901054064432,
       "shape_source": "predicted",
-      "pattern": "french_tips",
+      "pattern": "french",
       "pattern_confidence": 0.4296429554621379,
       "pattern_source": "predicted",
       "colors": [
@@ -28507,7 +28507,7 @@
       "shape": "almond",
       "shape_confidence": 0.6497061252593994,
       "shape_source": "predicted",
-      "pattern": "french_tips",
+      "pattern": "french",
       "pattern_confidence": 0.5920985341072083,
       "pattern_source": "predicted",
       "colors": [
@@ -28539,7 +28539,7 @@
       "shape": "almond",
       "shape_confidence": 0.4849652647972107,
       "shape_source": "predicted",
-      "pattern": "french_tips",
+      "pattern": "french",
       "pattern_confidence": 0.42379353443781537,
       "pattern_source": "predicted",
       "colors": [
@@ -29307,7 +29307,7 @@
       "shape": "almond",
       "shape_confidence": 0.9723529815673828,
       "shape_source": "predicted",
-      "pattern": "french_tips",
+      "pattern": "french",
       "pattern_confidence": 0.4112037122249603,
       "pattern_source": "predicted",
       "colors": [
@@ -29323,7 +29323,7 @@
       "shape": "almond",
       "shape_confidence": 0.8841115236282349,
       "shape_source": "predicted",
-      "pattern": "french_tips",
+      "pattern": "french",
       "pattern_confidence": 0.3503279189268748,
       "pattern_source": "predicted",
       "colors": [
@@ -31659,7 +31659,7 @@
       "shape": "square",
       "shape_confidence": 0.5766380230585734,
       "shape_source": "predicted",
-      "pattern": "french_tips",
+      "pattern": "french",
       "pattern_confidence": 0.3837193548679352,
       "pattern_source": "ground_truth",
       "colors": [
@@ -31755,7 +31755,7 @@
       "shape": "stiletto",
       "shape_confidence": 0.4569261372089386,
       "shape_source": "predicted",
-      "pattern": "french_tips",
+      "pattern": "french",
       "pattern_confidence": 0.5406016806761423,
       "pattern_source": "ground_truth",
       "colors": [
@@ -32171,7 +32171,7 @@
       "shape": "stiletto",
       "shape_confidence": 0.9493206342061361,
       "shape_source": "predicted",
-      "pattern": "french_tips",
+      "pattern": "french",
       "pattern_confidence": 0.48125014702479046,
       "pattern_source": "ground_truth",
       "colors": [
@@ -32379,7 +32379,7 @@
       "shape": "coffin",
       "shape_confidence": 0.7018701235453287,
       "shape_source": "ground_truth",
-      "pattern": "french_tips",
+      "pattern": "french",
       "pattern_confidence": 0.359602411588033,
       "pattern_source": "predicted",
       "colors": [
@@ -33083,7 +33083,7 @@
       "shape": "coffin",
       "shape_confidence": 0.6405926843484243,
       "shape_source": "ground_truth",
-      "pattern": "french_tips",
+      "pattern": "french",
       "pattern_confidence": 0.3751637240250905,
       "pattern_source": "predicted",
       "colors": [
@@ -33787,7 +33787,7 @@
       "shape": "coffin",
       "shape_confidence": 0.7893231312433878,
       "shape_source": "ground_truth",
-      "pattern": "french_tips",
+      "pattern": "french",
       "pattern_confidence": 0.29246460398038227,
       "pattern_source": "predicted",
       "colors": [
@@ -34123,7 +34123,7 @@
       "shape": "almond",
       "shape_confidence": 0.8275070786476135,
       "shape_source": "ground_truth",
-      "pattern": "french_tips",
+      "pattern": "french",
       "pattern_confidence": 0.48081114888191223,
       "pattern_source": "predicted",
       "colors": [
@@ -35019,7 +35019,7 @@
       "shape": "almond",
       "shape_confidence": 0.6565038561820984,
       "shape_source": "predicted",
-      "pattern": "french_tips",
+      "pattern": "french",
       "pattern_confidence": 0.3035562038421631,
       "pattern_source": "ground_truth",
       "colors": [
@@ -35083,7 +35083,7 @@
       "shape": "almond",
       "shape_confidence": 0.8381630182266235,
       "shape_source": "predicted",
-      "pattern": "french_tips",
+      "pattern": "french",
       "pattern_confidence": 0.3533411721388499,
       "pattern_source": "ground_truth",
       "colors": [
@@ -35131,7 +35131,7 @@
       "shape": "almond",
       "shape_confidence": 0.599527527888616,
       "shape_source": "ground_truth",
-      "pattern": "french_tips",
+      "pattern": "french",
       "pattern_confidence": 0.45965858300526935,
       "pattern_source": "predicted",
       "colors": [
@@ -35243,7 +35243,7 @@
       "shape": "almond",
       "shape_confidence": 0.7107881108919779,
       "shape_source": "predicted",
-      "pattern": "french_tips",
+      "pattern": "french",
       "pattern_confidence": 0.3289684057235718,
       "pattern_source": "ground_truth",
       "colors": [
@@ -35339,7 +35339,7 @@
       "shape": "almond",
       "shape_confidence": 0.6102490822474161,
       "shape_source": "predicted",
-      "pattern": "french_tips",
+      "pattern": "french",
       "pattern_confidence": 0.5017920037110647,
       "pattern_source": "ground_truth",
       "colors": [
@@ -36283,7 +36283,7 @@
       "shape": "square",
       "shape_confidence": 0.6555655797322592,
       "shape_source": "predicted",
-      "pattern": "french_tips",
+      "pattern": "french",
       "pattern_confidence": 0.36943428715070087,
       "pattern_source": "ground_truth",
       "colors": [
@@ -36507,7 +36507,7 @@
       "shape": "almond",
       "shape_confidence": 0.6835059324900309,
       "shape_source": "predicted",
-      "pattern": "french_tips",
+      "pattern": "french",
       "pattern_confidence": 0.37346140543619794,
       "pattern_source": "ground_truth",
       "colors": [
@@ -36619,7 +36619,7 @@
       "shape": "almond",
       "shape_confidence": 0.6937604745229086,
       "shape_source": "predicted",
-      "pattern": "french_tips",
+      "pattern": "french",
       "pattern_confidence": 0.3870866596698761,
       "pattern_source": "ground_truth",
       "colors": [
@@ -36635,7 +36635,7 @@
       "shape": "almond",
       "shape_confidence": 0.9542414546012878,
       "shape_source": "predicted",
-      "pattern": "french_tips",
+      "pattern": "french",
       "pattern_confidence": 0.4292202293872833,
       "pattern_source": "ground_truth",
       "colors": [
@@ -36667,7 +36667,7 @@
       "shape": "almond",
       "shape_confidence": 0.8277858098347982,
       "shape_source": "predicted",
-      "pattern": "french_tips",
+      "pattern": "french",
       "pattern_confidence": 0.5330101152261099,
       "pattern_source": "ground_truth",
       "colors": [
@@ -37019,7 +37019,7 @@
       "shape": "almond",
       "shape_confidence": 0.7789972027142843,
       "shape_source": "predicted",
-      "pattern": "french_tips",
+      "pattern": "french",
       "pattern_confidence": 0.3272147576014201,
       "pattern_source": "ground_truth",
       "colors": [
@@ -37563,7 +37563,7 @@
       "shape": "almond",
       "shape_confidence": 0.9903868238131205,
       "shape_source": "predicted",
-      "pattern": "french_tips",
+      "pattern": "french",
       "pattern_confidence": 0.41050413250923157,
       "pattern_source": "ground_truth",
       "colors": [
@@ -37627,7 +37627,7 @@
       "shape": "almond",
       "shape_confidence": 0.7016815145810446,
       "shape_source": "predicted",
-      "pattern": "french_tips",
+      "pattern": "french",
       "pattern_confidence": 0.31676186124483746,
       "pattern_source": "ground_truth",
       "colors": [
@@ -37803,7 +37803,7 @@
       "shape": "almond",
       "shape_confidence": 0.8172032038370768,
       "shape_source": "predicted",
-      "pattern": "french_tips",
+      "pattern": "french",
       "pattern_confidence": 0.44957708319028217,
       "pattern_source": "ground_truth",
       "colors": [
@@ -39163,7 +39163,7 @@
       "shape": "square",
       "shape_confidence": 0.5436312854290009,
       "shape_source": "predicted",
-      "pattern": "french_tips",
+      "pattern": "french",
       "pattern_confidence": 0.3503697117169698,
       "pattern_source": "ground_truth",
       "colors": [
@@ -39515,7 +39515,7 @@
       "shape": "coffin",
       "shape_confidence": 0.8230074445406595,
       "shape_source": "ground_truth",
-      "pattern": "french_tips",
+      "pattern": "french",
       "pattern_confidence": 0.4008180797100067,
       "pattern_source": "predicted",
       "colors": [
@@ -39867,7 +39867,7 @@
       "shape": "almond",
       "shape_confidence": 0.7319969733556112,
       "shape_source": "ground_truth",
-      "pattern": "french_tips",
+      "pattern": "french",
       "pattern_confidence": 0.40028605858484906,
       "pattern_source": "predicted",
       "colors": [
@@ -42027,7 +42027,7 @@
       "shape": "square",
       "shape_confidence": 0.8973099191983541,
       "shape_source": "ground_truth",
-      "pattern": "french_tips",
+      "pattern": "french",
       "pattern_confidence": 0.3699284791946411,
       "pattern_source": "predicted",
       "colors": [
@@ -42187,7 +42187,7 @@
       "shape": "square",
       "shape_confidence": 0.8392699162165324,
       "shape_source": "ground_truth",
-      "pattern": "french_tips",
+      "pattern": "french",
       "pattern_confidence": 0.41869258880615234,
       "pattern_source": "predicted",
       "colors": [
@@ -42219,7 +42219,7 @@
       "shape": "square",
       "shape_confidence": 0.8435172835985819,
       "shape_source": "ground_truth",
-      "pattern": "french_tips",
+      "pattern": "french",
       "pattern_confidence": 0.3723001778125763,
       "pattern_source": "predicted",
       "colors": [
@@ -42411,7 +42411,7 @@
       "shape": "square",
       "shape_confidence": 0.8881458838780721,
       "shape_source": "ground_truth",
-      "pattern": "french_tips",
+      "pattern": "french",
       "pattern_confidence": 0.3333936035633087,
       "pattern_source": "predicted",
       "colors": [
@@ -42955,7 +42955,7 @@
       "shape": "square",
       "shape_confidence": 0.8017411430676779,
       "shape_source": "ground_truth",
-      "pattern": "french_tips",
+      "pattern": "french",
       "pattern_confidence": 0.5381972193717957,
       "pattern_source": "predicted",
       "colors": [
@@ -42987,7 +42987,7 @@
       "shape": "almond",
       "shape_confidence": 0.6597422262032827,
       "shape_source": "predicted",
-      "pattern": "french_tips",
+      "pattern": "french",
       "pattern_confidence": 0.5172548592090607,
       "pattern_source": "ground_truth",
       "colors": [
@@ -43307,7 +43307,7 @@
       "shape": "square",
       "shape_confidence": 0.6054271757602692,
       "shape_source": "ground_truth",
-      "pattern": "french_tips",
+      "pattern": "french",
       "pattern_confidence": 0.3638083388408025,
       "pattern_source": "predicted",
       "colors": [
@@ -43611,7 +43611,7 @@
       "shape": "square",
       "shape_confidence": 0.6404875715573629,
       "shape_source": "ground_truth",
-      "pattern": "french_tips",
+      "pattern": "french",
       "pattern_confidence": 0.4479275047779083,
       "pattern_source": "predicted",
       "colors": [
@@ -43691,7 +43691,7 @@
       "shape": "square",
       "shape_confidence": 0.9564448992411295,
       "shape_source": "ground_truth",
-      "pattern": "french_tips",
+      "pattern": "french",
       "pattern_confidence": 0.6757544279098511,
       "pattern_source": "predicted",
       "colors": [
@@ -43755,7 +43755,7 @@
       "shape": "square",
       "shape_confidence": 0.6921519637107849,
       "shape_source": "ground_truth",
-      "pattern": "french_tips",
+      "pattern": "french",
       "pattern_confidence": 0.30423931777477264,
       "pattern_source": "predicted",
       "colors": [
@@ -43867,7 +43867,7 @@
       "shape": "square",
       "shape_confidence": 0.843114991982778,
       "shape_source": "ground_truth",
-      "pattern": "french_tips",
+      "pattern": "french",
       "pattern_confidence": 0.5622987548510233,
       "pattern_source": "predicted",
       "colors": [
@@ -44347,7 +44347,7 @@
       "shape": "square",
       "shape_confidence": 0.8083032170931498,
       "shape_source": "ground_truth",
-      "pattern": "french_tips",
+      "pattern": "french",
       "pattern_confidence": 0.4376899302005768,
       "pattern_source": "predicted",
       "colors": [
@@ -44731,7 +44731,7 @@
       "shape": "square",
       "shape_confidence": 0.7963605523109436,
       "shape_source": "predicted",
-      "pattern": "french_tips",
+      "pattern": "french",
       "pattern_confidence": 0.612836500008901,
       "pattern_source": "ground_truth",
       "colors": [
@@ -44843,7 +44843,7 @@
       "shape": "square",
       "shape_confidence": 0.6027894814809164,
       "shape_source": "ground_truth",
-      "pattern": "french_tips",
+      "pattern": "french",
       "pattern_confidence": 0.4961236317952474,
       "pattern_source": "predicted",
       "colors": [
@@ -45051,7 +45051,7 @@
       "shape": "square",
       "shape_confidence": 0.9107095201810201,
       "shape_source": "ground_truth",
-      "pattern": "french_tips",
+      "pattern": "french",
       "pattern_confidence": 0.6080975234508514,
       "pattern_source": "predicted",
       "colors": [
@@ -45099,7 +45099,7 @@
       "shape": "square",
       "shape_confidence": 0.95603479941686,
       "shape_source": "ground_truth",
-      "pattern": "french_tips",
+      "pattern": "french",
       "pattern_confidence": 0.3358616530895233,
       "pattern_source": "predicted",
       "colors": [
@@ -45131,7 +45131,7 @@
       "shape": "square",
       "shape_confidence": 0.6993778149286906,
       "shape_source": "ground_truth",
-      "pattern": "french_tips",
+      "pattern": "french",
       "pattern_confidence": 0.39262232184410095,
       "pattern_source": "predicted",
       "colors": [
@@ -45275,7 +45275,7 @@
       "shape": "square",
       "shape_confidence": 0.6875216762224833,
       "shape_source": "ground_truth",
-      "pattern": "french_tips",
+      "pattern": "french",
       "pattern_confidence": 0.42803722620010376,
       "pattern_source": "predicted",
       "colors": [
@@ -45323,7 +45323,7 @@
       "shape": "square",
       "shape_confidence": 0.9146647850672404,
       "shape_source": "ground_truth",
-      "pattern": "french_tips",
+      "pattern": "french",
       "pattern_confidence": 0.5936457812786102,
       "pattern_source": "predicted",
       "colors": [
@@ -45387,7 +45387,7 @@
       "shape": "coffin",
       "shape_confidence": 0.6030736764272054,
       "shape_source": "predicted",
-      "pattern": "french_tips",
+      "pattern": "french",
       "pattern_confidence": 0.3915055791536967,
       "pattern_source": "ground_truth",
       "colors": [
@@ -45835,7 +45835,7 @@
       "shape": "square",
       "shape_confidence": 0.8083473742008209,
       "shape_source": "ground_truth",
-      "pattern": "french_tips",
+      "pattern": "french",
       "pattern_confidence": 0.30954401195049286,
       "pattern_source": "predicted",
       "colors": [
@@ -45995,7 +45995,7 @@
       "shape": "coffin",
       "shape_confidence": 0.6005624334017435,
       "shape_source": "ground_truth",
-      "pattern": "french_tips",
+      "pattern": "french",
       "pattern_confidence": 0.40274275342623395,
       "pattern_source": "predicted",
       "colors": [
@@ -46219,7 +46219,7 @@
       "shape": "square",
       "shape_confidence": 0.7198159694671631,
       "shape_source": "ground_truth",
-      "pattern": "french_tips",
+      "pattern": "french",
       "pattern_confidence": 0.3311893343925476,
       "pattern_source": "predicted",
       "colors": [
@@ -46363,7 +46363,7 @@
       "shape": "square",
       "shape_confidence": 0.7993014057477316,
       "shape_source": "ground_truth",
-      "pattern": "french_tips",
+      "pattern": "french",
       "pattern_confidence": 0.47576406598091125,
       "pattern_source": "predicted",
       "colors": [
@@ -46699,7 +46699,7 @@
       "shape": "coffin",
       "shape_confidence": 0.6940165162086487,
       "shape_source": "ground_truth",
-      "pattern": "french_tips",
+      "pattern": "french",
       "pattern_confidence": 0.6267409125963846,
       "pattern_source": "ground_truth",
       "colors": [
@@ -46731,7 +46731,7 @@
       "shape": "almond",
       "shape_confidence": 0.5023643871148428,
       "shape_source": "predicted",
-      "pattern": "french_tips",
+      "pattern": "french",
       "pattern_confidence": 0.40091143051783246,
       "pattern_source": "ground_truth",
       "colors": [
@@ -46859,7 +46859,7 @@
       "shape": "square",
       "shape_confidence": 0.6795594294865926,
       "shape_source": "ground_truth",
-      "pattern": "french_tips",
+      "pattern": "french",
       "pattern_confidence": 0.43914274374643963,
       "pattern_source": "predicted",
       "colors": [
@@ -46907,7 +46907,7 @@
       "shape": "square",
       "shape_confidence": 0.7200172742207845,
       "shape_source": "ground_truth",
-      "pattern": "french_tips",
+      "pattern": "french",
       "pattern_confidence": 0.5046176215012869,
       "pattern_source": "predicted",
       "colors": [
@@ -46971,7 +46971,7 @@
       "shape": "square",
       "shape_confidence": 0.4701964060465495,
       "shape_source": "ground_truth",
-      "pattern": "french_tips",
+      "pattern": "french",
       "pattern_confidence": 0.3393071989218394,
       "pattern_source": "predicted",
       "colors": [
@@ -47067,7 +47067,7 @@
       "shape": "square",
       "shape_confidence": 0.7523606618245443,
       "shape_source": "ground_truth",
-      "pattern": "french_tips",
+      "pattern": "french",
       "pattern_confidence": 0.34534814953804016,
       "pattern_source": "predicted",
       "colors": [
@@ -48363,7 +48363,7 @@
       "shape": "square",
       "shape_confidence": 0.6818333069483439,
       "shape_source": "predicted",
-      "pattern": "french_tips",
+      "pattern": "french",
       "pattern_confidence": 0.5692659119764963,
       "pattern_source": "ground_truth",
       "colors": [
@@ -50091,7 +50091,7 @@
       "shape": "almond",
       "shape_confidence": 0.5729617873827616,
       "shape_source": "predicted",
-      "pattern": "french_tips",
+      "pattern": "french",
       "pattern_confidence": 0.35596774021784466,
       "pattern_source": "ground_truth",
       "colors": [
@@ -50187,7 +50187,7 @@
       "shape": "coffin",
       "shape_confidence": 0.5876311858495077,
       "shape_source": "ground_truth",
-      "pattern": "french_tips",
+      "pattern": "french",
       "pattern_confidence": 0.38561569650967914,
       "pattern_source": "predicted",
       "colors": [
@@ -50267,7 +50267,7 @@
       "shape": "stiletto",
       "shape_confidence": 0.79269939661026,
       "shape_source": "predicted",
-      "pattern": "french_tips",
+      "pattern": "french",
       "pattern_confidence": 0.4588107268015544,
       "pattern_source": "ground_truth",
       "colors": [
@@ -50715,7 +50715,7 @@
       "shape": "square",
       "shape_confidence": 0.7188959717750549,
       "shape_source": "predicted",
-      "pattern": "french_tips",
+      "pattern": "french",
       "pattern_confidence": 0.44425060351689655,
       "pattern_source": "ground_truth",
       "colors": [
@@ -52891,7 +52891,7 @@
       "shape": "coffin",
       "shape_confidence": 0.5862323542435964,
       "shape_source": "ground_truth",
-      "pattern": "french_tips",
+      "pattern": "french",
       "pattern_confidence": 0.37358030676841736,
       "pattern_source": "predicted",
       "colors": [
@@ -53003,7 +53003,7 @@
       "shape": "square",
       "shape_confidence": 0.8676122029622396,
       "shape_source": "predicted",
-      "pattern": "french_tips",
+      "pattern": "french",
       "pattern_confidence": 0.48710442582766217,
       "pattern_source": "ground_truth",
       "colors": [
@@ -53067,7 +53067,7 @@
       "shape": "coffin",
       "shape_confidence": 0.604729175567627,
       "shape_source": "ground_truth",
-      "pattern": "french_tips",
+      "pattern": "french",
       "pattern_confidence": 0.3803191880385081,
       "pattern_source": "predicted",
       "colors": [
@@ -53115,7 +53115,7 @@
       "shape": "coffin",
       "shape_confidence": 0.6246475080649058,
       "shape_source": "ground_truth",
-      "pattern": "french_tips",
+      "pattern": "french",
       "pattern_confidence": 0.499347060918808,
       "pattern_source": "predicted",
       "colors": [
@@ -53547,7 +53547,7 @@
       "shape": "coffin",
       "shape_confidence": 0.5866744220256805,
       "shape_source": "ground_truth",
-      "pattern": "french_tips",
+      "pattern": "french",
       "pattern_confidence": 0.4782765607039134,
       "pattern_source": "predicted",
       "colors": [
@@ -54075,7 +54075,7 @@
       "shape": "coffin",
       "shape_confidence": 0.5995156665643057,
       "shape_source": "ground_truth",
-      "pattern": "french_tips",
+      "pattern": "french",
       "pattern_confidence": 0.3698082168896993,
       "pattern_source": "predicted",
       "colors": [
@@ -54219,7 +54219,7 @@
       "shape": "almond",
       "shape_confidence": 0.8511343002319336,
       "shape_source": "ground_truth",
-      "pattern": "french_tips",
+      "pattern": "french",
       "pattern_confidence": 0.3582035005092621,
       "pattern_source": "predicted",
       "colors": [
@@ -54235,7 +54235,7 @@
       "shape": "coffin",
       "shape_confidence": 0.86664350827535,
       "shape_source": "ground_truth",
-      "pattern": "french_tips",
+      "pattern": "french",
       "pattern_confidence": 0.6812425255775452,
       "pattern_source": "predicted",
       "colors": [
@@ -54267,7 +54267,7 @@
       "shape": "almond",
       "shape_confidence": 0.5032107631365458,
       "shape_source": "ground_truth",
-      "pattern": "french_tips",
+      "pattern": "french",
       "pattern_confidence": 0.3485344350337982,
       "pattern_source": "predicted",
       "colors": [
@@ -54411,7 +54411,7 @@
       "shape": "square",
       "shape_confidence": 0.4982174336910248,
       "shape_source": "ground_truth",
-      "pattern": "french_tips",
+      "pattern": "french",
       "pattern_confidence": 0.30508018533388775,
       "pattern_source": "predicted",
       "colors": [
@@ -54539,7 +54539,7 @@
       "shape": "coffin",
       "shape_confidence": 0.7259812156359354,
       "shape_source": "ground_truth",
-      "pattern": "french_tips",
+      "pattern": "french",
       "pattern_confidence": 0.3862781723340352,
       "pattern_source": "predicted",
       "colors": [
@@ -54827,7 +54827,7 @@
       "shape": "coffin",
       "shape_confidence": 0.5038884182771047,
       "shape_source": "ground_truth",
-      "pattern": "french_tips",
+      "pattern": "french",
       "pattern_confidence": 0.5150808890660604,
       "pattern_source": "predicted",
       "colors": [
@@ -55115,7 +55115,7 @@
       "shape": "coffin",
       "shape_confidence": 0.6194908221562704,
       "shape_source": "ground_truth",
-      "pattern": "french_tips",
+      "pattern": "french",
       "pattern_confidence": 0.3780415753523509,
       "pattern_source": "predicted",
       "colors": [
@@ -55243,7 +55243,7 @@
       "shape": "almond",
       "shape_confidence": 0.6482138931751251,
       "shape_source": "ground_truth",
-      "pattern": "french_tips",
+      "pattern": "french",
       "pattern_confidence": 0.4434238870938619,
       "pattern_source": "predicted",
       "colors": [
@@ -55307,7 +55307,7 @@
       "shape": "coffin",
       "shape_confidence": 0.5537047584851583,
       "shape_source": "ground_truth",
-      "pattern": "french_tips",
+      "pattern": "french",
       "pattern_confidence": 0.3832891484101613,
       "pattern_source": "predicted",
       "colors": [
@@ -57451,7 +57451,7 @@
       "shape": "square",
       "shape_confidence": 0.5941251615683237,
       "shape_source": "predicted",
-      "pattern": "french_tips",
+      "pattern": "french",
       "pattern_confidence": 0.34799398978551227,
       "pattern_source": "predicted",
       "colors": [
