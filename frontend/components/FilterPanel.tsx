@@ -106,16 +106,6 @@ const FilterDropdown = ({
       </button>
       {isOpen && (
         <div className="absolute top-full mt-1 w-full bg-white rounded-lg shadow-xl z-10 py-1 border border-gray-200">
-          {/* <a
-            href="#"
-            onClick={(e) => {
-              e.preventDefault();
-              handleSelect(null); // This sends `null` to the onSelect handler
-            }}
-            className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 font-semibold"
-          >
-            Any {name}
-          </a> */}
           {options.map((option) => (
             <a
               key={option}
