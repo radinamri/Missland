@@ -4,13 +4,14 @@ import { useState, useMemo, useEffect } from "react";
 import { Post } from "@/types";
 import Image from "next/image";
 import PostGrid from "./PostGrid";
-import Pagination from "./Pagination";
 import { useAuth } from "@/context/AuthContext";
-import { useSearchStore } from "@/stores/searchStore";
 import Link from "next/link";
 import SaveToCollectionModal from "./SaveToCollectionModal";
+import InfiniteScroll from "react-infinite-scroll-component";
+import PostGridSkeleton from "./PostGridSkeleton";
 
-const MORE_POSTS_PER_PAGE = 24;
+const MORE_POSTS_INITIAL_LOAD = 12;
+const MORE_POSTS_CHUNK_SIZE = 12;
 
 interface PostDetailProps {
   post: Post;
@@ -30,14 +31,20 @@ export default function PostDetail({
   onOpenLoginModal,
 }: PostDetailProps) {
   const { user, collections, showToastWithMessage } = useAuth();
-  const { searchTerm } = useSearchStore();
   const [showCollectionsModal, setShowCollectionsModal] = useState(false);
-  const [morePostsPage, setMorePostsPage] = useState(1);
-  const totalMorePostsPages = Math.ceil(morePosts.length / MORE_POSTS_PER_PAGE);
+  const [visibleMorePosts, setVisibleMorePosts] = useState<Post[]>(
+    morePosts.slice(0, MORE_POSTS_INITIAL_LOAD)
+  );
+  const [hasMoreToLoad, setHasMoreToLoad] = useState(
+    morePosts.length > MORE_POSTS_INITIAL_LOAD
+  );
 
   useEffect(() => {
     window.scrollTo(0, 0);
-  }, [post.id]);
+    // When the main post changes, reset the visible "more" posts
+    setVisibleMorePosts(morePosts.slice(0, MORE_POSTS_INITIAL_LOAD));
+    setHasMoreToLoad(morePosts.length > MORE_POSTS_INITIAL_LOAD);
+  }, [post.id, morePosts]);
 
   const isSaved = useMemo(() => {
     if (!user || !collections) return false;
@@ -46,25 +53,20 @@ export default function PostDetail({
     );
   }, [collections, post, user]);
 
-  const paginatedMorePosts = useMemo(() => {
-    // First, filter by the search term
-    const term = searchTerm.trim().toLowerCase();
-    const filtered = term
-      ? morePosts.filter(
-          (p) =>
-            p.title.toLowerCase().includes(term) ||
-            (p.shape && p.shape.toLowerCase().includes(term)) ||
-            (p.pattern && p.pattern.toLowerCase().includes(term)) ||
-            (p.colors &&
-              p.colors.some((color) => color.toLowerCase().includes(term)))
-        )
-      : morePosts;
-
-    // Then, slice the filtered array for the current page
-    const startIndex = (morePostsPage - 1) * MORE_POSTS_PER_PAGE;
-    const endIndex = startIndex + MORE_POSTS_PER_PAGE;
-    return filtered.slice(startIndex, endIndex);
-  }, [morePosts, searchTerm, morePostsPage]);
+  const loadMorePosts = () => {
+    if (visibleMorePosts.length >= morePosts.length) {
+      setHasMoreToLoad(false);
+      return;
+    }
+    // Set a small timeout to create a smoother loading feel
+    setTimeout(() => {
+      const nextPosts = morePosts.slice(
+        visibleMorePosts.length,
+        visibleMorePosts.length + MORE_POSTS_CHUNK_SIZE
+      );
+      setVisibleMorePosts((prev) => [...prev, ...nextPosts]);
+    }, 300);
+  };
 
   // Handle download
   const handleDownload = async () => {
@@ -601,10 +603,26 @@ export default function PostDetail({
           <h2 className="text-2xl font-bold text-gray-800 mb-6 text-center">
             More to explore
           </h2>
-          {paginatedMorePosts.length > 0 ? (
-            <>
+          {morePosts.length > 0 ? (
+            <InfiniteScroll
+              dataLength={visibleMorePosts.length}
+              next={loadMorePosts}
+              hasMore={hasMoreToLoad}
+              loader={<PostGridSkeleton count={4} />} // Show a smaller skeleton for this section
+              endMessage={
+                <p
+                  style={{
+                    textAlign: "center",
+                    marginTop: "40px",
+                    color: "#888",
+                  }}
+                >
+                  <b>You&apos;ve seen all related posts!</b>
+                </p>
+              }
+            >
               <PostGrid
-                posts={paginatedMorePosts}
+                posts={visibleMorePosts} // Pass the visible posts, not the full list
                 variant="explore"
                 onPostClick={onMorePostClick}
                 onSave={onSave}
@@ -614,15 +632,7 @@ export default function PostDetail({
                   ) ?? false
                 }
               />
-              {/* Add the pagination component if there's more than one page */}
-              {totalMorePostsPages > 1 && (
-                <Pagination
-                  currentPage={morePostsPage}
-                  totalPages={totalMorePostsPages}
-                  onPageChange={(page) => setMorePostsPage(page)}
-                />
-              )}
-            </>
+            </InfiniteScroll>
           ) : (
             <p className="text-center text-gray-500">No more posts available</p>
           )}
