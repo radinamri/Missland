@@ -200,8 +200,12 @@ class MorePostsView(generics.ListAPIView):
 
     def get_queryset(self):
         exclude_id = self.kwargs.get('post_id')
-        feed_size = 20
+
+        # --- HIGHLIGHT: INCREASED THE DESIRED FEED SIZE ---
+        feed_size = 48
+
         random.seed(int(time.time()))
+
         try:
             current_post = Post.objects.get(id=exclude_id)
             q_objects = Q()
@@ -209,15 +213,39 @@ class MorePostsView(generics.ListAPIView):
             if current_post.pattern: q_objects |= Q(pattern=current_post.pattern)
             if current_post.colors:
                 for color in current_post.colors: q_objects |= Q(colors__contains=color)
+
             base_queryset = Post.objects.exclude(id=exclude_id)
+
+            relevant_posts = []
             if q_objects:
+                # Find all relevant posts and shuffle them
                 relevant_posts = list(base_queryset.filter(q_objects).distinct())
-                if len(relevant_posts) > 0:
-                    return random.sample(relevant_posts, min(len(relevant_posts), feed_size))
-            all_other_ids = list(base_queryset.values_list('id', flat=True))
-            return Post.objects.filter(id__in=random.sample(all_other_ids, min(len(all_other_ids), feed_size)))
+                random.shuffle(relevant_posts)
+
+            # --- HIGHLIGHT: NEW FALLBACK LOGIC ---
+            # Check if we have enough relevant posts to fill the feed
+            if len(relevant_posts) < feed_size:
+                # If not, we need to get some filler posts
+
+                # First, get the IDs of the posts we've already selected
+                existing_ids = {p.id for p in relevant_posts}
+                existing_ids.add(exclude_id)
+
+                # Calculate how many filler posts we need
+                needed = feed_size - len(relevant_posts)
+
+                # Get random posts from the rest of the database
+                filler_posts = list(Post.objects.exclude(id__in=existing_ids).order_by('?')[:needed])
+
+                # Combine the relevant posts with the filler posts
+                return relevant_posts + filler_posts
+            else:
+                # If we have enough relevant posts, just return a slice of them
+                return relevant_posts[:feed_size]
+
         except Post.DoesNotExist:
-            return Post.objects.none()
+            # Fallback if the original post doesn't exist for some reason
+            return Post.objects.exclude(id=exclude_id).order_by('?')[:feed_size]
 
     def list(self, request, *args, **kwargs):
         queryset = self.get_queryset()
