@@ -460,9 +460,10 @@ class FilterSuggestionsView(APIView):
 
     def get(self, request, *args, **kwargs):
         suggestions = {
-            "shapes": ["almond", "stiletto", "square", "coffin"],
-            "patterns": ["french", "ombre", "solid", "glitter"],
+            "shapes": ["square", "almond", "coffin", "stiletto"],
+            "patterns": ["french", "ombre", "glossy", "matte", "mixed"],
             "sizes": ["short", "medium", "long"],
-            "colors": ['red', 'pink', 'orange', 'yellow', 'green', 'blue', 'purple', 'brown', 'gray', 'black', 'white']
+            "colors": ["red", "pink", "orange", "yellow", "green", "turquoise", "blue", "purple", "cream", "brown",
+                       "white", "gray", "black"]
         }
         return Response(suggestions)
