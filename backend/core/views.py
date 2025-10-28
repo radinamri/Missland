@@ -150,7 +150,12 @@ class FilteredPostListView(generics.ListAPIView):
         size = self.request.query_params.get('size', None)
         color_query = self.request.query_params.get('color', None)
         query_filters = Q()
-        if query: query_filters &= Q(title__icontains=query)
+        if query:
+            # Split the search query into individual words
+            search_terms = query.split()
+            # For each word, add a condition that the title must contain it (AND logic)
+            for term in search_terms:
+                query_filters &= Q(title__icontains=term)
         if shape: query_filters &= Q(shape__iexact=shape)
         if pattern: query_filters &= Q(pattern__iexact=pattern)
         if size: query_filters &= Q(size__iexact=size)
