@@ -42,15 +42,16 @@ export const useSearchStore = create<SearchState>((set, get) => ({
   searchTerm: "",
   setSearchTerm: (term) => set({ searchTerm: term }),
   filters: initialFilters,
-  setFilter: (filterName, value) =>
+  setFilter: (filterName, value) => {
     set((state) => ({
       filters: {
         ...state.filters,
-        // If clicking the same filter again, deactivate it
+        // If the user clicks the same filter again, it will be deselected (set to null).
         [filterName]: state.filters[filterName] === value ? null : value,
       },
-    })),
-  resetFilters: () => set({ filters: initialFilters, searchTerm: "" }), // `showFilterBar` is handled separately
+    }));
+  },
+  resetFilters: () => set({ filters: initialFilters }),
   searchHistory: [],
   addToSearchHistory: (term) =>
     set((state) => {

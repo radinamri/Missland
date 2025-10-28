@@ -77,7 +77,7 @@ const FilterDropdown = ({
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  const handleSelect = (option: string) => {
+  const handleSelect = (option: string | null) => {
     onSelect(option);
     setIsOpen(false);
   };
@@ -106,6 +106,16 @@ const FilterDropdown = ({
       </button>
       {isOpen && (
         <div className="absolute top-full mt-1 w-full bg-white rounded-lg shadow-xl z-10 py-1 border border-gray-200">
+          {/* <a
+            href="#"
+            onClick={(e) => {
+              e.preventDefault();
+              handleSelect(null); // This sends `null` to the onSelect handler
+            }}
+            className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 font-semibold"
+          >
+            Any {name}
+          </a> */}
           {options.map((option) => (
             <a
               key={option}
@@ -140,6 +150,7 @@ export default function FilterPanel() {
 
   return (
     <div className="space-y-4">
+      {/* --- HIGHLIGHT: THESE CALLS ARE NOW TYPE-SAFE --- */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
         <FilterDropdown
           name="Shape"
