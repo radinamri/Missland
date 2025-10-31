@@ -105,7 +105,7 @@ const FilterDropdown = ({
         />
       </button>
       {isOpen && (
-        <div className="absolute top-full mt-1 w-full bg-white rounded-lg shadow-xl z-10 py-1 border border-gray-200">
+        <div className="absolute top-full mt-1 w-full bg-white rounded-lg shadow-xl z-10 py-2 px-2 border border-gray-200">
           {options.map((option) => (
             <a
               key={option}
@@ -114,7 +114,7 @@ const FilterDropdown = ({
                 e.preventDefault();
                 handleSelect(option);
               }}
-              className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+              className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded-lg"
             >
               {name === "Color" ? (
                 <span className="flex items-center">
