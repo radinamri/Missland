@@ -43,15 +43,38 @@ export const useSearchStore = create<SearchState>((set, get) => ({
   setSearchTerm: (term) => set({ searchTerm: term }),
   filters: initialFilters,
   setFilter: (filterName, value) => {
-    set((state) => ({
-      filters: {
+    set((state) => {
+      const newFilters = {
         ...state.filters,
         // If the user clicks the same filter again, it will be deselected (set to null).
         [filterName]: state.filters[filterName] === value ? null : value,
-      },
-    }));
+      };
+
+      // Check if any filter is active in the new state.
+      const isAnyFilterActive = Object.values(newFilters).some(
+        (v) => v !== null
+      );
+
+      // The FilterBar should be visible if a filter is active.
+      // We also check state.showFilterBar to preserve the visibility
+      // in case a text search was performed first.
+      return {
+        filters: newFilters,
+        showFilterBar: isAnyFilterActive || state.showFilterBar,
+      };
+    });
   },
-  resetFilters: () => set({ filters: initialFilters }),
+  resetFilters: () => {
+    set((state) => {
+      // When resetting filters, we only hide the filter bar if there's no active text search.
+      // We check if searchTerm is empty; if it is, the user isn't in a text-search state.
+      const isSearchTermEmpty = state.searchTerm.trim() === "";
+      return {
+        filters: initialFilters,
+        showFilterBar: isSearchTermEmpty ? false : state.showFilterBar,
+      };
+    });
+  },
   searchHistory: [],
   addToSearchHistory: (term) =>
     set((state) => {
