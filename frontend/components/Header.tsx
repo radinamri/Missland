@@ -28,6 +28,9 @@ export default function Header() {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
+  // This boolean will control the display of the search UI without clearing the underlying state.
+  const isPostDetailPage = pathname.startsWith("/post/");
+
   useEffect(() => {
     fetchFilterSuggestions();
   }, [fetchFilterSuggestions]);
@@ -119,7 +122,7 @@ export default function Header() {
             <div className="hidden md:block flex-grow mx-8 lg:mx-4">
               <SearchInput
                 placeholder="Search or filter nails..."
-                value={searchTerm}
+                value={isPostDetailPage ? "" : searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 onSearchSubmit={handleSearchSubmit}
                 onClear={handleSearchClear}
@@ -263,7 +266,7 @@ export default function Header() {
             />
           </div>
         )}
-        {showFilterBar && <FilterBar />}
+        {showFilterBar && !isPostDetailPage && <FilterBar />}
       </header>
 
       {/* Mobile Menu Panel */}
