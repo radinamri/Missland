@@ -3,7 +3,7 @@
 import { useSearchStore } from "@/stores/searchStore";
 import { useRef, useState, useEffect, useCallback } from "react";
 
-// A reusable pill button for our filters (No changes here)
+// FilterPill and ScrollButton components remain unchanged...
 const FilterPill = ({
   label,
   isActive,
@@ -38,7 +38,6 @@ const FilterPill = ({
   </button>
 );
 
-// ScrollButton component (No changes here)
 const ScrollButton = ({
   direction,
   onClick,
@@ -50,7 +49,7 @@ const ScrollButton = ({
 }) => (
   <button
     onClick={onClick}
-    className={`absolute top-1/2 -translate-y-1/2 w-8 h-8 rounded-xl bg-white/80 backdrop-blur-sm shadow-md flex items-center justify-center transition-opacity duration-300
+    className={`absolute top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-white/80 backdrop-blur-sm shadow-md flex items-center justify-center transition-opacity duration-300
       ${direction === "left" ? "left-2" : "right-2"}
       ${visible ? "opacity-100" : "opacity-0 pointer-events-none"}`}
   >
@@ -94,11 +93,10 @@ export default function FilterBar() {
       const isScrollable = el.scrollWidth > el.clientWidth;
       setCanScrollRight(
         isScrollable && el.scrollLeft < el.scrollWidth - el.clientWidth - 1
-      ); // -1 for precision
+      );
     }
   }, []);
 
-  // This effect sets up listeners when the component mounts. (No changes here)
   useEffect(() => {
     const el = scrollContainerRef.current;
     if (el) {
@@ -113,19 +111,12 @@ export default function FilterBar() {
     }
   }, [checkScrollability]);
 
-  // This new useEffect hook listens for changes to the filters or the search term.
-  // Whenever the content of the FilterBar changes, this will run and re-evaluate
-  // whether the scroll buttons should be visible.
   useEffect(() => {
-    // We run the check inside a small timeout to ensure the DOM has finished
-    // re-rendering with the new pills before we measure the container's width.
     const timer = setTimeout(() => {
       checkScrollability();
-    }, 100); // 100ms is a safe delay
-
-    // Cleanup the timer if the component re-renders again quickly
+    }, 100);
     return () => clearTimeout(timer);
-  }, [filters, searchTerm, checkScrollability]); // Dependencies that cause content to change
+  }, [filters, searchTerm, checkScrollability]);
 
   const handleScroll = (direction: "left" | "right") => {
     const el = scrollContainerRef.current;
@@ -139,7 +130,6 @@ export default function FilterBar() {
     return null;
   }
 
-  // The logic for what pills to show remains the same
   const searchTerms = new Set(searchTerm.toLowerCase().split(" "));
   const findActiveTermInCategory = (suggestions: string[]): string | null => {
     for (const suggestion of suggestions) {
@@ -213,7 +203,7 @@ export default function FilterBar() {
     <div className="w-full bg-white relative">
       <div
         ref={scrollContainerRef}
-        className="flex items-center space-x-3 overflow-x-auto px-12 md:px-14 no-scrollbar" // Increased padding for arrows
+        className="flex items-center space-x-3 overflow-x-auto pl-4 md:pl-8 pr-12 md:pr-14 no-scrollbar"
       >
         {uniqueSortedPills.map(({ type, value }) => (
           <FilterPill
