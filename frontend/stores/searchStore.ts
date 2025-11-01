@@ -47,41 +47,32 @@ export const useSearchStore = create<SearchState>((set, get) => ({
       const oldFilterValue = state.filters[filterName];
       const isFilterBeingRemoved = oldFilterValue === value;
 
-      // Update the filters object by toggling the selected filter.
       const newFilters = {
         ...state.filters,
         [filterName]: isFilterBeingRemoved ? null : value,
       };
 
-      // Update the search term to reflect the filter change.
       let newSearchTerm = state.searchTerm;
-      // This logic ensures the value is not null before processing.
       if (value) {
         if (isFilterBeingRemoved) {
-          // If a filter is being removed, remove its value from the search term.
-          // We use a regular expression with word boundaries (\b) to avoid removing parts of other words.
           const regex = new RegExp(`\\b${value}\\b`, "ig");
           newSearchTerm = newSearchTerm
             .replace(regex, "")
             .replace(/\s+/g, " ")
             .trim();
         } else {
-          // If a filter is being added, append its value to the search term.
-          // We also check to prevent adding a duplicate word.
           if (!newSearchTerm.toLowerCase().includes(value.toLowerCase())) {
             newSearchTerm = `${newSearchTerm} ${value}`.trim();
           }
         }
       }
 
-      // Recalculate the visibility of the filter bar based on the new state.
       const isAnyFilterActive = Object.values(newFilters).some(
         (v) => v !== null
       );
       const isSearchTermPresent = newSearchTerm.trim() !== "";
       const showFilterBar = isAnyFilterActive || isSearchTermPresent;
 
-      // Return the complete new state, including the updated search term.
       return {
         filters: newFilters,
         searchTerm: newSearchTerm,
@@ -90,13 +81,13 @@ export const useSearchStore = create<SearchState>((set, get) => ({
     });
   },
   resetFilters: () => {
-    set((state) => {
-      // When resetting filters, we only hide the filter bar if there's no active text search.
-      const isSearchTermPresent = state.searchTerm.trim() !== "";
-      return {
-        filters: initialFilters,
-        showFilterBar: isSearchTermPresent,
-      };
+    set({
+      // Reset the filters object to its initial, empty state.
+      filters: initialFilters,
+      // Completely clear the search term. This was the missing piece.
+      searchTerm: "",
+      // Hide the filter bar as there are no active filters or search terms.
+      showFilterBar: false,
     });
   },
   searchHistory: [],
@@ -114,7 +105,6 @@ export const useSearchStore = create<SearchState>((set, get) => ({
   setShowFilterBar: (show) => set({ showFilterBar: show }),
   filterSuggestions: null,
   fetchFilterSuggestions: async () => {
-    // Prevent re-fetching if data already exists
     if (get().filterSuggestions) return;
     try {
       const response = await api.get<FilterSuggestions>(
