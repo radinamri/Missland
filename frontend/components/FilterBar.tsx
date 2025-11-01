@@ -38,21 +38,44 @@ const FilterPill = ({
 );
 
 export default function FilterBar() {
-  const { filterSuggestions, filters, setFilter } = useSearchStore();
+  // Get `searchTerm` from the store
+  const { filterSuggestions, filters, setFilter, searchTerm } =
+    useSearchStore();
 
   if (!filterSuggestions) {
     return null; // Don't render if suggestions haven't loaded
   }
 
-  // --- HIGHLIGHT: MODIFIED LOGIC TO BUILD THE LIST OF SUGGESTIONS TO DISPLAY ---
-  // This new logic ensures that once a filter is selected for Shape, Pattern, or Size,
-  // only the selected filter from that category is shown. All color options are always shown.
+  // This new logic checks both the explicitly set `filters` and the `searchTerm`
+  // to determine which categories are "active". If a category is active, only the
+  // relevant pill is shown.
+
+  // Create a set of words from the search term for efficient lookup.
+  const searchTerms = new Set(searchTerm.toLowerCase().split(" "));
+
+  // Helper function to find if a search term matches any suggestion in a category.
+  const findActiveTermInCategory = (suggestions: string[]): string | null => {
+    for (const suggestion of suggestions) {
+      if (searchTerms.has(suggestion.toLowerCase())) {
+        return suggestion;
+      }
+    }
+    return null;
+  };
+
+  // Determine the single active item for each category, from either filters or search term.
+  const activeShape =
+    filters.shape || findActiveTermInCategory(filterSuggestions.shapes);
+  const activePattern =
+    filters.pattern || findActiveTermInCategory(filterSuggestions.patterns);
+  const activeSize =
+    filters.size || findActiveTermInCategory(filterSuggestions.sizes);
 
   const suggestionsToShow = [];
 
-  // Handle Shapes: If a shape is selected, show only that one. Otherwise, show all.
-  if (filters.shape) {
-    suggestionsToShow.push({ type: "shape" as const, value: filters.shape });
+  // Handle Shapes: If a shape is active (from filter or search), show only that one. Otherwise, show all.
+  if (activeShape) {
+    suggestionsToShow.push({ type: "shape" as const, value: activeShape });
   } else {
     suggestionsToShow.push(
       ...filterSuggestions.shapes.map((value) => ({
@@ -62,12 +85,9 @@ export default function FilterBar() {
     );
   }
 
-  // Handle Patterns: If a pattern is selected, show only that one. Otherwise, show all.
-  if (filters.pattern) {
-    suggestionsToShow.push({
-      type: "pattern" as const,
-      value: filters.pattern,
-    });
+  // Handle Patterns: If a pattern is active, show only that one. Otherwise, show all.
+  if (activePattern) {
+    suggestionsToShow.push({ type: "pattern" as const, value: activePattern });
   } else {
     suggestionsToShow.push(
       ...filterSuggestions.patterns.map((value) => ({
@@ -77,9 +97,9 @@ export default function FilterBar() {
     );
   }
 
-  // Handle Sizes: If a size is selected, show only that one. Otherwise, show all.
-  if (filters.size) {
-    suggestionsToShow.push({ type: "size" as const, value: filters.size });
+  // Handle Sizes: If a size is active, show only that one. Otherwise, show all.
+  if (activeSize) {
+    suggestionsToShow.push({ type: "size" as const, value: activeSize });
   } else {
     suggestionsToShow.push(
       ...filterSuggestions.sizes.map((value) => ({
@@ -96,27 +116,42 @@ export default function FilterBar() {
       value,
     }))
   );
-  // --- END OF MODIFIED LOGIC ---
 
+  // The logic to determine which pills are "active" vs "inactive" needs to be more robust now.
+  // A pill is active if its value is in the search term OR it's an explicitly set filter.
   const activePills = suggestionsToShow.filter(
-    (pill) => filters[pill.type] === pill.value
+    (pill) =>
+      filters[pill.type] === pill.value ||
+      searchTerms.has(pill.value.toLowerCase())
   );
+
   const inactivePills = suggestionsToShow.filter(
-    (pill) => filters[pill.type] !== pill.value
+    (pill) =>
+      !(
+        filters[pill.type] === pill.value ||
+        searchTerms.has(pill.value.toLowerCase())
+      )
   );
+
   const sortedPills = [...activePills, ...inactivePills];
+
+  // Remove duplicate pills that might appear if a filter is set and also in the search term
+  const uniqueSortedPills = sortedPills.filter(
+    (pill, index, self) =>
+      index ===
+      self.findIndex((p) => p.type === pill.type && p.value === pill.value)
+  );
 
   return (
     <div className="w-full bg-white">
       <div className="flex items-center space-x-3 overflow-x-auto px-4 md:px-8 no-scrollbar">
-        {sortedPills.map(({ type, value }) => (
+        {uniqueSortedPills.map(({ type, value }) => (
           <FilterPill
             key={`${type}-${value}`}
             label={value.charAt(0).toUpperCase() + value.slice(1)}
-            isActive={filters[type] === value}
-            // The onClick logic is already perfect. The store handles toggling the filter on/off.
-            // When the filter is turned off, this component will re-render, and the pill
-            // will automatically move back into the `inactivePills` group.
+            isActive={
+              filters[type] === value || searchTerms.has(value.toLowerCase())
+            }
             onClick={() => setFilter(type, value)}
           />
         ))}
