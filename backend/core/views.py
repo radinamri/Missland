@@ -155,7 +155,17 @@ class FilteredPostListView(generics.ListAPIView):
             search_terms = query.split()
             # For each word, add a condition that the title must contain it (AND logic)
             for term in search_terms:
-                query_filters &= Q(title__icontains=term)
+                # For each term, we check if it exists in ANY of the specified fields (OR logic)
+                term_q = (
+                        Q(title__icontains=term) |
+                        Q(shape__icontains=term) |
+                        Q(pattern__icontains=term) |
+                        Q(size__icontains=term) |
+                        Q(colors__icontains=term)
+                )
+                # We then combine these checks for each term (AND logic)
+                # This means a search for "red short" finds posts containing BOTH "red" AND "short".
+                query_filters &= term_q
         if shape: query_filters &= Q(shape__iexact=shape)
         if pattern: query_filters &= Q(pattern__iexact=pattern)
         if size: query_filters &= Q(size__iexact=size)
