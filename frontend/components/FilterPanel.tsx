@@ -6,10 +6,10 @@ import { useSearchStore } from "@/stores/searchStore";
 import { FiChevronDown } from "react-icons/fi";
 
 const filterOptions = {
-  // 1. Shape: The most fundamental choice. Ordered from classic/popular to more dramatic.
+  // Shape: The most fundamental choice. Ordered from classic/popular to more dramatic.
   shapes: ["square", "almond", "coffin", "stiletto"],
 
-  // 2. Color: The next most common filter. Ordered by a pseudo-spectral wheel, followed by neutrals.
+  // Color: The next most common filter. Ordered by a pseudo-spectral wheel, followed by neutrals.
   colors: [
     "red",
     "pink",
@@ -26,10 +26,10 @@ const filterOptions = {
     "black",
   ],
 
-  // 3. Pattern/Finish: Key stylistic choices. Ordered by popularity and type (patterns vs. finishes).
+  // Pattern/Finish: Key stylistic choices. Ordered by popularity and type (patterns vs. finishes).
   patterns: ["french", "ombre", "glossy", "matte", "mixed"],
 
-  // 4. Size: A practical filter. Ordered in natural progression.
+  // Size: A practical filter. Ordered in natural progression.
   sizes: ["short", "medium", "long"],
 };
 
@@ -136,34 +136,59 @@ const FilterDropdown = ({
 };
 
 export default function FilterPanel() {
-  const { filters, setFilter, resetFilters } = useSearchStore();
+  // Get `searchTerm` from the store
+  const { filters, setFilter, resetFilters, searchTerm } = useSearchStore();
+
+  // Create a set of words from the search term for efficient, case-insensitive lookup.
+  const searchTerms = new Set(searchTerm.toLowerCase().split(" "));
+
+  // This helper function checks if any word in the search term matches a suggestion from a category.
+  const findActiveTermInCategory = (options: string[]): string | null => {
+    for (const option of options) {
+      if (searchTerms.has(option.toLowerCase())) {
+        return option; // Return the first match found
+      }
+    }
+    return null;
+  };
+
+  // Determine the final selected value for each dropdown. It will be the explicitly set filter
+  // OR the value found in the search term.
+  const selectedShape =
+    filters.shape || findActiveTermInCategory(filterOptions.shapes);
+  const selectedColor =
+    filters.color || findActiveTermInCategory(filterOptions.colors);
+  const selectedPattern =
+    filters.pattern || findActiveTermInCategory(filterOptions.patterns);
+  const selectedSize =
+    filters.size || findActiveTermInCategory(filterOptions.sizes);
 
   return (
     <div className="space-y-4">
-      {/* --- HIGHLIGHT: THESE CALLS ARE NOW TYPE-SAFE --- */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+        {/* Pass the new dynamically calculated values to the dropdowns */}
         <FilterDropdown
           name="Shape"
           options={filterOptions.shapes}
-          selectedValue={filters.shape}
+          selectedValue={selectedShape}
           onSelect={(val) => setFilter("shape", val)}
         />
         <FilterDropdown
           name="Color"
           options={filterOptions.colors}
-          selectedValue={filters.color}
+          selectedValue={selectedColor}
           onSelect={(val) => setFilter("color", val)}
         />
         <FilterDropdown
           name="Pattern"
           options={filterOptions.patterns}
-          selectedValue={filters.pattern}
+          selectedValue={selectedPattern}
           onSelect={(val) => setFilter("pattern", val)}
         />
         <FilterDropdown
           name="Size"
           options={filterOptions.sizes}
-          selectedValue={filters.size}
+          selectedValue={selectedSize}
           onSelect={(val) => setFilter("size", val)}
         />
       </div>
