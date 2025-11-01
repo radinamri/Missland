@@ -1,8 +1,9 @@
 "use client";
 
 import { useSearchStore } from "@/stores/searchStore";
+import { useRef, useState, useEffect, useCallback } from "react";
 
-// A reusable pill button for our filters
+// A reusable pill button for our filters (No changes here)
 const FilterPill = ({
   label,
   isActive,
@@ -37,43 +38,122 @@ const FilterPill = ({
   </button>
 );
 
+// ScrollButton component (No changes here)
+const ScrollButton = ({
+  direction,
+  onClick,
+  visible,
+}: {
+  direction: "left" | "right";
+  onClick: () => void;
+  visible: boolean;
+}) => (
+  <button
+    onClick={onClick}
+    className={`absolute top-1/2 -translate-y-1/2 w-8 h-8 rounded-xl bg-white/80 backdrop-blur-sm shadow-md flex items-center justify-center transition-opacity duration-300
+      ${direction === "left" ? "left-2" : "right-2"}
+      ${visible ? "opacity-100" : "opacity-0 pointer-events-none"}`}
+  >
+    <svg
+      className="w-5 h-5 text-gray-600"
+      fill="none"
+      stroke="currentColor"
+      viewBox="0 0 24 24"
+    >
+      {direction === "left" ? (
+        <path
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          strokeWidth="2"
+          d="M15 19l-7-7 7-7"
+        />
+      ) : (
+        <path
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          strokeWidth="2"
+          d="M9 5l7 7-7 7"
+        />
+      )}
+    </svg>
+  </button>
+);
+
 export default function FilterBar() {
-  // Get `searchTerm` from the store
   const { filterSuggestions, filters, setFilter, searchTerm } =
     useSearchStore();
 
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
+  const [canScrollLeft, setCanScrollLeft] = useState(false);
+  const [canScrollRight, setCanScrollRight] = useState(false);
+
+  const checkScrollability = useCallback(() => {
+    const el = scrollContainerRef.current;
+    if (el) {
+      setCanScrollLeft(el.scrollLeft > 0);
+      const isScrollable = el.scrollWidth > el.clientWidth;
+      setCanScrollRight(
+        isScrollable && el.scrollLeft < el.scrollWidth - el.clientWidth - 1
+      ); // -1 for precision
+    }
+  }, []);
+
+  // This effect sets up listeners when the component mounts. (No changes here)
+  useEffect(() => {
+    const el = scrollContainerRef.current;
+    if (el) {
+      checkScrollability();
+      el.addEventListener("scroll", checkScrollability);
+      const resizeObserver = new ResizeObserver(checkScrollability);
+      resizeObserver.observe(el);
+      return () => {
+        el.removeEventListener("scroll", checkScrollability);
+        resizeObserver.unobserve(el);
+      };
+    }
+  }, [checkScrollability]);
+
+  // This new useEffect hook listens for changes to the filters or the search term.
+  // Whenever the content of the FilterBar changes, this will run and re-evaluate
+  // whether the scroll buttons should be visible.
+  useEffect(() => {
+    // We run the check inside a small timeout to ensure the DOM has finished
+    // re-rendering with the new pills before we measure the container's width.
+    const timer = setTimeout(() => {
+      checkScrollability();
+    }, 100); // 100ms is a safe delay
+
+    // Cleanup the timer if the component re-renders again quickly
+    return () => clearTimeout(timer);
+  }, [filters, searchTerm, checkScrollability]); // Dependencies that cause content to change
+
+  const handleScroll = (direction: "left" | "right") => {
+    const el = scrollContainerRef.current;
+    if (el) {
+      const scrollAmount = direction === "left" ? -250 : 250;
+      el.scrollBy({ left: scrollAmount, behavior: "smooth" });
+    }
+  };
+
   if (!filterSuggestions) {
-    return null; // Don't render if suggestions haven't loaded
+    return null;
   }
 
-  // This new logic checks both the explicitly set `filters` and the `searchTerm`
-  // to determine which categories are "active". If a category is active, only the
-  // relevant pill is shown.
-
-  // Create a set of words from the search term for efficient lookup.
+  // The logic for what pills to show remains the same
   const searchTerms = new Set(searchTerm.toLowerCase().split(" "));
-
-  // Helper function to find if a search term matches any suggestion in a category.
   const findActiveTermInCategory = (suggestions: string[]): string | null => {
     for (const suggestion of suggestions) {
-      if (searchTerms.has(suggestion.toLowerCase())) {
-        return suggestion;
-      }
+      if (searchTerms.has(suggestion.toLowerCase())) return suggestion;
     }
     return null;
   };
-
-  // Determine the single active item for each category, from either filters or search term.
   const activeShape =
     filters.shape || findActiveTermInCategory(filterSuggestions.shapes);
   const activePattern =
     filters.pattern || findActiveTermInCategory(filterSuggestions.patterns);
   const activeSize =
     filters.size || findActiveTermInCategory(filterSuggestions.sizes);
-
   const suggestionsToShow = [];
-
-  // Handle Shapes: If a shape is active (from filter or search), show only that one. Otherwise, show all.
   if (activeShape) {
     suggestionsToShow.push({ type: "shape" as const, value: activeShape });
   } else {
@@ -84,8 +164,6 @@ export default function FilterBar() {
       }))
     );
   }
-
-  // Handle Patterns: If a pattern is active, show only that one. Otherwise, show all.
   if (activePattern) {
     suggestionsToShow.push({ type: "pattern" as const, value: activePattern });
   } else {
@@ -96,8 +174,6 @@ export default function FilterBar() {
       }))
     );
   }
-
-  // Handle Sizes: If a size is active, show only that one. Otherwise, show all.
   if (activeSize) {
     suggestionsToShow.push({ type: "size" as const, value: activeSize });
   } else {
@@ -108,23 +184,17 @@ export default function FilterBar() {
       }))
     );
   }
-
-  // Exception for Colors: Always show all color options.
   suggestionsToShow.push(
     ...filterSuggestions.colors.map((value) => ({
       type: "color" as const,
       value,
     }))
   );
-
-  // The logic to determine which pills are "active" vs "inactive" needs to be more robust now.
-  // A pill is active if its value is in the search term OR it's an explicitly set filter.
   const activePills = suggestionsToShow.filter(
     (pill) =>
       filters[pill.type] === pill.value ||
       searchTerms.has(pill.value.toLowerCase())
   );
-
   const inactivePills = suggestionsToShow.filter(
     (pill) =>
       !(
@@ -132,10 +202,7 @@ export default function FilterBar() {
         searchTerms.has(pill.value.toLowerCase())
       )
   );
-
   const sortedPills = [...activePills, ...inactivePills];
-
-  // Remove duplicate pills that might appear if a filter is set and also in the search term
   const uniqueSortedPills = sortedPills.filter(
     (pill, index, self) =>
       index ===
@@ -143,8 +210,11 @@ export default function FilterBar() {
   );
 
   return (
-    <div className="w-full bg-white">
-      <div className="flex items-center space-x-3 overflow-x-auto px-4 md:px-8 no-scrollbar">
+    <div className="w-full bg-white relative">
+      <div
+        ref={scrollContainerRef}
+        className="flex items-center space-x-3 overflow-x-auto px-12 md:px-14 no-scrollbar" // Increased padding for arrows
+      >
         {uniqueSortedPills.map(({ type, value }) => (
           <FilterPill
             key={`${type}-${value}`}
@@ -156,6 +226,17 @@ export default function FilterBar() {
           />
         ))}
       </div>
+
+      <ScrollButton
+        direction="left"
+        onClick={() => handleScroll("left")}
+        visible={canScrollLeft}
+      />
+      <ScrollButton
+        direction="right"
+        onClick={() => handleScroll("right")}
+        visible={canScrollRight}
+      />
     </div>
   );
 }
