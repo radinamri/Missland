@@ -21,6 +21,7 @@ export default function Header() {
     showFilterBar,
     setShowFilterBar,
     fetchFilterSuggestions,
+    resetFilters,
   } = useSearchStore();
   const pathname = usePathname();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -59,6 +60,10 @@ export default function Header() {
 
   const handleSearchSubmit = async (query: string) => {
     if (!query.trim()) return;
+    // Reset filters when a text search is submitted
+    // This ensures that the text query is the only active search criteria,
+    // providing a clearer and more predictable user experience.
+    resetFilters();
     await trackSearchQuery(query);
     addToSearchHistory(query);
     // If we are not on the explore page, navigate there to see results.
