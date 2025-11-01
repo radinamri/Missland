@@ -44,26 +44,48 @@ export const useSearchStore = create<SearchState>((set, get) => ({
   filters: initialFilters,
   setFilter: (filterName, value) => {
     set((state) => {
-      // Determine the new state of filters by toggling the selected one
+      const oldFilterValue = state.filters[filterName];
+      const isFilterBeingRemoved = oldFilterValue === value;
+
+      // Update the filters object by toggling the selected filter.
       const newFilters = {
         ...state.filters,
-        [filterName]: state.filters[filterName] === value ? null : value,
+        [filterName]: isFilterBeingRemoved ? null : value,
       };
 
-      // Check if any filter is active in the new state.
+      // Update the search term to reflect the filter change.
+      let newSearchTerm = state.searchTerm;
+      // This logic ensures the value is not null before processing.
+      if (value) {
+        if (isFilterBeingRemoved) {
+          // If a filter is being removed, remove its value from the search term.
+          // We use a regular expression with word boundaries (\b) to avoid removing parts of other words.
+          const regex = new RegExp(`\\b${value}\\b`, "ig");
+          newSearchTerm = newSearchTerm
+            .replace(regex, "")
+            .replace(/\s+/g, " ")
+            .trim();
+        } else {
+          // If a filter is being added, append its value to the search term.
+          // We also check to prevent adding a duplicate word.
+          if (!newSearchTerm.toLowerCase().includes(value.toLowerCase())) {
+            newSearchTerm = `${newSearchTerm} ${value}`.trim();
+          }
+        }
+      }
+
+      // Recalculate the visibility of the filter bar based on the new state.
       const isAnyFilterActive = Object.values(newFilters).some(
         (v) => v !== null
       );
+      const isSearchTermPresent = newSearchTerm.trim() !== "";
+      const showFilterBar = isAnyFilterActive || isSearchTermPresent;
 
-      // Check if there's an active text search term.
-      const isSearchTermPresent = state.searchTerm.trim() !== "";
-
-      // The FilterBar should only be visible if a filter is active OR if a search term is present.
-      // This ensures that if the user removes the last active filter, the bar will hide
-      // (unless they also have a search term entered).
+      // Return the complete new state, including the updated search term.
       return {
         filters: newFilters,
-        showFilterBar: isAnyFilterActive || isSearchTermPresent,
+        searchTerm: newSearchTerm,
+        showFilterBar: showFilterBar,
       };
     });
   },
