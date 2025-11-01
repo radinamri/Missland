@@ -44,30 +44,64 @@ export default function FilterBar() {
     return null; // Don't render if suggestions haven't loaded
   }
 
-  // Combine all suggestions into a single array for rendering
-  const allSuggestions = [
-    ...filterSuggestions.shapes.map((value) => ({
-      type: "shape" as const,
-      value,
-    })),
-    ...filterSuggestions.patterns.map((value) => ({
+  // --- HIGHLIGHT: MODIFIED LOGIC TO BUILD THE LIST OF SUGGESTIONS TO DISPLAY ---
+  // This new logic ensures that once a filter is selected for Shape, Pattern, or Size,
+  // only the selected filter from that category is shown. All color options are always shown.
+
+  const suggestionsToShow = [];
+
+  // Handle Shapes: If a shape is selected, show only that one. Otherwise, show all.
+  if (filters.shape) {
+    suggestionsToShow.push({ type: "shape" as const, value: filters.shape });
+  } else {
+    suggestionsToShow.push(
+      ...filterSuggestions.shapes.map((value) => ({
+        type: "shape" as const,
+        value,
+      }))
+    );
+  }
+
+  // Handle Patterns: If a pattern is selected, show only that one. Otherwise, show all.
+  if (filters.pattern) {
+    suggestionsToShow.push({
       type: "pattern" as const,
-      value,
-    })),
-    ...filterSuggestions.sizes.map((value) => ({
-      type: "size" as const,
-      value,
-    })),
+      value: filters.pattern,
+    });
+  } else {
+    suggestionsToShow.push(
+      ...filterSuggestions.patterns.map((value) => ({
+        type: "pattern" as const,
+        value,
+      }))
+    );
+  }
+
+  // Handle Sizes: If a size is selected, show only that one. Otherwise, show all.
+  if (filters.size) {
+    suggestionsToShow.push({ type: "size" as const, value: filters.size });
+  } else {
+    suggestionsToShow.push(
+      ...filterSuggestions.sizes.map((value) => ({
+        type: "size" as const,
+        value,
+      }))
+    );
+  }
+
+  // Exception for Colors: Always show all color options.
+  suggestionsToShow.push(
     ...filterSuggestions.colors.map((value) => ({
       type: "color" as const,
       value,
-    })),
-  ];
+    }))
+  );
+  // --- END OF MODIFIED LOGIC ---
 
-  const activePills = allSuggestions.filter(
+  const activePills = suggestionsToShow.filter(
     (pill) => filters[pill.type] === pill.value
   );
-  const inactivePills = allSuggestions.filter(
+  const inactivePills = suggestionsToShow.filter(
     (pill) => filters[pill.type] !== pill.value
   );
   const sortedPills = [...activePills, ...inactivePills];
