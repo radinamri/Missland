@@ -18,16 +18,15 @@ export default function Header() {
     searchTerm,
     setSearchTerm,
     showFilterBar,
-    setShowFilterBar,
     fetchFilterSuggestions,
     performTextSearch,
+    resetFilters,
   } = useSearchStore();
   const pathname = usePathname();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
-  // This boolean will control the display of the search UI without clearing the underlying state.
   const isPostDetailPage = pathname.startsWith("/post/");
 
   useEffect(() => {
@@ -47,9 +46,7 @@ export default function Header() {
         setIsDropdownOpen(false);
       }
     }
-    // Bind the event listener
     document.addEventListener("mousedown", handleClickOutside);
-    // Unbind the event listener on component unmount
     return () => {
       document.removeEventListener("mousedown", handleClickOutside);
     };
@@ -63,10 +60,9 @@ export default function Header() {
   const handleSearchSubmit = async (query: string) => {
     if (!query.trim()) return;
 
-    // Use the new, reliable store action to set the search state correctly.
+    // Use the reliable store action that handles state correctly.
     performTextSearch(query);
 
-    // Handle side-effects like analytics and navigation.
     await trackSearchQuery(query);
     if (pathname !== "/") {
       router.push("/");
@@ -74,8 +70,7 @@ export default function Header() {
   };
 
   const handleSearchClear = () => {
-    setSearchTerm("");
-    setShowFilterBar(false); // Hide the bar when search is cleared
+    resetFilters();
   };
 
   const showSearch = pathname === "/" || pathname.startsWith("/post/");
@@ -84,7 +79,6 @@ export default function Header() {
     <>
       <header className="bg-white shadow-sm sticky top-0 z-30 h-auto flex flex-col items-center py-4 gap-4">
         <div className="flex items-center justify-between w-full md:px-8 px-4">
-          {/* Left Side: Logo and Desktop Nav */}
           <div className="flex items-center space-x-4">
             <Link href="/" className="flex items-center space-x-2">
               <Icon className="w-10 h-10" />
@@ -113,7 +107,6 @@ export default function Header() {
             </nav>
           </div>
 
-          {/* Center: Search Input (Desktop Only on Homepage or PostDetail) */}
           {showSearch && (
             <div className="hidden md:block flex-grow mx-8 lg:mx-4">
               <SearchInput
@@ -127,7 +120,6 @@ export default function Header() {
             </div>
           )}
 
-          {/* Right Side: Auth Buttons and Dropdown (Desktop) */}
           <div className="hidden md:flex items-center space-x-2 relative">
             {user ? (
               <div className="w-10 h-10 rounded-full flex items-center justify-center relative overflow-hidden">
@@ -160,8 +152,6 @@ export default function Header() {
               <button
                 onClick={() => setIsDropdownOpen(!isDropdownOpen)}
                 className="text-gray-500 hover:text-gray-700 hover:bg-gray-100 p-1 rounded-lg"
-                aria-haspopup="true"
-                aria-expanded={isDropdownOpen}
               >
                 <svg
                   className={`w-5 h-5 transition-transform duration-300 ${
@@ -180,21 +170,17 @@ export default function Header() {
                 </svg>
               </button>
               <div
-                className={`absolute right-0 mt-2 w-48 origin-top-right rounded-xl bg-white shadow-xl transition-all duration-200 ease-out
-                  ${
-                    isDropdownOpen
-                      ? "opacity-100 scale-100" // Open state
-                      : "opacity-0 scale-95" // Closed state
-                  }`}
-                role="menu"
-                aria-orientation="vertical"
+                className={`absolute right-0 mt-2 w-48 origin-top-right rounded-xl bg-white shadow-xl transition-all duration-200 ease-out ${
+                  isDropdownOpen
+                    ? "opacity-100 scale-100"
+                    : "opacity-0 scale-95"
+                }`}
               >
-                <div className="py-2 px-2" role="none">
+                <div className="py-2 px-2">
                   <Link
                     href="/articles"
                     onClick={() => setIsDropdownOpen(false)}
                     className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded-lg"
-                    role="menuitem"
                   >
                     Articles
                   </Link>
@@ -202,7 +188,6 @@ export default function Header() {
                     href="/support"
                     onClick={() => setIsDropdownOpen(false)}
                     className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded-lg"
-                    role="menuitem"
                   >
                     About
                   </Link>
@@ -211,7 +196,6 @@ export default function Header() {
             </div>
           </div>
 
-          {/* Mobile Menu Button */}
           <div className="md:hidden z-50">
             <button
               onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
@@ -249,12 +233,12 @@ export default function Header() {
             </button>
           </div>
         </div>
-        {/* Search Input (Mobile Only on Homepage or PostDetail) */}
+
         {showSearch && (
           <div className="md:hidden w-full px-4 pb-2">
             <SearchInput
               placeholder="Search or filter nails..."
-              value={searchTerm}
+              value={isPostDetailPage ? "" : searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               onSearchSubmit={handleSearchSubmit}
               onClear={handleSearchClear}
@@ -265,7 +249,6 @@ export default function Header() {
         {showFilterBar && !isPostDetailPage && <FilterBar />}
       </header>
 
-      {/* Mobile Menu Panel */}
       <div
         className={`fixed inset-0 bg-white z-40 transform ${
           isMobileMenuOpen ? "translate-x-0" : "translate-x-full"
@@ -274,7 +257,6 @@ export default function Header() {
         <button
           onClick={() => setIsMobileMenuOpen(false)}
           className="absolute top-6 right-4 text-gray-600 hover:text-gray-900"
-          aria-label="Close menu"
         >
           <svg
             className="w-8 h-8"
@@ -290,7 +272,6 @@ export default function Header() {
             ></path>
           </svg>
         </button>
-
         <div className="flex flex-col items-center justify-center h-full space-y-10">
           {navLinks.map((link) => (
             <Link
@@ -305,9 +286,7 @@ export default function Header() {
               {link.label}
             </Link>
           ))}
-
           <div className="w-4/5 border-t border-gray-200"></div>
-
           <div className="flex flex-col items-center space-y-8">
             {user ? (
               <>
