@@ -149,23 +149,54 @@ class FilteredPostListView(generics.ListAPIView):
         pattern = self.request.query_params.get('pattern', None)
         size = self.request.query_params.get('size', None)
         color_query = self.request.query_params.get('color', None)
+
         query_filters = Q()
+
         if query:
-            # Split the search query into individual words
-            search_terms = query.split()
-            # For each word, add a condition that the title must contain it (AND logic)
+            search_terms = query.lower().split()
+            non_color_terms = []
+            found_base_colors = set()
+
+            # 1. Separate color terms from other search terms
             for term in search_terms:
-                # For each term, we check if it exists in ANY of the specified fields (OR logic)
+                normalized_term = term.replace(' ', '_')
+                # Check if the term is a color variant (e.g., 'navy', 'burgundy')
+                if normalized_term in COLOR_SIMPLIFICATION_MAP:
+                    base_color = COLOR_SIMPLIFICATION_MAP[normalized_term]
+                    found_base_colors.add(base_color)
+                else:
+                    non_color_terms.append(term)
+
+            # 2. Build the query for non-color terms (e.g., "nails", "almond")
+            # This searches across all fields EXCEPT the colors field.
+            for term in non_color_terms:
                 term_q = (
                         Q(title__icontains=term) |
                         Q(shape__icontains=term) |
                         Q(pattern__icontains=term) |
-                        Q(size__icontains=term) |
-                        Q(colors__icontains=term)
+                        Q(size__icontains=term)
                 )
-                # We then combine these checks for each term (AND logic)
-                # This means a search for "red short" finds posts containing BOTH "red" AND "short".
                 query_filters &= term_q
+
+            # 3. Build a powerful query for all found base colors
+            if found_base_colors:
+                # This will hold the big OR condition for all color variants
+                color_master_q = Q()
+
+                # Find all variants for each base color found.
+                # E.g., if user searched "navy", base is "blue". This will now find
+                # all posts that have 'blue', 'sky_blue', 'cyan', 'teal', etc.
+                variants_to_search = {
+                    variant for variant, base in COLOR_SIMPLIFICATION_MAP.items()
+                    if base in found_base_colors
+                }
+
+                for variant in variants_to_search:
+                    color_master_q |= Q(colors__icontains=variant)
+
+                # Add the combined color query to the main filters
+                query_filters &= color_master_q
+
         if shape: query_filters &= Q(shape__iexact=shape)
         if pattern: query_filters &= Q(pattern__iexact=pattern)
         if size: query_filters &= Q(size__iexact=size)
