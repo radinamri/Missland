@@ -1,5 +1,8 @@
+// stores/searchStore.ts
+
 import { create } from "zustand";
 import api from "@/utils/api";
+import { COLOR_SIMPLIFICATION_MAP } from "@/utils/colorMap";
 
 // Define the structure for filter suggestions
 interface FilterSuggestions {
@@ -54,7 +57,6 @@ interface SearchState {
   searchSuggestions: string[];
   generateSearchSuggestions: () => void;
   correctionSuggestion: string | null;
-  // These are not used in the final implementation but are kept to satisfy the interface if needed elsewhere
   addToSearchHistory: (term: string) => void;
   clearSearchHistory: () => void;
 }
@@ -121,42 +123,60 @@ export const useSearchStore = create<SearchState>((set, get) => ({
   },
   performTextSearch: (query) => {
     const { filterSuggestions } = get();
-    let correctedQuery = query;
+    const newFilters = { ...initialFilters };
+    let nonFilterQueryParts: string[] = [];
+
+    if (query.trim()) {
+      set((state) => ({
+        searchHistory: [
+          query.trim(),
+          ...state.searchHistory.filter((item) => item !== query.trim()),
+        ].slice(0, 5),
+      }));
+    }
 
     if (filterSuggestions) {
       const allFilters = [
         ...filterSuggestions.shapes,
         ...filterSuggestions.patterns,
         ...filterSuggestions.sizes,
-        ...filterSuggestions.colors,
+        ...Object.keys(COLOR_SIMPLIFICATION_MAP),
       ];
       const words = query.toLowerCase().split(" ").filter(Boolean);
-      const correctedWords = words.map((word) => {
-        if (allFilters.includes(word)) return word;
-        let bestMatch: string | null = null;
-        let minDistance = word.length <= 4 ? 1 : 2;
-        for (const filter of allFilters) {
-          const distance = levenshteinDistance(word, filter);
-          if (distance <= minDistance) {
-            minDistance = distance;
-            bestMatch = filter;
+
+      words.forEach((word) => {
+        let bestMatch = word;
+        if (!allFilters.includes(word)) {
+          let minDistance = word.length <= 4 ? 1 : 2;
+          for (const filter of allFilters) {
+            const distance = levenshteinDistance(word, filter);
+            if (distance <= minDistance) {
+              minDistance = distance;
+              bestMatch = filter;
+            }
           }
         }
-        return bestMatch || word;
+
+        const baseColor = COLOR_SIMPLIFICATION_MAP[bestMatch.replace(" ", "_")];
+        if (baseColor) {
+          newFilters.color = baseColor;
+        } else if (filterSuggestions.shapes.includes(bestMatch)) {
+          newFilters.shape = bestMatch;
+        } else if (filterSuggestions.patterns.includes(bestMatch)) {
+          newFilters.pattern = bestMatch;
+        } else if (filterSuggestions.sizes.includes(bestMatch)) {
+          newFilters.size = bestMatch;
+        } else {
+          nonFilterQueryParts.push(bestMatch);
+        }
       });
-      correctedQuery = correctedWords.join(" ");
+    } else {
+      nonFilterQueryParts = query.split(" ");
     }
 
-    set((state) => ({
-      searchHistory: [
-        correctedQuery.trim(),
-        ...state.searchHistory.filter((item) => item !== correctedQuery.trim()),
-      ].slice(0, 5),
-    }));
-
     set({
-      searchTerm: correctedQuery,
-      filters: initialFilters,
+      searchTerm: nonFilterQueryParts.join(" "),
+      filters: newFilters,
       showFilterBar: true,
       searchSuggestions: [],
       correctionSuggestion: null,
@@ -195,7 +215,6 @@ export const useSearchStore = create<SearchState>((set, get) => ({
     ];
     const isLastWordComplete = allFilters.includes(lastWord);
 
-    // Logic to find and suggest a spelling correction
     if (!isLastWordComplete) {
       let bestMatch: string | null = null;
       let minDistance = lastWord.length <= 4 ? 1 : 2;
