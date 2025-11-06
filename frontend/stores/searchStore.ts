@@ -1,5 +1,3 @@
-// stores/searchStore.ts
-
 import { create } from "zustand";
 import api from "@/utils/api";
 import { COLOR_SIMPLIFICATION_MAP } from "@/utils/colorMap";
@@ -66,7 +64,7 @@ interface SearchState {
   clearSearchHistory: () => void;
 }
 
-const initialFilters: Filters = {
+export const initialFilters: Filters = {
   shape: null,
   pattern: null,
   size: null,
@@ -190,7 +188,6 @@ export const useSearchStore = create<SearchState>((set, get) => ({
 
     let finalSearchTerm = nonFilterQueryParts.join(" ");
 
-    // If the entire query was resolved into filter terms, join them to display in the input.
     if (finalSearchTerm === "" && extractedCanonicalTerms.length > 0) {
       finalSearchTerm = extractedCanonicalTerms.join(" ");
     }

@@ -18,9 +18,9 @@ export default function Header() {
     searchTerm,
     setSearchTerm,
     showFilterBar,
-    fetchFilterSuggestions,
     performTextSearch,
     resetFilters,
+    fetchFilterSuggestions,
   } = useSearchStore();
   const pathname = usePathname();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -59,10 +59,7 @@ export default function Header() {
 
   const handleSearchSubmit = async (query: string) => {
     if (!query.trim()) return;
-
-    // Use the reliable store action that handles state correctly.
     performTextSearch(query);
-
     await trackSearchQuery(query);
     if (pathname !== "/") {
       router.push("/");
@@ -116,6 +113,7 @@ export default function Header() {
                 onSearchSubmit={handleSearchSubmit}
                 onClear={handleSearchClear}
                 showFilterPanelOnFocus={true}
+                isPanelTemporarilyReset={isPostDetailPage}
               />
             </div>
           )}
@@ -243,6 +241,7 @@ export default function Header() {
               onSearchSubmit={handleSearchSubmit}
               onClear={handleSearchClear}
               showFilterPanelOnFocus={true}
+              isPanelTemporarilyReset={isPostDetailPage}
             />
           </div>
         )}

@@ -1,15 +1,11 @@
-// components/FilterPanel.tsx
 "use client";
 
 import { useState, useRef, useEffect } from "react";
-import { useSearchStore } from "@/stores/searchStore";
+import { useSearchStore, initialFilters } from "@/stores/searchStore";
 import { FiChevronDown } from "react-icons/fi";
 
 const filterOptions = {
-  // Shape: The most fundamental choice. Ordered from classic/popular to more dramatic.
   shapes: ["square", "almond", "coffin", "stiletto"],
-
-  // Color: The next most common filter. Ordered by a pseudo-spectral wheel, followed by neutrals.
   colors: [
     "red",
     "pink",
@@ -25,11 +21,7 @@ const filterOptions = {
     "gray",
     "black",
   ],
-
-  // Pattern/Finish: Key stylistic choices. Ordered by popularity and type (patterns vs. finishes).
   patterns: ["french", "ombre", "glossy", "matte", "mixed"],
-
-  // Size: A practical filter. Ordered in natural progression.
   sizes: ["short", "medium", "long"],
 };
 
@@ -49,7 +41,6 @@ const colorHexMap: { [key: string]: string } = {
   turquoise: "#2dd4bf",
 };
 
-// A reusable dropdown component for our filters
 const FilterDropdown = ({
   name,
   options,
@@ -135,25 +126,33 @@ const FilterDropdown = ({
   );
 };
 
-export default function FilterPanel() {
-  // Get `searchTerm` from the store
-  const { filters, setFilter, resetFilters, searchTerm } = useSearchStore();
+interface FilterPanelProps {
+  isTemporarilyReset?: boolean;
+}
 
-  // Create a set of words from the search term for efficient, case-insensitive lookup.
-  const searchTerms = new Set(searchTerm.toLowerCase().split(" "));
+export default function FilterPanel({
+  isTemporarilyReset = false,
+}: FilterPanelProps) {
+  const {
+    filters: realFilters,
+    setFilter,
+    resetFilters,
+    searchTerm,
+  } = useSearchStore();
 
-  // This helper function checks if any word in the search term matches a suggestion from a category.
+  const filters = isTemporarilyReset ? initialFilters : realFilters;
+  const displaySearchTerm = isTemporarilyReset ? "" : searchTerm;
+  const searchTerms = new Set(displaySearchTerm.toLowerCase().split(" "));
+
   const findActiveTermInCategory = (options: string[]): string | null => {
     for (const option of options) {
       if (searchTerms.has(option.toLowerCase())) {
-        return option; // Return the first match found
+        return option;
       }
     }
     return null;
   };
 
-  // Determine the final selected value for each dropdown. It will be the explicitly set filter
-  // OR the value found in the search term.
   const selectedShape =
     filters.shape || findActiveTermInCategory(filterOptions.shapes);
   const selectedColor =
@@ -166,7 +165,6 @@ export default function FilterPanel() {
   return (
     <div className="space-y-4">
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-        {/* Pass the new dynamically calculated values to the dropdowns */}
         <FilterDropdown
           name="Shape"
           options={filterOptions.shapes}

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, ChangeEvent } from "react";
 import { useSearchStore } from "@/stores/searchStore";
 import FilterPanel from "./FilterPanel";
 
@@ -58,11 +58,12 @@ const SuggestionItem = ({
 
 interface SearchInputProps {
   value: string;
-  onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  onChange: (e: ChangeEvent<HTMLInputElement>) => void;
   onSearchSubmit: (query: string) => void;
   placeholder: string;
   showFilterPanelOnFocus?: boolean;
   onClear: () => void;
+  isPanelTemporarilyReset?: boolean;
 }
 
 export default function SearchInput({
@@ -72,6 +73,7 @@ export default function SearchInput({
   placeholder,
   showFilterPanelOnFocus = false,
   onClear,
+  isPanelTemporarilyReset = false,
 }: SearchInputProps) {
   const [isFocused, setIsFocused] = useState(false);
   const searchRef = useRef<HTMLDivElement>(null);
@@ -80,12 +82,14 @@ export default function SearchInput({
     setSearchTerm,
     filterSuggestions,
     correctionSuggestion,
+    addToSearchHistory, // Assuming you might need this from your old code
   } = useSearchStore();
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === "Enter") {
       if (value.trim()) {
         onSearchSubmit(value);
+        // addToSearchHistory(value); // This is now handled inside performTextSearch
       }
       setIsFocused(false);
       e.currentTarget.blur();
@@ -246,7 +250,8 @@ export default function SearchInput({
               <h3 className="text-sm font-semibold text-gray-500 mb-4 px-2">
                 Filter by Category
               </h3>
-              <FilterPanel />
+              {/* Pass the prop down to the FilterPanel */}
+              <FilterPanel isTemporarilyReset={isPanelTemporarilyReset} />
             </div>
           </div>
         )}
