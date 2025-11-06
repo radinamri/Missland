@@ -130,7 +130,7 @@ export const useSearchStore = create<SearchState>((set, get) => ({
     const { filterSuggestions } = get();
     const newFilters = { ...initialFilters };
     const nonFilterQueryParts: string[] = [];
-    let primaryFilterTerm: string | null = null;
+    const extractedCanonicalTerms: string[] = [];
 
     if (query.trim()) {
       set((state) => ({
@@ -170,16 +170,16 @@ export const useSearchStore = create<SearchState>((set, get) => ({
 
         if (baseColor) {
           newFilters.color = baseColor;
-          primaryFilterTerm = baseColor;
+          extractedCanonicalTerms.push(baseColor);
         } else if (canonicalShape) {
           newFilters.shape = canonicalShape;
-          primaryFilterTerm = canonicalShape;
+          extractedCanonicalTerms.push(canonicalShape);
         } else if (canonicalPattern) {
           newFilters.pattern = canonicalPattern;
-          primaryFilterTerm = canonicalPattern;
+          extractedCanonicalTerms.push(canonicalPattern);
         } else if (canonicalSize) {
           newFilters.size = canonicalSize;
-          primaryFilterTerm = canonicalSize;
+          extractedCanonicalTerms.push(canonicalSize);
         } else {
           nonFilterQueryParts.push(bestMatch);
         }
@@ -190,12 +190,9 @@ export const useSearchStore = create<SearchState>((set, get) => ({
 
     let finalSearchTerm = nonFilterQueryParts.join(" ");
 
-    if (
-      finalSearchTerm === "" &&
-      primaryFilterTerm &&
-      query.toLowerCase().split(" ").filter(Boolean).length === 1
-    ) {
-      finalSearchTerm = primaryFilterTerm;
+    // If the entire query was resolved into filter terms, join them to display in the input.
+    if (finalSearchTerm === "" && extractedCanonicalTerms.length > 0) {
+      finalSearchTerm = extractedCanonicalTerms.join(" ");
     }
 
     set({
