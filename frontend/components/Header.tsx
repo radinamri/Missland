@@ -29,9 +29,19 @@ export default function Header() {
 
   const isPostDetailPage = pathname.startsWith("/post/");
 
+  // Local state to manage the input value ONLY when on the detail page
+  const [localSearchTerm, setLocalSearchTerm] = useState("");
+
   useEffect(() => {
     fetchFilterSuggestions();
   }, [fetchFilterSuggestions]);
+
+  // When navigating away from the detail page, clear the local term to prevent stale state
+  useEffect(() => {
+    if (!isPostDetailPage) {
+      setLocalSearchTerm("");
+    }
+  }, [isPostDetailPage]);
 
   useEffect(() => {
     setIsMobileMenuOpen(false);
@@ -108,8 +118,14 @@ export default function Header() {
             <div className="hidden md:block flex-grow mx-8 lg:mx-4">
               <SearchInput
                 placeholder="Search or filter nails..."
-                value={isPostDetailPage ? "" : searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
+                value={isPostDetailPage ? localSearchTerm : searchTerm}
+                onChange={(e) => {
+                  if (isPostDetailPage) {
+                    setLocalSearchTerm(e.target.value);
+                  } else {
+                    setSearchTerm(e.target.value);
+                  }
+                }}
                 onSearchSubmit={handleSearchSubmit}
                 onClear={handleSearchClear}
                 showFilterPanelOnFocus={true}
@@ -236,8 +252,14 @@ export default function Header() {
           <div className="md:hidden w-full px-4 pb-2">
             <SearchInput
               placeholder="Search or filter nails..."
-              value={isPostDetailPage ? "" : searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
+              value={isPostDetailPage ? localSearchTerm : searchTerm}
+              onChange={(e) => {
+                if (isPostDetailPage) {
+                  setLocalSearchTerm(e.target.value);
+                } else {
+                  setSearchTerm(e.target.value);
+                }
+              }}
               onSearchSubmit={handleSearchSubmit}
               onClear={handleSearchClear}
               showFilterPanelOnFocus={true}

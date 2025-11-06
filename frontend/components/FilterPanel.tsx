@@ -3,6 +3,7 @@
 import { useState, useRef, useEffect } from "react";
 import { useSearchStore, initialFilters } from "@/stores/searchStore";
 import { FiChevronDown } from "react-icons/fi";
+import { useRouter } from "next/navigation";
 
 const filterOptions = {
   shapes: ["square", "almond", "coffin", "stiletto"],
@@ -41,7 +42,6 @@ const colorHexMap: { [key: string]: string } = {
   turquoise: "#2dd4bf",
 };
 
-// A custom dropdown component for multi-selecting colors
 const MultiSelectColorDropdown = ({
   options,
   selectedColors,
@@ -144,7 +144,6 @@ const MultiSelectColorDropdown = ({
   );
 };
 
-// The original single-select dropdown component
 const FilterDropdown = ({
   name,
   options,
@@ -233,6 +232,8 @@ export default function FilterPanel({
     resetFilters,
     searchTerm,
   } = useSearchStore();
+  const router = useRouter();
+
   const filters = isTemporarilyReset ? initialFilters : realFilters;
   const displaySearchTerm = isTemporarilyReset ? "" : searchTerm;
   const searchTerms = new Set(displaySearchTerm.toLowerCase().split(" "));
@@ -244,6 +245,16 @@ export default function FilterPanel({
       }
     }
     return null;
+  };
+
+  const handleFilterChange = (
+    filterName: keyof typeof initialFilters,
+    value: string | null
+  ) => {
+    setFilter(filterName, value);
+    if (isTemporarilyReset) {
+      router.push("/");
+    }
   };
 
   const selectedShape =
@@ -260,24 +271,24 @@ export default function FilterPanel({
           name="Shape"
           options={filterOptions.shapes}
           selectedValue={selectedShape}
-          onSelect={(val) => setFilter("shape", val)}
+          onSelect={(val) => handleFilterChange("shape", val)}
         />
         <MultiSelectColorDropdown
           options={filterOptions.colors}
           selectedColors={filters.color}
-          onToggleColor={(color) => setFilter("color", color)}
+          onToggleColor={(color) => handleFilterChange("color", color)}
         />
         <FilterDropdown
           name="Pattern"
           options={filterOptions.patterns}
           selectedValue={selectedPattern}
-          onSelect={(val) => setFilter("pattern", val)}
+          onSelect={(val) => handleFilterChange("pattern", val)}
         />
         <FilterDropdown
           name="Size"
           options={filterOptions.sizes}
           selectedValue={selectedSize}
-          onSelect={(val) => setFilter("size", val)}
+          onSelect={(val) => handleFilterChange("size", val)}
         />
       </div>
       <button
