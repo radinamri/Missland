@@ -26,6 +26,7 @@ from .serializers import (
     CollectionCreateSerializer, CollectionListSerializer, TryOnSerializer, PasswordResetRequestSerializer,
     PasswordResetConfirmSerializer
 )
+from .keyword_extractor import extract_nail_keywords
 from .color_constants import COLOR_SIMPLIFICATION_MAP
 
 
@@ -153,65 +154,69 @@ class FilteredPostListView(generics.ListAPIView):
         query_filters = Q()
 
         if query:
-            search_terms = query.lower().split()
-            non_color_terms = []
-            found_base_colors = set()
+            # Use the extractor to get structured keywords and any leftover text
+            extracted_keywords, remaining_query = extract_nail_keywords(query)
 
-            # 1. Separate color terms from other search terms
-            for term in search_terms:
-                normalized_term = term.replace(' ', '_')
-                # Check if the term is a color variant (e.g., 'navy', 'burgundy')
-                if normalized_term in COLOR_SIMPLIFICATION_MAP:
-                    base_color = COLOR_SIMPLIFICATION_MAP[normalized_term]
-                    found_base_colors.add(base_color)
-                else:
-                    non_color_terms.append(term)
+            # Apply filters based on the keywords extracted from the text query
+            if extracted_keywords.get('shape'):
+                query_filters &= Q(shape__iexact=extracted_keywords['shape'])
 
-            # 2. Build the query for non-color terms (e.g., "nails", "almond")
-            # This searches across all fields EXCEPT the colors field.
-            for term in non_color_terms:
-                term_q = (
-                        Q(title__icontains=term) |
-                        Q(shape__icontains=term) |
-                        Q(pattern__icontains=term) |
-                        Q(size__icontains=term)
-                )
-                query_filters &= term_q
+            if extracted_keywords.get('pattern'):
+                query_filters &= Q(pattern__iexact=extracted_keywords['pattern'])
 
-            # 3. Build a powerful query for all found base colors
-            if found_base_colors:
-                # This will hold the big OR condition for all color variants
-                color_master_q = Q()
+            if extracted_keywords.get('size'):
+                query_filters &= Q(size__iexact=extracted_keywords['size'])
 
-                # Find all variants for each base color found.
-                # E.g., if user searched "navy", base is "blue". This will now find
-                # all posts that have 'blue', 'sky_blue', 'cyan', 'teal', etc.
-                variants_to_search = {
-                    variant for variant, base in COLOR_SIMPLIFICATION_MAP.items()
-                    if base in found_base_colors
-                }
-
-                for variant in variants_to_search:
-                    color_master_q |= Q(colors__icontains=variant)
-
-                # Add the combined color query to the main filters
-                query_filters &= color_master_q
-
-        if shape: query_filters &= Q(shape__iexact=shape)
-        if pattern: query_filters &= Q(pattern__iexact=pattern)
-        if size: query_filters &= Q(size__iexact=size)
-        if color_query:
-            normalized_color = color_query.lower().replace(' ', '_')
-            base_color = COLOR_SIMPLIFICATION_MAP.get(normalized_color)
-            if base_color:
-                variants = [v for v, b in COLOR_SIMPLIFICATION_MAP.items() if b == base_color]
+            # Special handling for the extracted color to find all its variants
+            if extracted_keywords.get('color'):
+                base_color = extracted_keywords['color']
                 color_q = Q()
-                for v in variants: color_q |= Q(colors__contains=v)
+                # Find all variants in the map that belong to the same base color family
+                variants_to_find = {
+                    variant for variant, base in COLOR_SIMPLIFICATION_MAP.items()
+                    if base == base_color
+                }
+                for variant in variants_to_find:
+                    color_q |= Q(colors__icontains=variant)
                 query_filters &= color_q
-            else:
-                query_filters &= Q(colors__contains=normalized_color)
+
+            # Use the remaining text for a general title search
+            if remaining_query:
+                # This handles leftover words like "nails", "design", "art", etc.
+                for term in remaining_query.split():
+                    query_filters &= Q(title__icontains=term)
+
+        # This part handles direct filter parameters from the frontend (e.g., ?shape=coffin from a pill click).
+        # These are combined with any filters derived from the text search.
+        if shape:
+            query_filters &= Q(shape__iexact=shape)
+        if pattern:
+            query_filters &= Q(pattern__iexact=pattern)
+        if size:
+            query_filters &= Q(size__iexact=size)
+
+        # Handle a direct color filter click. This logic is now more robust.
+        if color_query:
+            # Find the base color for the clicked filter (e.g., 'red')
+            base_color = COLOR_SIMPLIFICATION_MAP.get(color_query.lower().replace(' ', '_'), color_query)
+            color_q = Q()
+            # Find all variants that map to this base color
+            variants_to_find = {
+                variant for variant, base in COLOR_SIMPLIFICATION_MAP.items()
+                if base == base_color
+            }
+            # Also include the base color itself in the search, as it might not be a key in the map (e.g., turquoise)
+            variants_to_find.add(base_color)
+
+            for variant in variants_to_find:
+                color_q |= Q(colors__icontains=variant)
+            query_filters &= color_q
+
         if query_filters:
+            # Use .distinct() to avoid duplicate results if a post matches multiple criteria
             return queryset.filter(query_filters).distinct().order_by('-created_at')
+
+        # If no query or filters were provided, return the default unfiltered list
         return queryset.order_by('-created_at')
 
 
