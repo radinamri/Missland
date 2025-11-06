@@ -19,7 +19,7 @@ interface Filters {
   shape: string | null;
   pattern: string | null;
   size: string | null;
-  color: string | null;
+  color: string[];
 }
 
 // Levenshtein distance function
@@ -68,7 +68,7 @@ export const initialFilters: Filters = {
   shape: null,
   pattern: null,
   size: null,
-  color: null,
+  color: [],
 };
 
 export const useSearchStore = create<SearchState>((set, get) => ({
@@ -81,38 +81,35 @@ export const useSearchStore = create<SearchState>((set, get) => ({
   filters: initialFilters,
   setFilter: (filterName, value) => {
     set((state) => {
-      const oldFilterValue = state.filters[filterName];
-      const isFilterBeingRemoved = oldFilterValue === value;
-      const newFilters = {
-        ...state.filters,
-        [filterName]: isFilterBeingRemoved ? null : value,
-      };
-      let newSearchTerm = state.searchTerm;
-      if (value) {
-        if (isFilterBeingRemoved) {
-          const regex = new RegExp(`\\b${value}\\b`, "ig");
-          newSearchTerm = newSearchTerm
-            .replace(regex, "")
-            .replace(/\s+/g, " ")
-            .trim();
-        } else {
-          if (!newSearchTerm.toLowerCase().includes(value.toLowerCase())) {
-            newSearchTerm = `${newSearchTerm} ${value}`.trim();
+      const newFilters = { ...state.filters };
+
+      // Logic for multi-select color
+      if (filterName === "color") {
+        if (value) {
+          const currentColors = state.filters.color;
+          if (currentColors.includes(value)) {
+            newFilters.color = currentColors.filter((c) => c !== value);
+          } else {
+            newFilters.color = [...currentColors, value];
           }
         }
+      } else {
+        // Logic for single-select filters
+        newFilters[filterName as "shape" | "pattern" | "size"] =
+          state.filters[filterName as "shape" | "pattern" | "size"] === value
+            ? null
+            : value;
       }
-      const isAnyFilterActive = Object.values(newFilters).some(
-        (v) => v !== null
+
+      const isAnyFilterActive = Object.values(newFilters).some((v) =>
+        Array.isArray(v) ? v.length > 0 : v !== null
       );
-      const isSearchTermPresent = newSearchTerm.trim() !== "";
-      const showFilterBar = isAnyFilterActive || isSearchTermPresent;
-      const nextState = {
+      const showFilterBar = isAnyFilterActive || state.searchTerm.trim() !== "";
+
+      return {
         filters: newFilters,
-        searchTerm: newSearchTerm,
-        showFilterBar: showFilterBar,
+        showFilterBar,
       };
-      setTimeout(() => get().generateSearchSuggestions(), 0);
-      return nextState;
     });
   },
   resetFilters: () => {
@@ -167,7 +164,9 @@ export const useSearchStore = create<SearchState>((set, get) => ({
         const baseColor = COLOR_SIMPLIFICATION_MAP[bestMatch.replace(" ", "_")];
 
         if (baseColor) {
-          newFilters.color = baseColor;
+          if (!newFilters.color.includes(baseColor)) {
+            newFilters.color.push(baseColor);
+          }
           extractedCanonicalTerms.push(baseColor);
         } else if (canonicalShape) {
           newFilters.shape = canonicalShape;
@@ -187,7 +186,6 @@ export const useSearchStore = create<SearchState>((set, get) => ({
     }
 
     let finalSearchTerm = nonFilterQueryParts.join(" ");
-
     if (finalSearchTerm === "" && extractedCanonicalTerms.length > 0) {
       finalSearchTerm = extractedCanonicalTerms.join(" ");
     }

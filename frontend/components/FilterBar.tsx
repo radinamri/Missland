@@ -3,7 +3,6 @@
 import { useSearchStore } from "@/stores/searchStore";
 import { useRef, useState, useEffect, useCallback } from "react";
 
-// FilterPill and ScrollButton components remain unchanged...
 const FilterPill = ({
   label,
   isActive,
@@ -49,9 +48,9 @@ const ScrollButton = ({
 }) => (
   <button
     onClick={onClick}
-    className={`absolute top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-white/80 backdrop-blur-sm shadow-md flex items-center justify-center transition-opacity duration-300
-      ${direction === "left" ? "left-2" : "right-2"}
-      ${visible ? "opacity-100" : "opacity-0 pointer-events-none"}`}
+    className={`absolute top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-white/80 backdrop-blur-sm shadow-md flex items-center justify-center transition-opacity duration-300 ${
+      direction === "left" ? "left-2" : "right-2"
+    } ${visible ? "opacity-100" : "opacity-0 pointer-events-none"}`}
   >
     <svg
       className="w-5 h-5 text-gray-600"
@@ -81,7 +80,6 @@ const ScrollButton = ({
 export default function FilterBar() {
   const { filterSuggestions, filters, setFilter, searchTerm } =
     useSearchStore();
-
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const [canScrollLeft, setCanScrollLeft] = useState(false);
   const [canScrollRight, setCanScrollRight] = useState(false);
@@ -130,68 +128,51 @@ export default function FilterBar() {
     return null;
   }
 
-  const searchTerms = new Set(searchTerm.toLowerCase().split(" "));
-  const findActiveTermInCategory = (suggestions: string[]): string | null => {
-    for (const suggestion of suggestions) {
-      if (searchTerms.has(suggestion.toLowerCase())) return suggestion;
-    }
-    return null;
-  };
-  const activeShape =
-    filters.shape || findActiveTermInCategory(filterSuggestions.shapes);
-  const activePattern =
-    filters.pattern || findActiveTermInCategory(filterSuggestions.patterns);
-  const activeSize =
-    filters.size || findActiveTermInCategory(filterSuggestions.sizes);
   const suggestionsToShow = [];
-  if (activeShape) {
-    suggestionsToShow.push({ type: "shape" as const, value: activeShape });
-  } else {
-    suggestionsToShow.push(
-      ...filterSuggestions.shapes.map((value) => ({
-        type: "shape" as const,
-        value,
-      }))
-    );
-  }
-  if (activePattern) {
-    suggestionsToShow.push({ type: "pattern" as const, value: activePattern });
-  } else {
-    suggestionsToShow.push(
-      ...filterSuggestions.patterns.map((value) => ({
-        type: "pattern" as const,
-        value,
-      }))
-    );
-  }
-  if (activeSize) {
-    suggestionsToShow.push({ type: "size" as const, value: activeSize });
-  } else {
-    suggestionsToShow.push(
-      ...filterSuggestions.sizes.map((value) => ({
-        type: "size" as const,
-        value,
-      }))
-    );
-  }
+
+  // Logic for single-select categories
+  const singleSelectCategories: Array<"shapes" | "patterns" | "sizes"> = [
+    "shapes",
+    "patterns",
+    "sizes",
+  ];
+  singleSelectCategories.forEach((category) => {
+    const filterKey = category.slice(0, -1) as "shape" | "pattern" | "size";
+    const activeFilter = filters[filterKey];
+    if (activeFilter) {
+      suggestionsToShow.push({ type: filterKey, value: activeFilter });
+    } else {
+      suggestionsToShow.push(
+        ...filterSuggestions[category].map((value) => ({
+          type: filterKey,
+          value,
+        }))
+      );
+    }
+  });
+
+  // Always show all color options for multi-selection
   suggestionsToShow.push(
     ...filterSuggestions.colors.map((value) => ({
       type: "color" as const,
       value,
     }))
   );
-  const activePills = suggestionsToShow.filter(
-    (pill) =>
-      filters[pill.type] === pill.value ||
-      searchTerms.has(pill.value.toLowerCase())
-  );
-  const inactivePills = suggestionsToShow.filter(
-    (pill) =>
-      !(
-        filters[pill.type] === pill.value ||
-        searchTerms.has(pill.value.toLowerCase())
-      )
-  );
+
+  const activePills = suggestionsToShow.filter(({ type, value }) => {
+    if (type === "color") {
+      return filters.color.includes(value);
+    }
+    return filters[type] === value;
+  });
+
+  const inactivePills = suggestionsToShow.filter(({ type, value }) => {
+    if (type === "color") {
+      return !filters.color.includes(value);
+    }
+    return filters[type] !== value;
+  });
+
   const sortedPills = [...activePills, ...inactivePills];
   const uniqueSortedPills = sortedPills.filter(
     (pill, index, self) =>
@@ -205,16 +186,20 @@ export default function FilterBar() {
         ref={scrollContainerRef}
         className="flex items-center space-x-3 overflow-x-auto pl-4 md:pl-8 pr-12 md:pr-14 no-scrollbar"
       >
-        {uniqueSortedPills.map(({ type, value }) => (
-          <FilterPill
-            key={`${type}-${value}`}
-            label={value.charAt(0).toUpperCase() + value.slice(1)}
-            isActive={
-              filters[type] === value || searchTerms.has(value.toLowerCase())
-            }
-            onClick={() => setFilter(type, value)}
-          />
-        ))}
+        {uniqueSortedPills.map(({ type, value }) => {
+          const isActive =
+            type === "color"
+              ? filters.color.includes(value)
+              : filters[type] === value;
+          return (
+            <FilterPill
+              key={`${type}-${value}`}
+              label={value.charAt(0).toUpperCase() + value.slice(1)}
+              isActive={isActive}
+              onClick={() => setFilter(type, value)}
+            />
+          );
+        })}
       </div>
 
       <ScrollButton

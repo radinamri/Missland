@@ -41,6 +41,110 @@ const colorHexMap: { [key: string]: string } = {
   turquoise: "#2dd4bf",
 };
 
+// A custom dropdown component for multi-selecting colors
+const MultiSelectColorDropdown = ({
+  options,
+  selectedColors,
+  onToggleColor,
+}: {
+  options: string[];
+  selectedColors: string[];
+  onToggleColor: (color: string) => void;
+}) => {
+  const [isOpen, setIsOpen] = useState(false);
+  const dropdownRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        dropdownRef.current &&
+        !dropdownRef.current.contains(event.target as Node)
+      ) {
+        setIsOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  const displayName = (() => {
+    if (selectedColors.length === 0) return "Any Color";
+    if (selectedColors.length === 1)
+      return (
+        selectedColors[0].charAt(0).toUpperCase() + selectedColors[0].slice(1)
+      );
+    return `${selectedColors.length} Colors`;
+  })();
+
+  const isActive = selectedColors.length > 0;
+
+  return (
+    <div className="relative" ref={dropdownRef}>
+      <button
+        onClick={() => setIsOpen(!isOpen)}
+        className={`w-full flex items-center justify-between text-left px-4 py-2 text-sm font-semibold rounded-lg transition-colors duration-200 ${
+          isActive
+            ? "bg-[#3D5A6C] text-white"
+            : "bg-[#E7E7E7] text-[#3D5A6C] hover:bg-[#dcdcdc]"
+        }`}
+      >
+        <span>{displayName}</span>
+        <FiChevronDown
+          className={`w-5 h-5 transition-transform ${
+            isOpen ? "rotate-180" : ""
+          }`}
+        />
+      </button>
+      {isOpen && (
+        <div className="absolute top-full mt-1 w-full bg-white rounded-lg shadow-xl z-10 py-2 px-2 border border-gray-200">
+          {options.map((option) => {
+            const isSelected = selectedColors.includes(option);
+            return (
+              <a
+                key={option}
+                href="#"
+                onClick={(e) => {
+                  e.preventDefault();
+                  onToggleColor(option);
+                }}
+                className={`flex items-center justify-between px-4 py-2 text-sm rounded-lg ${
+                  isSelected
+                    ? "bg-[#3D5A6C] font-semibold text-white"
+                    : "text-gray-700 hover:bg-gray-100"
+                }`}
+              >
+                <span className="flex items-center">
+                  <span
+                    className="w-4 h-4 rounded-full mr-2 border"
+                    style={{ backgroundColor: colorHexMap[option] }}
+                  ></span>
+                  {option.charAt(0).toUpperCase() + option.slice(1)}
+                </span>
+                {isSelected && (
+                  <svg
+                    className="w-5 h-5 text-white"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth="2.5"
+                      d="M5 13l4 4L19 7"
+                    />
+                  </svg>
+                )}
+              </a>
+            );
+          })}
+        </div>
+      )}
+    </div>
+  );
+};
+
+// The original single-select dropdown component
 const FilterDropdown = ({
   name,
   options,
@@ -107,17 +211,7 @@ const FilterDropdown = ({
               }}
               className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded-lg"
             >
-              {name === "Color" ? (
-                <span className="flex items-center">
-                  <span
-                    className="w-4 h-4 rounded-full mr-2 border"
-                    style={{ backgroundColor: colorHexMap[option] }}
-                  ></span>
-                  {option.charAt(0).toUpperCase() + option.slice(1)}
-                </span>
-              ) : (
-                option.charAt(0).toUpperCase() + option.slice(1)
-              )}
+              {option.charAt(0).toUpperCase() + option.slice(1)}
             </a>
           ))}
         </div>
@@ -139,7 +233,6 @@ export default function FilterPanel({
     resetFilters,
     searchTerm,
   } = useSearchStore();
-
   const filters = isTemporarilyReset ? initialFilters : realFilters;
   const displaySearchTerm = isTemporarilyReset ? "" : searchTerm;
   const searchTerms = new Set(displaySearchTerm.toLowerCase().split(" "));
@@ -155,8 +248,6 @@ export default function FilterPanel({
 
   const selectedShape =
     filters.shape || findActiveTermInCategory(filterOptions.shapes);
-  const selectedColor =
-    filters.color || findActiveTermInCategory(filterOptions.colors);
   const selectedPattern =
     filters.pattern || findActiveTermInCategory(filterOptions.patterns);
   const selectedSize =
@@ -171,11 +262,10 @@ export default function FilterPanel({
           selectedValue={selectedShape}
           onSelect={(val) => setFilter("shape", val)}
         />
-        <FilterDropdown
-          name="Color"
+        <MultiSelectColorDropdown
           options={filterOptions.colors}
-          selectedValue={selectedColor}
-          onSelect={(val) => setFilter("color", val)}
+          selectedColors={filters.color}
+          onToggleColor={(color) => setFilter("color", color)}
         />
         <FilterDropdown
           name="Pattern"
