@@ -28,6 +28,8 @@ from .serializers import (
 )
 from .keyword_extractor import extract_nail_keywords
 from .color_constants import COLOR_SIMPLIFICATION_MAP
+from functools import reduce
+import operator
 
 
 # --- HELPER FUNCTION ---
@@ -151,6 +153,8 @@ class FilteredPostListView(generics.ListAPIView):
         size = self.request.query_params.get('size', None)
         color_query = self.request.query_params.get('color', None)
 
+        color_query = self.request.query_params.get('color', None)
+
         query_filters = Q()
 
         if query:
@@ -195,22 +199,31 @@ class FilteredPostListView(generics.ListAPIView):
         if size:
             query_filters &= Q(size__iexact=size)
 
-        # Handle a direct color filter click. This logic is now more robust.
+        # Color logic to handle multi-select OR queries
         if color_query:
-            # Find the base color for the clicked filter (e.g., 'red')
-            base_color = COLOR_SIMPLIFICATION_MAP.get(color_query.lower().replace(' ', '_'), color_query)
-            color_q = Q()
-            # Find all variants that map to this base color
-            variants_to_find = {
-                variant for variant, base in COLOR_SIMPLIFICATION_MAP.items()
-                if base == base_color
-            }
-            # Also include the base color itself in the search, as it might not be a key in the map (e.g., turquoise)
-            variants_to_find.add(base_color)
+            colors = [c.strip() for c in color_query.lower().split(',')]
+            base_colors_to_find = set()
+            for c in colors:
+                base_color = COLOR_SIMPLIFICATION_MAP.get(c.replace(' ', '_'), c)
+                base_colors_to_find.add(base_color)
 
-            for variant in variants_to_find:
-                color_q |= Q(colors__icontains=variant)
-            query_filters &= color_q
+            color_master_q = Q()
+            if base_colors_to_find:
+                # Find all variants for all the base colors requested
+                variants_to_search = {
+                    variant for variant, base in COLOR_SIMPLIFICATION_MAP.items()
+                    if base in base_colors_to_find
+                }
+                # Also include the base colors themselves
+                variants_to_search.update(base_colors_to_find)
+
+                # Build a single, powerful OR query
+                or_conditions = [Q(colors__icontains=variant) for variant in variants_to_search]
+                if or_conditions:
+                    color_master_q = reduce(operator.or_, or_conditions)
+
+            if color_master_q:
+                query_filters &= color_master_q
 
         if query_filters:
             # Use .distinct() to avoid duplicate results if a post matches multiple criteria
