@@ -124,7 +124,8 @@ export const useSearchStore = create<SearchState>((set, get) => ({
   performTextSearch: (query) => {
     const { filterSuggestions } = get();
     const newFilters = { ...initialFilters };
-    let nonFilterQueryParts: string[] = [];
+    const nonFilterQueryParts: string[] = [];
+    let primaryFilterTerm: string | null = null;
 
     if (query.trim()) {
       set((state) => ({
@@ -136,19 +137,19 @@ export const useSearchStore = create<SearchState>((set, get) => ({
     }
 
     if (filterSuggestions) {
-      const allFilters = [
+      const allFilterTerms = new Set([
         ...filterSuggestions.shapes,
         ...filterSuggestions.patterns,
         ...filterSuggestions.sizes,
         ...Object.keys(COLOR_SIMPLIFICATION_MAP),
-      ];
+      ]);
       const words = query.toLowerCase().split(" ").filter(Boolean);
 
       words.forEach((word) => {
         let bestMatch = word;
-        if (!allFilters.includes(word)) {
+        if (!allFilterTerms.has(word)) {
           let minDistance = word.length <= 4 ? 1 : 2;
-          for (const filter of allFilters) {
+          for (const filter of allFilterTerms) {
             const distance = levenshteinDistance(word, filter);
             if (distance <= minDistance) {
               minDistance = distance;
@@ -160,22 +161,36 @@ export const useSearchStore = create<SearchState>((set, get) => ({
         const baseColor = COLOR_SIMPLIFICATION_MAP[bestMatch.replace(" ", "_")];
         if (baseColor) {
           newFilters.color = baseColor;
+          primaryFilterTerm = baseColor;
         } else if (filterSuggestions.shapes.includes(bestMatch)) {
           newFilters.shape = bestMatch;
+          primaryFilterTerm = bestMatch;
         } else if (filterSuggestions.patterns.includes(bestMatch)) {
           newFilters.pattern = bestMatch;
+          primaryFilterTerm = bestMatch;
         } else if (filterSuggestions.sizes.includes(bestMatch)) {
           newFilters.size = bestMatch;
+          primaryFilterTerm = bestMatch;
         } else {
           nonFilterQueryParts.push(bestMatch);
         }
       });
     } else {
-      nonFilterQueryParts = query.split(" ");
+      nonFilterQueryParts.push(...query.split(" "));
+    }
+
+    let finalSearchTerm = nonFilterQueryParts.join(" ");
+
+    if (
+      finalSearchTerm === "" &&
+      primaryFilterTerm &&
+      query.toLowerCase().split(" ").filter(Boolean).length === 1
+    ) {
+      finalSearchTerm = primaryFilterTerm;
     }
 
     set({
-      searchTerm: nonFilterQueryParts.join(" "),
+      searchTerm: finalSearchTerm,
       filters: newFilters,
       showFilterBar: true,
       searchSuggestions: [],
