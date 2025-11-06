@@ -3,6 +3,11 @@
 import { create } from "zustand";
 import api from "@/utils/api";
 import { COLOR_SIMPLIFICATION_MAP } from "@/utils/colorMap";
+import {
+  SHAPE_NORMALIZATION_MAP,
+  PATTERN_NORMALIZATION_MAP,
+  SIZE_NORMALIZATION_MAP,
+} from "@/utils/keywordMaps";
 
 // Define the structure for filter suggestions
 interface FilterSuggestions {
@@ -19,7 +24,7 @@ interface Filters {
   color: string | null;
 }
 
-// Levenshtein distance function - calculates the "edit distance" between two strings.
+// Levenshtein distance function
 const levenshteinDistance = (a: string, b: string): number => {
   if (a.length === 0) return b.length;
   if (b.length === 0) return a.length;
@@ -138,9 +143,9 @@ export const useSearchStore = create<SearchState>((set, get) => ({
 
     if (filterSuggestions) {
       const allFilterTerms = new Set([
-        ...filterSuggestions.shapes,
-        ...filterSuggestions.patterns,
-        ...filterSuggestions.sizes,
+        ...Object.keys(SHAPE_NORMALIZATION_MAP),
+        ...Object.keys(PATTERN_NORMALIZATION_MAP),
+        ...Object.keys(SIZE_NORMALIZATION_MAP),
         ...Object.keys(COLOR_SIMPLIFICATION_MAP),
       ]);
       const words = query.toLowerCase().split(" ").filter(Boolean);
@@ -158,19 +163,23 @@ export const useSearchStore = create<SearchState>((set, get) => ({
           }
         }
 
+        const canonicalShape = SHAPE_NORMALIZATION_MAP[bestMatch];
+        const canonicalPattern = PATTERN_NORMALIZATION_MAP[bestMatch];
+        const canonicalSize = SIZE_NORMALIZATION_MAP[bestMatch];
         const baseColor = COLOR_SIMPLIFICATION_MAP[bestMatch.replace(" ", "_")];
+
         if (baseColor) {
           newFilters.color = baseColor;
           primaryFilterTerm = baseColor;
-        } else if (filterSuggestions.shapes.includes(bestMatch)) {
-          newFilters.shape = bestMatch;
-          primaryFilterTerm = bestMatch;
-        } else if (filterSuggestions.patterns.includes(bestMatch)) {
-          newFilters.pattern = bestMatch;
-          primaryFilterTerm = bestMatch;
-        } else if (filterSuggestions.sizes.includes(bestMatch)) {
-          newFilters.size = bestMatch;
-          primaryFilterTerm = bestMatch;
+        } else if (canonicalShape) {
+          newFilters.shape = canonicalShape;
+          primaryFilterTerm = canonicalShape;
+        } else if (canonicalPattern) {
+          newFilters.pattern = canonicalPattern;
+          primaryFilterTerm = canonicalPattern;
+        } else if (canonicalSize) {
+          newFilters.size = canonicalSize;
+          primaryFilterTerm = canonicalSize;
         } else {
           nonFilterQueryParts.push(bestMatch);
         }
@@ -222,22 +231,24 @@ export const useSearchStore = create<SearchState>((set, get) => ({
 
     const words = searchTerm.toLowerCase().split(" ").filter(Boolean);
     const lastWord = words[words.length - 1];
-    const allFilters = [
-      ...filterSuggestions.shapes,
-      ...filterSuggestions.patterns,
-      ...filterSuggestions.sizes,
-      ...filterSuggestions.colors,
+
+    const allVariants = [
+      ...Object.keys(SHAPE_NORMALIZATION_MAP),
+      ...Object.keys(PATTERN_NORMALIZATION_MAP),
+      ...Object.keys(SIZE_NORMALIZATION_MAP),
+      ...Object.keys(COLOR_SIMPLIFICATION_MAP),
     ];
-    const isLastWordComplete = allFilters.includes(lastWord);
+
+    const isLastWordComplete = allVariants.includes(lastWord);
 
     if (!isLastWordComplete) {
       let bestMatch: string | null = null;
       let minDistance = lastWord.length <= 4 ? 1 : 2;
-      for (const filter of allFilters) {
-        const distance = levenshteinDistance(lastWord, filter);
+      for (const variant of allVariants) {
+        const distance = levenshteinDistance(lastWord, variant);
         if (distance > 0 && distance <= minDistance) {
           minDistance = distance;
-          bestMatch = filter;
+          bestMatch = variant;
         }
       }
       if (bestMatch) {
@@ -247,21 +258,18 @@ export const useSearchStore = create<SearchState>((set, get) => ({
 
     const suggestionsSet = new Set<string>();
     if (!isLastWordComplete) {
-      allFilters.forEach((filter) => {
-        if (filter.startsWith(lastWord) && !words.includes(filter)) {
-          suggestionsSet.add(filter);
+      allVariants.forEach((variant) => {
+        if (variant.startsWith(lastWord) && !words.includes(variant)) {
+          suggestionsSet.add(variant);
         }
       });
     } else {
       const usedCategories = new Set<string>();
       words.forEach((word) => {
-        if (filterSuggestions.shapes.includes(word))
-          usedCategories.add("shapes");
-        if (filterSuggestions.patterns.includes(word))
-          usedCategories.add("patterns");
-        if (filterSuggestions.sizes.includes(word)) usedCategories.add("sizes");
-        if (filterSuggestions.colors.includes(word))
-          usedCategories.add("colors");
+        if (SHAPE_NORMALIZATION_MAP[word]) usedCategories.add("shapes");
+        if (PATTERN_NORMALIZATION_MAP[word]) usedCategories.add("patterns");
+        if (SIZE_NORMALIZATION_MAP[word]) usedCategories.add("sizes");
+        if (COLOR_SIMPLIFICATION_MAP[word]) usedCategories.add("colors");
       });
       if (!usedCategories.has("shapes"))
         filterSuggestions.shapes.forEach((s) => suggestionsSet.add(s));
