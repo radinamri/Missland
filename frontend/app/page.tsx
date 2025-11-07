@@ -27,11 +27,41 @@ export default function ExplorePage() {
       }
 
       const params = new URLSearchParams();
-      if (searchTerm) params.append("q", searchTerm);
-      if (filters.shape) params.append("shape", filters.shape);
-      if (filters.pattern) params.append("pattern", filters.pattern);
-      if (filters.size) params.append("size", filters.size);
-      if (filters.color) params.append("color", filters.color);
+
+      // Get all words from the current search term.
+      const searchWords = searchTerm.toLowerCase().split(" ").filter(Boolean);
+
+      // Create a set of all active filter values for easy lookup.
+      const filterValues = new Set<string>();
+      if (filters.shape) filterValues.add(filters.shape);
+      if (filters.pattern) filterValues.add(filters.pattern);
+      if (filters.size) filterValues.add(filters.size);
+      filters.color.forEach((c) => filterValues.add(c));
+
+      // Isolate the pure text query by filtering out words already handled by a filter.
+      // This leaves only non-filter words like "nails", "design", etc.
+      const textQueryParts = searchWords.filter(
+        (word) => !filterValues.has(word)
+      );
+      const textQuery = textQueryParts.join(" ");
+
+      // Build the final, clean URL parameters.
+      if (textQuery) {
+        params.append("q", textQuery);
+      }
+      if (filters.shape) {
+        params.append("shape", filters.shape);
+      }
+      if (filters.pattern) {
+        params.append("pattern", filters.pattern);
+      }
+      if (filters.size) {
+        params.append("size", filters.size);
+      }
+      // Join the color array into a comma-separated string for the backend.
+      if (filters.color.length > 0) {
+        params.append("color", filters.color.join(","));
+      }
 
       const pageToFetch = isNewSearch ? 1 : page;
       params.append("page", String(pageToFetch));
@@ -64,11 +94,9 @@ export default function ExplorePage() {
   useEffect(() => {
     const handler = setTimeout(() => {
       fetchPosts(true);
-    }, 500);
+    }, 500); // Debounce to prevent rapid-fire requests
     return () => clearTimeout(handler);
-
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [searchTerm, filters]);
+  }, [searchTerm, filters, fetchPosts]);
 
   return (
     <main className="p-4 md:p-8 pb-16">
