@@ -82,32 +82,68 @@ export const useSearchStore = create<SearchState>((set, get) => ({
   setFilter: (filterName, value) => {
     set((state) => {
       const newFilters = { ...state.filters };
+      let newSearchTerm = state.searchTerm;
 
-      // Logic for multi-select color
+      // Handle multi-select Color
       if (filterName === "color") {
         if (value) {
           const currentColors = state.filters.color;
-          if (currentColors.includes(value)) {
+          const isPresent = currentColors.includes(value);
+          if (isPresent) {
             newFilters.color = currentColors.filter((c) => c !== value);
+            // Remove color from search term
+            const regex = new RegExp(`\\b${value}\\b`, "ig");
+            newSearchTerm = newSearchTerm
+              .replace(regex, "")
+              .replace(/\s+/g, " ")
+              .trim();
           } else {
             newFilters.color = [...currentColors, value];
+            // Add color to search term
+            if (!newSearchTerm.toLowerCase().includes(value.toLowerCase())) {
+              newSearchTerm = `${newSearchTerm} ${value}`.trim();
+            }
           }
         }
-      } else {
-        // Logic for single-select filters
-        newFilters[filterName as "shape" | "pattern" | "size"] =
-          state.filters[filterName as "shape" | "pattern" | "size"] === value
-            ? null
-            : value;
+      }
+      // Handle single-select Shape, Pattern, Size
+      else {
+        const filterKey = filterName as "shape" | "pattern" | "size";
+        const currentFilterValue = state.filters[filterKey];
+
+        // If there was an old value for this category, remove it from the search term first.
+        if (currentFilterValue) {
+          const regex = new RegExp(`\\b${currentFilterValue}\\b`, "ig");
+          newSearchTerm = newSearchTerm
+            .replace(regex, "")
+            .replace(/\s+/g, " ")
+            .trim();
+        }
+
+        // If the user clicks the same filter again, it deselects it.
+        if (currentFilterValue === value) {
+          newFilters[filterKey] = null;
+        }
+        // Otherwise, a new filter is being set.
+        else if (value) {
+          newFilters[filterKey] = value;
+          // Add the new value to the search term.
+          if (!newSearchTerm.toLowerCase().includes(value.toLowerCase())) {
+            newSearchTerm = `${newSearchTerm} ${value}`.trim();
+          }
+        }
       }
 
       const isAnyFilterActive = Object.values(newFilters).some((v) =>
         Array.isArray(v) ? v.length > 0 : v !== null
       );
-      const showFilterBar = isAnyFilterActive || state.searchTerm.trim() !== "";
+      const showFilterBar = isAnyFilterActive || newSearchTerm.trim() !== "";
+
+      setTimeout(() => get().generateSearchSuggestions(), 0);
 
       return {
         filters: newFilters,
+        searchTerm: newSearchTerm,
         showFilterBar,
       };
     });
@@ -122,8 +158,8 @@ export const useSearchStore = create<SearchState>((set, get) => ({
     });
   },
   performTextSearch: (query) => {
-    const { filterSuggestions } = get();
-    const newFilters = { ...initialFilters };
+    const { filterSuggestions, filters: currentFilters } = get();
+    const newFilters = { ...currentFilters };
     const nonFilterQueryParts: string[] = [];
     const extractedCanonicalTerms: string[] = [];
 
