@@ -251,9 +251,17 @@ export default function FilterPanel({
     filterName: keyof typeof initialFilters,
     value: string | null
   ) => {
-    setFilter(filterName, value);
+    // If we are on a detail page, this is a NEW search.
     if (isTemporarilyReset) {
+      // Reset everything to start fresh.
+      resetFilters();
+      // Apply just the new filter.
+      setFilter(filterName, value);
+      // Navigate to the explore page to see the results.
       router.push("/");
+    } else {
+      // Otherwise, it's just a normal filter toggle on the explore page.
+      setFilter(filterName, value);
     }
   };
 
