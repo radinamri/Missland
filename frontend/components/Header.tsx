@@ -17,7 +17,9 @@ export default function Header() {
   const {
     searchTerm,
     setSearchTerm,
+    filters,
     showFilterBar,
+    setShowFilterBar,
     performTextSearch,
     resetFilters,
     fetchFilterSuggestions,
@@ -35,6 +37,30 @@ export default function Header() {
   useEffect(() => {
     fetchFilterSuggestions();
   }, [fetchFilterSuggestions]);
+
+  // It handles both showing and hiding the filter bar based on the page context.
+  useEffect(() => {
+    const isSearchContextPage =
+      pathname === "/" || pathname.startsWith("/post/");
+
+    if (isSearchContextPage) {
+      // If we are ON a search page, re-evaluate if the bar should be visible.
+      const isAnyFilterActive = Object.values(filters).some((v) =>
+        Array.isArray(v) ? v.length > 0 : v !== null
+      );
+      const isSearchTermPresent = searchTerm.trim() !== "";
+
+      // If there's an active search state, ensure the bar is visible.
+      if (isAnyFilterActive || isSearchTermPresent) {
+        setShowFilterBar(true);
+      }
+    } else {
+      // If we are NOT on a search page, ensure the bar is hidden.
+      if (showFilterBar) {
+        setShowFilterBar(false);
+      }
+    }
+  }, [pathname, filters, searchTerm, showFilterBar, setShowFilterBar]);
 
   // When navigating away from the detail page, clear the local term to prevent stale state
   useEffect(() => {
@@ -184,7 +210,7 @@ export default function Header() {
                 </svg>
               </button>
               <div
-                className={`absolute right-0 mt-2 w-48 origin-top-right rounded-xl bg-white shadow-xl transition-all duration-200 ease-out ${
+                className={`absolute right-0 mt-2 w-48 origin-top-right rounded-xl bg-white shadow-xl transition-all duration-200 ease-out z-50 ${
                   isDropdownOpen
                     ? "opacity-100 scale-100"
                     : "opacity-0 scale-95"
