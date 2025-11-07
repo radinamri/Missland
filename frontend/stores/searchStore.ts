@@ -49,7 +49,7 @@ interface SearchState {
   searchTerm: string;
   setSearchTerm: (term: string) => void;
   filters: Filters;
-  setFilter: (filterName: keyof Filters, value: string | null) => void;
+  setFilter: (filterName: keyof Filters, value: string) => void;
   resetFilters: () => void;
   searchHistory: string[];
   performTextSearch: (query: string) => void;
@@ -74,80 +74,73 @@ export const initialFilters: Filters = {
 export const useSearchStore = create<SearchState>((set, get) => ({
   searchTerm: "",
   correctionSuggestion: null,
+  filters: initialFilters,
+
+  // `setSearchTerm` is the single source of truth. It derives the filter state from the search string.
   setSearchTerm: (term) => {
-    set({ searchTerm: term });
+    const { filterSuggestions } = get();
+    const newFilters = { ...initialFilters, color: [] as string[] };
+
+    if (filterSuggestions) {
+      const words = term.toLowerCase().split(" ").filter(Boolean);
+      words.forEach((word) => {
+        const canonicalShape = SHAPE_NORMALIZATION_MAP[word];
+        const canonicalPattern = PATTERN_NORMALIZATION_MAP[word];
+        const canonicalSize = SIZE_NORMALIZATION_MAP[word];
+        const baseColor = COLOR_SIMPLIFICATION_MAP[word.replace(" ", "_")];
+
+        if (baseColor && !newFilters.color.includes(baseColor)) {
+          newFilters.color.push(baseColor);
+        } else if (canonicalShape) {
+          newFilters.shape = canonicalShape;
+        } else if (canonicalPattern) {
+          newFilters.pattern = canonicalPattern;
+        } else if (canonicalSize) {
+          newFilters.size = canonicalSize;
+        }
+      });
+    }
+
+    set({
+      searchTerm: term,
+      filters: newFilters,
+      showFilterBar:
+        term.trim() !== "" ||
+        Object.values(newFilters).some((v) =>
+          Array.isArray(v) ? v.length > 0 : v !== null
+        ),
+    });
+
     get().generateSearchSuggestions();
   },
-  filters: initialFilters,
+
+  // `setFilter` is now a helper function that reconstructs the search term string and calls setSearchTerm.
   setFilter: (filterName, value) => {
-    set((state) => {
-      const newFilters = { ...state.filters };
-      let newSearchTerm = state.searchTerm;
+    const state = get();
+    let words = state.searchTerm.toLowerCase().split(" ").filter(Boolean);
+    const filterValue = value; // `value` is guaranteed to be a string here.
 
-      // Handle multi-select Color
-      if (filterName === "color") {
-        if (value) {
-          const currentColors = state.filters.color;
-          const isPresent = currentColors.includes(value);
-          if (isPresent) {
-            newFilters.color = currentColors.filter((c) => c !== value);
-            // Remove color from search term
-            const regex = new RegExp(`\\b${value}\\b`, "ig");
-            newSearchTerm = newSearchTerm
-              .replace(regex, "")
-              .replace(/\s+/g, " ")
-              .trim();
-          } else {
-            newFilters.color = [...currentColors, value];
-            // Add color to search term
-            if (!newSearchTerm.toLowerCase().includes(value.toLowerCase())) {
-              newSearchTerm = `${newSearchTerm} ${value}`.trim();
-            }
-          }
-        }
-      }
-      // Handle single-select Shape, Pattern, Size
-      else {
-        const filterKey = filterName as "shape" | "pattern" | "size";
-        const currentFilterValue = state.filters[filterKey];
-
-        // If there was an old value for this category, remove it from the search term first.
-        if (currentFilterValue) {
-          const regex = new RegExp(`\\b${currentFilterValue}\\b`, "ig");
-          newSearchTerm = newSearchTerm
-            .replace(regex, "")
-            .replace(/\s+/g, " ")
-            .trim();
-        }
-
-        // If the user clicks the same filter again, it deselects it.
-        if (currentFilterValue === value) {
-          newFilters[filterKey] = null;
-        }
-        // Otherwise, a new filter is being set.
-        else if (value) {
-          newFilters[filterKey] = value;
-          // Add the new value to the search term.
-          if (!newSearchTerm.toLowerCase().includes(value.toLowerCase())) {
-            newSearchTerm = `${newSearchTerm} ${value}`.trim();
-          }
-        }
-      }
-
-      const isAnyFilterActive = Object.values(newFilters).some((v) =>
-        Array.isArray(v) ? v.length > 0 : v !== null
+    if (filterName !== "color" && state.filters[filterName]) {
+      words = words.filter(
+        (w) => w !== state.filters[filterName as "shape" | "pattern" | "size"]
       );
-      const showFilterBar = isAnyFilterActive || newSearchTerm.trim() !== "";
+    }
 
-      setTimeout(() => get().generateSearchSuggestions(), 0);
+    if (words.includes(filterValue)) {
+      if (
+        (filterName === "color" && state.filters.color.includes(filterValue)) ||
+        filterName !== "color"
+      ) {
+        words = words.filter((w) => w !== filterValue);
+      }
+    } else {
+      words.push(filterValue);
+    }
 
-      return {
-        filters: newFilters,
-        searchTerm: newSearchTerm,
-        showFilterBar,
-      };
-    });
+    const newSearchTerm = [...new Set(words)].join(" ");
+    get().setSearchTerm(newSearchTerm);
   },
+
   resetFilters: () => {
     set({
       filters: initialFilters,
@@ -157,20 +150,11 @@ export const useSearchStore = create<SearchState>((set, get) => ({
       correctionSuggestion: null,
     });
   },
-  performTextSearch: (query) => {
-    const { filterSuggestions, filters: currentFilters } = get();
-    const newFilters = { ...currentFilters };
-    const nonFilterQueryParts: string[] = [];
-    const extractedCanonicalTerms: string[] = [];
 
-    if (query.trim()) {
-      set((state) => ({
-        searchHistory: [
-          query.trim(),
-          ...state.searchHistory.filter((item) => item !== query.trim()),
-        ].slice(0, 5),
-      }));
-    }
+  // `performTextSearch` handles "submit" actions: correcting typos and then calling setSearchTerm.
+  performTextSearch: (query) => {
+    const { filterSuggestions } = get();
+    let correctedQuery = query;
 
     if (filterSuggestions) {
       const allFilterTerms = new Set([
@@ -180,60 +164,34 @@ export const useSearchStore = create<SearchState>((set, get) => ({
         ...Object.keys(COLOR_SIMPLIFICATION_MAP),
       ]);
       const words = query.toLowerCase().split(" ").filter(Boolean);
-
-      words.forEach((word) => {
+      const correctedWords = words.map((word) => {
+        if (allFilterTerms.has(word)) return word;
         let bestMatch = word;
-        if (!allFilterTerms.has(word)) {
-          let minDistance = word.length <= 4 ? 1 : 2;
-          for (const filter of allFilterTerms) {
-            const distance = levenshteinDistance(word, filter);
-            if (distance <= minDistance) {
-              minDistance = distance;
-              bestMatch = filter;
-            }
+        let minDistance = word.length <= 4 ? 1 : 2;
+        for (const filter of allFilterTerms) {
+          const distance = levenshteinDistance(word, filter);
+          if (distance <= minDistance) {
+            minDistance = distance;
+            bestMatch = filter;
           }
         }
-
-        const canonicalShape = SHAPE_NORMALIZATION_MAP[bestMatch];
-        const canonicalPattern = PATTERN_NORMALIZATION_MAP[bestMatch];
-        const canonicalSize = SIZE_NORMALIZATION_MAP[bestMatch];
-        const baseColor = COLOR_SIMPLIFICATION_MAP[bestMatch.replace(" ", "_")];
-
-        if (baseColor) {
-          if (!newFilters.color.includes(baseColor)) {
-            newFilters.color.push(baseColor);
-          }
-          extractedCanonicalTerms.push(baseColor);
-        } else if (canonicalShape) {
-          newFilters.shape = canonicalShape;
-          extractedCanonicalTerms.push(canonicalShape);
-        } else if (canonicalPattern) {
-          newFilters.pattern = canonicalPattern;
-          extractedCanonicalTerms.push(canonicalPattern);
-        } else if (canonicalSize) {
-          newFilters.size = canonicalSize;
-          extractedCanonicalTerms.push(canonicalSize);
-        } else {
-          nonFilterQueryParts.push(bestMatch);
-        }
+        return bestMatch;
       });
-    } else {
-      nonFilterQueryParts.push(...query.split(" "));
+      correctedQuery = correctedWords.join(" ");
     }
 
-    let finalSearchTerm = nonFilterQueryParts.join(" ");
-    if (finalSearchTerm === "" && extractedCanonicalTerms.length > 0) {
-      finalSearchTerm = extractedCanonicalTerms.join(" ");
-    }
+    get().setSearchTerm(correctedQuery);
 
-    set({
-      searchTerm: finalSearchTerm,
-      filters: newFilters,
-      showFilterBar: true,
+    set((state) => ({
+      searchHistory: [
+        correctedQuery.trim(),
+        ...state.searchHistory.filter((item) => item !== correctedQuery.trim()),
+      ].slice(0, 5),
       searchSuggestions: [],
       correctionSuggestion: null,
-    });
+    }));
   },
+
   searchHistory: [],
   addToSearchHistory: () => {},
   clearSearchHistory: () => set({ searchHistory: [] }),
