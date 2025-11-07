@@ -231,6 +231,7 @@ export default function FilterPanel({
     setFilter,
     resetFilters,
     searchTerm,
+    setSearchTerm,
   } = useSearchStore();
   const router = useRouter();
 
@@ -253,15 +254,14 @@ export default function FilterPanel({
   ) => {
     // If we are on a detail page, this is a NEW search.
     if (isTemporarilyReset) {
-      // Reset everything to start fresh.
-      resetFilters();
-      // Apply just the new filter.
-      setFilter(filterName, value);
+      // Directly set the search term to just this new value.
+      // This atomically resets all other filters and sets the new one.
+      setSearchTerm(value || "");
       // Navigate to the explore page to see the results.
       router.push("/");
     } else {
-      // Otherwise, it's just a normal filter toggle on the explore page.
-      setFilter(filterName, value);
+      // Otherwise, it's a normal filter toggle on the explore page.
+      setFilter(filterName, value!);
     }
   };
 
