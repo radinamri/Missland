@@ -85,8 +85,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       return;
     }
     try {
-      const response = await api.get<Collection[]>("/api/auth/collections/");
-      setCollections(response.data);
+      const response = await api.get<{ results: Collection[] }>("/api/auth/collections/");
+      setCollections(response.data.results);
     } catch (error) {
       console.error("Failed to fetch collections:", error);
       showToastWithMessage("Failed to fetch collections.");
@@ -218,14 +218,24 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
-  const logoutUser = useCallback(() => {
+  const logoutUser = useCallback(async () => {
+    // Call backend to blacklist the refresh token
+    if (tokens?.refresh) {
+      try {
+        await api.post("/api/auth/logout/", { refresh: tokens.refresh });
+      } catch (error) {
+        console.error("Logout failed:", error);
+        // Continue with local logout even if API call fails
+      }
+    }
+    
     setTokens(null);
     setUser(null);
     setCollections(null);
     localStorage.removeItem("authTokens");
     localStorage.removeItem("pendingSavePostId");
     router.push("/login");
-  }, [router]);
+  }, [tokens, router]);
 
   const fetchUserProfile = useCallback(async () => {
     try {
@@ -233,9 +243,11 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       setUser(response.data);
     } catch (error) {
       console.error("Failed to fetch user profile:", error);
-      logoutUser();
+      // Don't immediately logout - let token refresh interceptor handle expired tokens
+      // Only clear user state
+      setUser(null);
     }
-  }, [logoutUser]);
+  }, []);
 
   useEffect(() => {
     const initializeAuth = async () => {
@@ -339,6 +351,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       if (response.status === 200) {
         setTokens(response.data);
         localStorage.setItem("authTokens", JSON.stringify(response.data));
+        
+        // Small delay to ensure tokens are fully saved
+        await new Promise(resolve => setTimeout(resolve, 100));
+        
         await fetchUserProfile();
         router.push("/");
         showToastWithMessage("Login successful!");
@@ -363,6 +379,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       if (response.status === 200) {
         setTokens(response.data);
         localStorage.setItem("authTokens", JSON.stringify(response.data));
+        
+        // Small delay to ensure tokens are fully saved
+        await new Promise(resolve => setTimeout(resolve, 100));
+        
         await fetchUserProfile();
         router.push("/");
         showToastWithMessage("Google login successful!");

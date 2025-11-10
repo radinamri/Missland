@@ -2,6 +2,7 @@
 
 import random
 import time
+import logging
 from itertools import chain
 from django.conf import settings
 from django.contrib.auth.tokens import default_token_generator
@@ -15,6 +16,7 @@ from rest_framework.parsers import MultiPartParser, FormParser
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
+from rest_framework_simplejwt.tokens import RefreshToken
 from allauth.socialaccount.providers.google.views import GoogleOAuth2Adapter
 from allauth.socialaccount.providers.oauth2.client import OAuth2Client
 from dj_rest_auth.registration.views import SocialLoginView
@@ -24,10 +26,13 @@ from .serializers import (
     EmailChangeInitiateSerializer, EmailChangeConfirmSerializer, PostSerializer,
     ArticleListSerializer, ArticleDetailSerializer, UserDeleteSerializer, CollectionDetailSerializer,
     CollectionCreateSerializer, CollectionListSerializer, TryOnSerializer, PasswordResetRequestSerializer,
-    PasswordResetConfirmSerializer
+    PasswordResetConfirmSerializer, UserSerializer
 )
 from .keyword_extractor import extract_nail_keywords
 from .color_constants import COLOR_SIMPLIFICATION_MAP
+
+logger = logging.getLogger(__name__)
+from . import db_utils
 from functools import reduce
 import operator
 
@@ -140,97 +145,43 @@ class UserDeleteView(generics.GenericAPIView):
 
 # --- POST & FEED VIEWS ---
 
-class FilteredPostListView(generics.ListAPIView):
-    serializer_class = PostSerializer
+class FilteredPostListView(APIView):
+    """
+    Text-based search endpoint with intelligent fallback.
+    
+    GET /api/auth/posts/filter/
+    
+    If MongoDB is enabled and results < 10, automatically triggers
+    similarity search from nail search microservice.
+    """
     permission_classes = [AllowAny]
-    pagination_class = StandardResultsSetPagination
 
-    def get_queryset(self):
-        queryset = Post.objects.all()
-        query = self.request.query_params.get('q', None)
-        shape = self.request.query_params.get('shape', None)
-        pattern = self.request.query_params.get('pattern', None)
-        size = self.request.query_params.get('size', None)
-        color_query = self.request.query_params.get('color', None)
+    def get(self, request, *args, **kwargs):
+        # Get query parameters
+        query = request.query_params.get('q', None)
+        shape = request.query_params.get('shape', None)
+        pattern = request.query_params.get('pattern', None)
+        size = request.query_params.get('size', None)
+        color_query = request.query_params.get('color', None)
+        page = int(request.query_params.get('page', 1))
+        page_size = int(request.query_params.get('page_size', 48))
+        
+        # Enable fallback for MongoDB (defaults to True for better UX)
+        enable_fallback = request.query_params.get('fallback', 'true').lower() == 'true'
 
-        color_query = self.request.query_params.get('color', None)
-
-        query_filters = Q()
-
-        if query:
-            # Use the extractor to get structured keywords and any leftover text
-            extracted_keywords, remaining_query = extract_nail_keywords(query)
-
-            # Apply filters based on the keywords extracted from the text query
-            if extracted_keywords.get('shape'):
-                query_filters &= Q(shape__iexact=extracted_keywords['shape'])
-
-            if extracted_keywords.get('pattern'):
-                query_filters &= Q(pattern__iexact=extracted_keywords['pattern'])
-
-            if extracted_keywords.get('size'):
-                query_filters &= Q(size__iexact=extracted_keywords['size'])
-
-            # Special handling for the extracted color to find all its variants
-            if extracted_keywords.get('color'):
-                base_color = extracted_keywords['color']
-                color_q = Q()
-                # Find all variants in the map that belong to the same base color family
-                variants_to_find = {
-                    variant for variant, base in COLOR_SIMPLIFICATION_MAP.items()
-                    if base == base_color
-                }
-                for variant in variants_to_find:
-                    color_q |= Q(colors__icontains=variant)
-                query_filters &= color_q
-
-            # Use the remaining text for a general title search
-            if remaining_query:
-                # This handles leftover words like "nails", "design", "art", etc.
-                for term in remaining_query.split():
-                    query_filters &= Q(title__icontains=term)
-
-        # This part handles direct filter parameters from the frontend (e.g., ?shape=coffin from a pill click).
-        # These are combined with any filters derived from the text search.
-        if shape:
-            query_filters &= Q(shape__iexact=shape)
-        if pattern:
-            query_filters &= Q(pattern__iexact=pattern)
-        if size:
-            query_filters &= Q(size__iexact=size)
-
-        # Color logic to handle multi-select OR queries
-        if color_query:
-            colors = [c.strip() for c in color_query.lower().split(',')]
-            base_colors_to_find = set()
-            for c in colors:
-                base_color = COLOR_SIMPLIFICATION_MAP.get(c.replace(' ', '_'), c)
-                base_colors_to_find.add(base_color)
-
-            color_master_q = Q()
-            if base_colors_to_find:
-                # Find all variants for all the base colors requested
-                variants_to_search = {
-                    variant for variant, base in COLOR_SIMPLIFICATION_MAP.items()
-                    if base in base_colors_to_find
-                }
-                # Also include the base colors themselves
-                variants_to_search.update(base_colors_to_find)
-
-                # Build a single, powerful OR query
-                or_conditions = [Q(colors__icontains=variant) for variant in variants_to_search]
-                if or_conditions:
-                    color_master_q = reduce(operator.or_, or_conditions)
-
-            if color_master_q:
-                query_filters &= color_master_q
-
-        if query_filters:
-            # Use .distinct() to avoid duplicate results if a post matches multiple criteria
-            return queryset.filter(query_filters).distinct().order_by('-created_at')
-
-        # If no query or filters were provided, return the default unfiltered list
-        return queryset.order_by('-created_at')
+        # Use db_utils to route to appropriate database with fallback
+        result = db_utils.filter_posts(
+            q=query,
+            shape=shape,
+            pattern=pattern,
+            size=size,
+            color=color_query,
+            page=page,
+            page_size=page_size,
+            enable_fallback=enable_fallback
+        )
+        
+        return Response(result, status=status.HTTP_200_OK)
 
 
 class ForYouPostListView(generics.ListAPIView):
@@ -258,17 +209,20 @@ class ForYouPostListView(generics.ListAPIView):
             return Post.objects.all().order_by('?')
 
 
-class MorePostsView(generics.ListAPIView):
-    serializer_class = PostSerializer
+class MorePostsView(APIView):
     permission_classes = [AllowAny]
 
-    def get_queryset(self):
-        exclude_id = self.kwargs.get('post_id')
-
-        # --- HIGHLIGHT: INCREASED THE DESIRED FEED SIZE ---
+    def get(self, request, post_id, *args, **kwargs):
         feed_size = 48
-
         random.seed(int(time.time()))
+        
+        # Use db_utils for MongoDB/PostgreSQL routing
+        if getattr(settings, 'USE_MONGODB', False):
+            similar_posts = db_utils.get_similar_posts(str(post_id), count=feed_size)
+            return Response({'seed': int(time.time()), 'results': similar_posts})
+        
+        # PostgreSQL implementation
+        exclude_id = post_id
 
         try:
             current_post = Post.objects.get(id=exclude_id)
@@ -286,41 +240,32 @@ class MorePostsView(generics.ListAPIView):
                 relevant_posts = list(base_queryset.filter(q_objects).distinct())
                 random.shuffle(relevant_posts)
 
-            # --- HIGHLIGHT: NEW FALLBACK LOGIC ---
-            # Check if we have enough relevant posts to fill the feed
             if len(relevant_posts) < feed_size:
-                # If not, we need to get some filler posts
-
-                # First, get the IDs of the posts we've already selected
                 existing_ids = {p.id for p in relevant_posts}
                 existing_ids.add(exclude_id)
-
-                # Calculate how many filler posts we need
                 needed = feed_size - len(relevant_posts)
-
-                # Get random posts from the rest of the database
                 filler_posts = list(Post.objects.exclude(id__in=existing_ids).order_by('?')[:needed])
-
-                # Combine the relevant posts with the filler posts
-                return relevant_posts + filler_posts
+                queryset = relevant_posts + filler_posts
             else:
-                # If we have enough relevant posts, just return a slice of them
-                return relevant_posts[:feed_size]
+                queryset = relevant_posts[:feed_size]
+            
+            serializer = PostSerializer(queryset, many=True)
+            return Response({'seed': int(time.time()), 'results': serializer.data})
 
         except Post.DoesNotExist:
-            # Fallback if the original post doesn't exist for some reason
-            return Post.objects.exclude(id=exclude_id).order_by('?')[:feed_size]
-
-    def list(self, request, *args, **kwargs):
-        queryset = self.get_queryset()
-        serializer = self.get_serializer(queryset, many=True)
-        return Response({'seed': int(time.time()), 'results': serializer.data})
+            queryset = Post.objects.exclude(id=exclude_id).order_by('?')[:feed_size]
+            serializer = PostSerializer(queryset, many=True)
+            return Response({'seed': int(time.time()), 'results': serializer.data})
 
 
-class PostDetailView(generics.RetrieveAPIView):
-    queryset = Post.objects.all()
-    serializer_class = PostSerializer
+class PostDetailView(APIView):
     permission_classes = [AllowAny]
+
+    def get(self, request, pk, *args, **kwargs):
+        post_data = db_utils.get_post_by_id(str(pk))
+        if post_data:
+            return Response(post_data, status=status.HTTP_200_OK)
+        return Response({'detail': 'Post not found.'}, status=status.HTTP_404_NOT_FOUND)
 
 
 class PostListView(generics.ListAPIView):  # This is likely a legacy/unused view but included for safety
@@ -403,60 +348,77 @@ class ArticleDetailView(generics.RetrieveAPIView):
     lookup_field = 'slug'
 
 
-class CollectionListView(generics.ListCreateAPIView):
+class CollectionListView(APIView):
     permission_classes = [IsAuthenticated]
 
-    def get_serializer_class(self):
-        if self.request.method == 'POST': return CollectionCreateSerializer
-        return CollectionListSerializer
+    def get(self, request, *args, **kwargs):
+        page = int(request.query_params.get('page', 1))
+        page_size = int(request.query_params.get('page_size', 20))
+        result = db_utils.get_user_collections(request.user.id, page, page_size)
+        return Response(result, status=status.HTTP_200_OK)
 
-    def get_queryset(self):
-        return self.request.user.collections.all().order_by('-created_at')
+    def post(self, request, *args, **kwargs):
+        serializer = CollectionCreateSerializer(data=request.data)
+        if serializer.is_valid():
+            name = serializer.validated_data['name']
+            collection_id = db_utils.create_collection(request.user.id, name)
+            if collection_id:
+                return Response({'id': collection_id, 'name': name}, status=status.HTTP_201_CREATED)
+            return Response({'detail': 'Collection with this name already exists.'}, status=status.HTTP_400_BAD_REQUEST)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-    def perform_create(self, serializer):
-        serializer.save(user=self.request.user)
 
-
-class CollectionDetailView(generics.RetrieveUpdateDestroyAPIView):
+class CollectionDetailView(APIView):
     permission_classes = [IsAuthenticated]
-    serializer_class = CollectionDetailSerializer
 
-    def get_queryset(self):
-        return self.request.user.collections.all()
+    def get(self, request, pk, *args, **kwargs):
+        collection_data = db_utils.get_collection_detail(str(pk))
+        if collection_data:
+            return Response(collection_data, status=status.HTTP_200_OK)
+        return Response({'detail': 'Collection not found.'}, status=status.HTTP_404_NOT_FOUND)
 
-    def get_serializer_class(self):
-        if self.request.method in ['PUT', 'PATCH']: return CollectionCreateSerializer
-        return CollectionDetailSerializer
-
-    def destroy(self, request, *args, **kwargs):
-        instance = self.get_object()
-        if instance.name == "All Posts":
-            return Response({"detail": "The default 'All Posts' collection cannot be deleted."},
-                            status=status.HTTP_400_BAD_REQUEST)
-        return super().destroy(request, *args, **kwargs)
+    def delete(self, request, pk, *args, **kwargs):
+        collection_data = db_utils.get_collection_detail(str(pk))
+        if collection_data and collection_data.get('name') == "All Posts":
+            return Response({"detail": "The default 'All Posts' collection cannot be deleted."}, status=status.HTTP_400_BAD_REQUEST)
+        # Delete using PostgreSQL for now (MongoDB delete can be added later)
+        try:
+            collection = request.user.collections.get(id=pk)
+            collection.delete()
+            return Response(status=status.HTTP_204_NO_CONTENT)
+        except Collection.DoesNotExist:
+            return Response({'detail': 'Collection not found.'}, status=status.HTTP_404_NOT_FOUND)
 
 
 class ManagePostInCollectionView(APIView):
     permission_classes = [IsAuthenticated]
 
     def post(self, request, collection_id, post_id, *args, **kwargs):
-        try:
-            collection = request.user.collections.get(id=collection_id)
-            post = Post.objects.get(id=post_id)
-            if post in collection.posts.all():
-                collection.posts.remove(post)
-                message = f'Post removed from {collection.name}.'
-            else:
-                collection.posts.add(post)
-                message = f'Post saved to {collection.name}.'
-            default_collection, _ = request.user.collections.get_or_create(name="All Posts")
-            if default_collection.id != collection.id and post not in default_collection.posts.all():
-                default_collection.posts.add(post)
-            return Response({'detail': message}, status=status.HTTP_200_OK)
-        except Collection.DoesNotExist:
+        collection_data = db_utils.get_collection_detail(str(collection_id))
+        if not collection_data:
             return Response({'detail': 'Collection not found.'}, status=status.HTTP_404_NOT_FOUND)
-        except Post.DoesNotExist:
+        
+        post_data = db_utils.get_post_by_id(str(post_id))
+        if not post_data:
             return Response({'detail': 'Post not found.'}, status=status.HTTP_404_NOT_FOUND)
+        
+        post_ids = [str(p.get('id')) for p in collection_data.get('posts', [])]
+        is_in_collection = str(post_id) in post_ids
+        
+        if is_in_collection:
+            success = db_utils.remove_post_from_collection(str(collection_id), str(post_id))
+            message = f'Post removed from {collection_data["name"]}.'
+        else:
+            success = db_utils.add_post_to_collection(str(collection_id), str(post_id))
+            message = f'Post saved to {collection_data["name"]}.'
+            if collection_data['name'] != "All Posts":
+                all_posts_id = db_utils.create_collection(request.user.id, "All Posts")
+                if all_posts_id:
+                    db_utils.add_post_to_collection(all_posts_id, str(post_id))
+        
+        if success:
+            return Response({'detail': message}, status=status.HTTP_200_OK)
+        return Response({'detail': 'Operation failed.'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
 class PublicPostDetailView(generics.RetrieveAPIView):
@@ -469,35 +431,34 @@ class SaveTryOnView(APIView):
     permission_classes = [IsAuthenticated]
 
     def post(self, request, post_id, *args, **kwargs):
-        try:
-            post = Post.objects.get(id=post_id)
-            try_on, created = TryOn.objects.get_or_create(user=request.user, post=post)
-            if created:
-                return Response({'detail': 'Saved to My Try-Ons.'}, status=status.HTTP_201_CREATED)
-            else:
-                return Response({'detail': 'Already in My Try-Ons.'}, status=status.HTTP_200_OK)
-        except Post.DoesNotExist:
+        post_data = db_utils.get_post_by_id(str(post_id))
+        if not post_data:
             return Response({'detail': 'Post not found.'}, status=status.HTTP_404_NOT_FOUND)
+        
+        tryon_id = db_utils.create_tryon(request.user.id, str(post_id))
+        if tryon_id:
+            return Response({'detail': 'Saved to My Try-Ons.'}, status=status.HTTP_201_CREATED)
+        return Response({'detail': 'Failed to save try-on.'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
-class MyTryOnsListView(generics.ListAPIView):
+class MyTryOnsListView(APIView):
     permission_classes = [IsAuthenticated]
-    serializer_class = TryOnSerializer
 
-    def get_queryset(self):
-        return self.request.user.try_ons.all()
+    def get(self, request, *args, **kwargs):
+        page = int(request.query_params.get('page', 1))
+        page_size = int(request.query_params.get('page_size', 48))
+        result = db_utils.get_user_tryons(request.user.id, page, page_size)
+        return Response(result, status=status.HTTP_200_OK)
 
 
 class DeleteTryOnView(APIView):
     permission_classes = [IsAuthenticated]
 
     def delete(self, request, try_on_id, *args, **kwargs):
-        try:
-            try_on = request.user.try_ons.get(id=try_on_id)
-            try_on.delete()
+        success = db_utils.delete_tryon(str(try_on_id))
+        if success:
             return Response({"detail": "Removed from My Try-Ons."}, status=status.HTTP_204_NO_CONTENT)
-        except TryOn.DoesNotExist:
-            return Response({"detail": "Try-on not found."}, status=status.HTTP_404_NOT_FOUND)
+        return Response({"detail": "Try-on not found."}, status=status.HTTP_404_NOT_FOUND)
 
 
 class PasswordResetRequestView(APIView):
@@ -559,3 +520,317 @@ class FilterSuggestionsView(APIView):
                        "white", "gray", "black"]
         }
         return Response(suggestions)
+
+
+class LogoutView(APIView):
+    """
+    Logout endpoint that blacklists the refresh token.
+    """
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        try:
+            refresh_token = request.data.get("refresh")
+            if not refresh_token:
+                return Response(
+                    {"detail": "Refresh token is required."},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+            
+            token = RefreshToken(refresh_token)
+            token.blacklist()
+            
+            return Response(
+                {"detail": "Successfully logged out."},
+                status=status.HTTP_205_RESET_CONTENT
+            )
+        except Exception as e:
+            return Response(
+                {"detail": str(e)},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+
+class CurrentUserView(generics.RetrieveAPIView):
+    """
+    Get current authenticated user info with role.
+    """
+    permission_classes = [IsAuthenticated]
+    serializer_class = UserSerializer
+
+    def get_object(self):
+        return self.request.user
+
+
+# ==================== NAIL SEARCH MICROSERVICE PROXY VIEWS ====================
+
+class NailClassifyView(APIView):
+    """
+    Proxy endpoint for nail image classification.
+    
+    POST /api/nails/classify
+    
+    Accepts:
+    - multipart/form-data with 'image' file
+    - JSON with 'imageUrl' string
+    
+    Returns classification: {pattern, shape, size, colors}
+    """
+    permission_classes = [AllowAny]
+    
+    def post(self, request, *args, **kwargs):
+        try:
+            from .nail_search_client import get_nail_search_client
+            
+            nail_client = get_nail_search_client()
+            
+            # Check if image file was uploaded
+            image_file = request.FILES.get('image')
+            image_url = request.data.get('imageUrl')
+            
+            if not image_file and not image_url:
+                return Response(
+                    {
+                        'success': False,
+                        'error': 'Either image file or imageUrl must be provided'
+                    },
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+            
+            # Health check
+            if not nail_client.health_check():
+                return Response(
+                    {
+                        'success': False,
+                        'error': 'Nail search service is currently unavailable'
+                    },
+                    status=status.HTTP_503_SERVICE_UNAVAILABLE
+                )
+            
+            # Call microservice
+            if image_file:
+                result = nail_client.classify_nail_image(image=image_file)
+            else:
+                result = nail_client.classify_nail_image(image_url=image_url)
+            
+            if not result:
+                return Response(
+                    {
+                        'success': False,
+                        'error': 'Classification failed'
+                    },
+                    status=status.HTTP_500_INTERNAL_SERVER_ERROR
+                )
+            
+            return Response(result, status=status.HTTP_200_OK)
+            
+        except Exception as e:
+            logger.error(f"Error in NailClassifyView: {e}")
+            return Response(
+                {
+                    'success': False,
+                    'error': 'Internal server error',
+                    'message': str(e)
+                },
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+
+
+class NailSimilarSearchView(APIView):
+    """
+    Proxy endpoint for finding similar nails.
+    
+    POST /api/nails/search/similar
+    
+    Accepts:
+    - multipart/form-data with 'image' file and query params
+    - JSON with 'id' (nail ObjectId) and optional filters
+    
+    Returns similar nails ranked by similarity score.
+    """
+    permission_classes = [AllowAny]
+    
+    def post(self, request, *args, **kwargs):
+        try:
+            from .nail_search_client import get_nail_search_client
+            
+            nail_client = get_nail_search_client()
+            
+            # Extract parameters
+            image_file = request.FILES.get('image')
+            nail_id = request.data.get('id')
+            limit = int(request.data.get('limit', 10))
+            threshold = float(request.data.get('threshold', 0.7))
+            match_fields = int(request.data.get('matchFields', 2))
+            exclude_ids = request.data.get('excludeIds', '')
+            
+            if not image_file and not nail_id:
+                return Response(
+                    {
+                        'success': False,
+                        'error': 'Either image file or nail id must be provided'
+                    },
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+            
+            # Health check
+            if not nail_client.health_check():
+                return Response(
+                    {
+                        'success': False,
+                        'error': 'Nail search service is currently unavailable'
+                    },
+                    status=status.HTTP_503_SERVICE_UNAVAILABLE
+                )
+            
+            # Parse exclude_ids
+            exclude_list = None
+            if exclude_ids:
+                if isinstance(exclude_ids, str):
+                    exclude_list = [x.strip() for x in exclude_ids.split(',') if x.strip()]
+                elif isinstance(exclude_ids, list):
+                    exclude_list = exclude_ids
+            
+            # Call microservice
+            if image_file:
+                result = nail_client.find_similar(
+                    image=image_file,
+                    limit=limit,
+                    threshold=threshold,
+                    exclude_ids=exclude_list,
+                    match_fields=match_fields
+                )
+            else:
+                result = nail_client.find_similar(
+                    nail_id=nail_id,
+                    limit=limit,
+                    threshold=threshold,
+                    exclude_ids=exclude_list,
+                    match_fields=match_fields
+                )
+            
+            if not result:
+                return Response(
+                    {
+                        'success': False,
+                        'error': 'Similarity search failed'
+                    },
+                    status=status.HTTP_500_INTERNAL_SERVER_ERROR
+                )
+            
+            return Response(result, status=status.HTTP_200_OK)
+            
+        except ValueError as e:
+            return Response(
+                {
+                    'success': False,
+                    'error': 'Invalid parameter',
+                    'message': str(e)
+                },
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        except Exception as e:
+            logger.error(f"Error in NailSimilarSearchView: {e}")
+            return Response(
+                {
+                    'success': False,
+                    'error': 'Internal server error',
+                    'message': str(e)
+                },
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+
+
+class NailClassifyAndSearchView(APIView):
+    """
+    Combined endpoint: Classify a new image and search for similar nails.
+    
+    POST /api/nails/classify-and-search
+    
+    Accepts:
+    - multipart/form-data with 'image' file
+    - JSON with 'imageUrl' string
+    
+    Returns:
+    - classification results
+    - search results based on classified attributes
+    - newly created post ID (saved to MongoDB)
+    """
+    permission_classes = [AllowAny]
+    
+    def post(self, request, *args, **kwargs):
+        try:
+            # Check if MongoDB is enabled
+            if not getattr(settings, 'USE_MONGODB', False):
+                return Response(
+                    {
+                        'success': False,
+                        'error': 'MongoDB must be enabled for this feature'
+                    },
+                    status=status.HTTP_503_SERVICE_UNAVAILABLE
+                )
+            
+            image_file = request.FILES.get('image')
+            image_url = request.data.get('imageUrl')
+            page = int(request.data.get('page', 1))
+            page_size = int(request.data.get('page_size', 48))
+            
+            if not image_file and not image_url:
+                return Response(
+                    {
+                        'success': False,
+                        'error': 'Either image file or imageUrl must be provided'
+                    },
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+            
+            # If image file, we need to upload it somewhere first
+            # For now, assume we have image_url or handle file upload
+            if image_file and not image_url:
+                return Response(
+                    {
+                        'success': False,
+                        'error': 'Image file upload not yet implemented. Please provide imageUrl.'
+                    },
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+            
+            # Use async MongoDB manager
+            from .db_utils import _use_mongodb, get_mongo_manager
+            import asyncio
+            
+            if _use_mongodb():
+                mongo_manager = get_mongo_manager()
+                loop = asyncio.get_event_loop()
+                
+                result = loop.run_until_complete(
+                    mongo_manager.classify_and_search(
+                        image_url=image_url,
+                        page=page,
+                        page_size=page_size
+                    )
+                )
+                
+                if result.get('success'):
+                    return Response(result, status=status.HTTP_200_OK)
+                else:
+                    return Response(result, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+            else:
+                return Response(
+                    {
+                        'success': False,
+                        'error': 'MongoDB is not enabled'
+                    },
+                    status=status.HTTP_503_SERVICE_UNAVAILABLE
+                )
+            
+        except Exception as e:
+            logger.error(f"Error in NailClassifyAndSearchView: {e}")
+            return Response(
+                {
+                    'success': False,
+                    'error': 'Internal server error',
+                    'message': str(e)
+                },
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )

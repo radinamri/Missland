@@ -5,7 +5,9 @@ from .views import (
     PostDetailView, UserDeleteView, MorePostsView, ForYouPostListView,
     TrackPostClickView, TrackSearchQueryView, TrackTryOnView, CollectionListView,
     CollectionDetailView, ManagePostInCollectionView, SaveTryOnView, MyTryOnsListView,
-    DeleteTryOnView, PasswordResetRequestView, PasswordResetConfirmView, FilteredPostListView, FilterSuggestionsView
+    DeleteTryOnView, PasswordResetRequestView, PasswordResetConfirmView, FilteredPostListView, 
+    FilterSuggestionsView, LogoutView, CurrentUserView, NailClassifyView, NailSimilarSearchView,
+    NailClassifyAndSearchView
 )
 from dj_rest_auth.views import PasswordChangeView
 
@@ -13,6 +15,8 @@ urlpatterns = [
     # Auth
     path('register/', UserRegistrationView.as_view(), name='user-registration'),
     path('google/', GoogleLogin.as_view(), name='google_login'),
+    path('logout/', LogoutView.as_view(), name='logout'),
+    path('me/', CurrentUserView.as_view(), name='current-user'),
 
     # Profile & Account Management
     path('profile/', UserProfileView.as_view(), name='user-profile'),
@@ -50,4 +54,9 @@ urlpatterns = [
     # Add these two paths for password reset
     path('password/reset/', PasswordResetRequestView.as_view(), name='password-reset-request'),
     path('password/reset/confirm/', PasswordResetConfirmView.as_view(), name='password-reset-confirm'),
+
+    # Nail Search Microservice Endpoints
+    path('nails/classify/', NailClassifyView.as_view(), name='nail-classify'),
+    path('nails/search/similar/', NailSimilarSearchView.as_view(), name='nail-similar-search'),
+    path('nails/classify-and-search/', NailClassifyAndSearchView.as_view(), name='nail-classify-and-search'),
 ]

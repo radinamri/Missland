@@ -1,0 +1,209 @@
+services:
+  # PostgreSQL Database (Primary Database for User Auth & Core Models)
+  postgres:
+    image: postgres:16-alpine
+    container_name: nail_dashboard_postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-missland_db}
+      POSTGRES_USER: ${POSTGRES_USER:-missland_user}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-change-this-password}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - nail_network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-missland_user} -d ${POSTGRES_DB:-missland_db}"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+  # Redis for Django Channels
+  redis:
+    image: redis:7-alpine
+    container_name: nail_dashboard_redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    networks:
+      - nail_network
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+  # MongoDB Database (Single-node Replica Set)
+  mongodb:
+    image: mongo:7.0
+    container_name: nail_dashboard_mongodb
+    restart: unless-stopped
+    entrypoint: ["/scripts/mongodb-entrypoint.sh"]
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: ${MONGO_ROOT_USERNAME}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_ROOT_PASSWORD}
+      MONGO_INITDB_DATABASE: ${MONGO_DATABASE}
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    volumes:
+      - mongodb_data:/data/db
+      - mongodb_config:/data/configdb
+      - ./scripts/mongodb-keyfile:/tmp/mongodb-keyfile:ro
+      - ./scripts/mongodb-entrypoint.sh:/scripts/mongodb-entrypoint.sh:ro
+    networks:
+      - nail_network
+    healthcheck:
+      test: ["CMD-SHELL", "mongosh --port 27017 --eval 'db.runCommand({ ping: 1 }).ok' --quiet || exit 1"]
+      interval: 10s
+      timeout: 10s
+      retries: 5
+      start_period: 40s
+
+  # Django Backend
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: nail_dashboard_backend
+    restart: unless-stopped
+    environment:
+      # Django Configuration
+      SECRET_KEY: ${SECRET_KEY:-django-insecure-change-this-key}
+      DEBUG: ${DEBUG:-False}
+      ALLOWED_HOSTS: ${ALLOWED_HOSTS:-localhost,127.0.0.1}
+      CORS_ALLOWED_ORIGINS: ${CORS_ALLOWED_ORIGINS:-http://localhost:3000,http://127.0.0.1:3000}
+      # PostgreSQL Configuration
+      POSTGRES_DB: ${POSTGRES_DB:-missland_db}
+      POSTGRES_USER: ${POSTGRES_USER:-missland_user}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-change-this-password}
+      POSTGRES_HOST: postgres
+      POSTGRES_PORT: 5432
+      # MongoDB Configuration
+      MONGODB_URI: mongodb://${MONGO_ROOT_USERNAME:-admin}:${MONGO_ROOT_PASSWORD:-password}@mongodb:27017/?replicaSet=rs0&authSource=admin
+      MONGO_DATABASE: ${MONGO_DATABASE:-missland_db}
+      MONGO_COLLECTION: ${MONGO_COLLECTION:-nail_images}
+      USE_MONGODB: ${USE_MONGODB:-False}
+      # Redis Configuration
+      REDIS_URL: redis://redis:6379/0
+      # Google OAuth (set in .env file)
+      GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID:-}
+      GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET:-}
+      # External Services
+      NAIL_SEARCH_API_URL: ${NAIL_SEARCH_API_URL:-http://localhost:3000}
+      NAIL_SEARCH_API_KEY: ${NAIL_SEARCH_API_KEY:-}
+    volumes:
+      - ./backend/media:/app/media
+      - static_volume:/app/staticfiles
+      - ./backend/nail_images:/app/nail_images:ro
+      - ./backend/annotations.json:/app/annotations.json:ro
+    depends_on:
+      postgres:
+        condition: service_healthy
+      mongodb:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - nail_network
+    healthcheck:
+      test: ["CMD-SHELL", "wget --no-verbose --tries=1 --spider http://localhost:8000/admin/ || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+
+  # AI Try-On Microservice (commented out for now)
+  # ai-service:
+  #   build:
+  #     context: ../ai_service
+  #     dockerfile: Dockerfile
+  #   container_name: nail_tryon_ai
+  #   restart: unless-stopped
+  #   environment:
+  #     LOG_LEVEL: info
+  #   networks:
+  #     - nail_network
+  #   healthcheck:
+  #     test: ["CMD-SHELL", "wget --no-verbose --tries=1 --spider http://localhost:8001/health || exit 1"]
+  #     interval: 30s
+  #     timeout: 10s
+  #     retries: 3
+  #     start_period: 30s
+
+  # Next.js Frontend
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      args:
+        NEXT_PUBLIC_API_BASE_URL: ${NEXT_PUBLIC_API_BASE_URL:-http://localhost/api}
+        NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-https://localhost}
+    container_name: nail_dashboard_frontend
+    restart: unless-stopped
+    environment:
+      NEXT_PUBLIC_API_BASE_URL: ${NEXT_PUBLIC_API_BASE_URL:-http://localhost/api}
+      NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-https://localhost}
+      NODE_ENV: production
+    depends_on:
+      - backend
+    networks:
+      - nail_network
+    healthcheck:
+      test: ["CMD", "node", "-e", "require('http').get('http://localhost:3000', (r) => process.exit(r.statusCode === 200 ? 0 : 1))"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  # Nginx Reverse Proxy
+  nginx:
+    build:
+      context: ./nginx
+      dockerfile: Dockerfile
+    container_name: nail_dashboard_nginx
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - static_volume:/app/staticfiles:ro
+      - ./backend/media:/app/media:ro
+      - ./nginx/ssl:/etc/nginx/ssl
+      - ./nginx/certbot/www:/var/www/certbot:ro
+      - ./nginx/certbot/conf:/etc/letsencrypt:ro
+    depends_on:
+      - backend
+      - frontend
+    networks:
+      - nail_network
+    healthcheck:
+      test: ["CMD-SHELL", "pgrep nginx || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+
+  # Certbot for Let's Encrypt SSL certificates
+  certbot:
+    image: certbot/certbot:latest
+    container_name: nail_dashboard_certbot
+    volumes:
+      - ./nginx/certbot/www:/var/www/certbot:rw
+      - ./nginx/certbot/conf:/etc/letsencrypt:rw
+    entrypoint: "/bin/sh -c 'trap exit TERM; while :; do certbot renew --webroot -w /var/www/certbot --quiet; sleep 12h & wait $${!}; done;'"
+    networks:
+      - nail_network
+
+volumes:
+  postgres_data:
+    driver: local
+  mongodb_data:
+    driver: local
+  mongodb_config:
+    driver: local
+  static_volume:
+    driver: local
+
+networks:
+  nail_network:
+    driver: bridge

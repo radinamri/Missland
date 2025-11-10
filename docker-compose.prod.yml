@@ -1,0 +1,54 @@
+# =============================================================================
+# Docker Compose - Production Override
+# =============================================================================
+# Usage: docker-compose -f docker-compose.yml -f docker-compose.prod.yml up -d
+# =============================================================================
+
+services:
+  # PostgreSQL - Production
+  postgres:
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    # No exposed ports for security
+
+  # MongoDB - Production
+  mongodb:
+    # No exposed ports for security
+    command: ["--quiet"]
+
+  # Backend - Production Mode
+  backend:
+    environment:
+      DEBUG: "False"
+      ALLOWED_HOSTS: ${ALLOWED_HOSTS}
+      CORS_ALLOWED_ORIGINS: ${CORS_ALLOWED_ORIGINS}
+    # No exposed ports - accessed via nginx
+    command: ["daphne", "-b", "0.0.0.0", "-p", "8000", "--proxy-headers", "config.asgi:application"]
+
+  # Frontend - Production Mode
+  frontend:
+    environment:
+      NEXT_PUBLIC_API_BASE_URL: ${NEXT_PUBLIC_API_BASE_URL}
+      NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL}
+      NODE_ENV: production
+    # No exposed ports - accessed via nginx
+
+  # Nginx - Production
+  nginx:
+    environment:
+      DOMAIN: ${DOMAIN:-localhost}
+    volumes:
+      - static_volume:/app/staticfiles:ro
+      - ./backend/media:/app/media:ro
+      - ./nginx/ssl:/etc/nginx/ssl
+      - ./nginx/certbot/www:/var/www/certbot:ro
+      - ./nginx/certbot/conf:/etc/letsencrypt:ro
+      - ./nginx/logs:/var/log/nginx
+
+  # Certbot - Production SSL
+  certbot:
+    environment:
+      DOMAIN: ${DOMAIN}
+      EMAIL: ${SSL_EMAIL}

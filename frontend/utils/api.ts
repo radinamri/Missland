@@ -76,3 +76,174 @@ api.interceptors.response.use(
 );
 
 export default api;
+
+// ==================== NAIL SEARCH MICROSERVICE API ====================
+
+/**
+ * Classification result from the nail search microservice
+ */
+export interface NailClassification {
+  pattern: string;
+  shape: string;
+  size: string;
+  colors: string[];
+}
+
+/**
+ * Response from the classify endpoint
+ */
+export interface ClassifyResponse {
+  success: boolean;
+  classification: NailClassification;
+  timestamp: string;
+  error?: string;
+}
+
+/**
+ * Similar nail result from the microservice
+ */
+export interface SimilarNail {
+  id: string;
+  imageUrl: string;
+  classification: NailClassification;
+  similarity: number;
+  matchedFields: string[];
+}
+
+/**
+ * Response from the similar search endpoint
+ */
+export interface SimilarSearchResponse {
+  success: boolean;
+  searchType: "image" | "id";
+  inputAnalysis?: NailClassification;
+  reference?: any;
+  similarNails: SimilarNail[];
+  total: number;
+  error?: string;
+}
+
+/**
+ * Classify a nail image to extract attributes
+ */
+export async function classifyNailImage(
+  file: File
+): Promise<ClassifyResponse> {
+  const formData = new FormData();
+  formData.append("image", file);
+
+  try {
+    const response = await api.post<ClassifyResponse>(
+      "/api/auth/nails/classify/",
+      formData,
+      {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      }
+    );
+    return response.data;
+  } catch (error: any) {
+    console.error("Nail classification failed:", error);
+    return {
+      success: false,
+      classification: {
+        pattern: "",
+        shape: "",
+        size: "",
+        colors: [],
+      },
+      timestamp: new Date().toISOString(),
+      error: error.response?.data?.error || "Classification service unavailable",
+    };
+  }
+}
+
+/**
+ * Find similar nails by image or nail ID
+ */
+export async function findSimilarNails(
+  imageOrId: File | string,
+  options?: {
+    limit?: number;
+    threshold?: number;
+    matchFields?: number;
+    excludeIds?: string[];
+  }
+): Promise<SimilarSearchResponse> {
+  const { limit = 10, threshold = 0.7, matchFields = 2, excludeIds = [] } = options || {};
+
+  try {
+    if (typeof imageOrId === "string") {
+      // Search by nail ID
+      const response = await api.post<SimilarSearchResponse>(
+        "/api/auth/nails/search/similar/",
+        {
+          id: imageOrId,
+          limit,
+          threshold,
+          matchFields,
+          excludeIds,
+        }
+      );
+      return response.data;
+    } else {
+      // Search by image
+      const formData = new FormData();
+      formData.append("image", imageOrId);
+      formData.append("limit", limit.toString());
+      formData.append("threshold", threshold.toString());
+      formData.append("matchFields", matchFields.toString());
+      if (excludeIds.length > 0) {
+        formData.append("excludeIds", excludeIds.join(","));
+      }
+
+      const response = await api.post<SimilarSearchResponse>(
+        "/api/auth/nails/search/similar/",
+        formData,
+        {
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+        }
+      );
+      return response.data;
+    }
+  } catch (error: any) {
+    console.error("Similar search failed:", error);
+    return {
+      success: false,
+      searchType: typeof imageOrId === "string" ? "id" : "image",
+      similarNails: [],
+      total: 0,
+      error: error.response?.data?.error || "Search service unavailable",
+    };
+  }
+}
+
+/**
+ * Classify a new image and search for similar results
+ * (Combined endpoint for new images not in database)
+ */
+export async function classifyAndSearchImage(
+  imageUrl: string,
+  page: number = 1,
+  pageSize: number = 48
+): Promise<any> {
+  try {
+    const response = await api.post("/api/auth/nails/classify-and-search/", {
+      imageUrl,
+      page,
+      page_size: pageSize,
+    });
+    return response.data;
+  } catch (error: any) {
+    console.error("Classify and search failed:", error);
+    return {
+      success: false,
+      results: [],
+      count: 0,
+      error: error.response?.data?.error || "Service unavailable",
+    };
+  }
+}

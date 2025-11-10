@@ -82,7 +82,6 @@ export default function SearchInput({
     setSearchTerm,
     filterSuggestions,
     correctionSuggestion,
-    addToSearchHistory, // Assuming you might need this from your old code
   } = useSearchStore();
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {

@@ -106,6 +106,7 @@ export default function SupportPage() {
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             onSearchSubmit={() => {}}
+            onClear={() => setSearchTerm("")}
           />
         </div>
 

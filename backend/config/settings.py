@@ -12,6 +12,7 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 
 from pathlib import Path
 import os
+from datetime import timedelta
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -20,16 +21,17 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-#bxo)y=)7m(mo=zcf9&(o70om0-(#7c=1k75k6w)r8)m$kj(tl'
+SECRET_KEY = os.environ.get('SECRET_KEY', 'django-insecure-change-this-key')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = os.environ.get('DEBUG', 'False').lower() in ('true', '1', 'yes')
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = os.environ.get('ALLOWED_HOSTS', 'localhost,127.0.0.1').split(',')
 
 # Application definition
 
 INSTALLED_APPS = [
+    'daphne',  # Must be first for WebSocket support
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -38,11 +40,15 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     # Add your app here
     'core',
+    'dashboard',
+    'try_on',  # Try-on feature
     # 3rd party apps
     'rest_framework',
     'rest_framework.authtoken',
     'rest_framework_simplejwt',
+    'rest_framework_simplejwt.token_blacklist',
     'corsheaders',
+    'channels',  # WebSocket support
     # Add allauth apps
     'allauth',
     'allauth.account',
@@ -84,17 +90,33 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'config.wsgi.application'
 
+# ASGI application for WebSocket support
+ASGI_APPLICATION = 'config.asgi.application'
+
+# Channels configuration for WebSocket
+CHANNEL_LAYERS = {
+    'default': {
+        'BACKEND': 'channels_redis.core.RedisChannelLayer',
+        'CONFIG': {
+            'hosts': [os.environ.get('REDIS_URL', 'redis://localhost:6379/0')],
+        },
+    },
+}
+
+# AI Try-On Service URL (commented out for now)
+# AI_TRYON_SERVICE_URL = os.environ.get('AI_TRYON_SERVICE_URL', 'http://localhost:8001')
+
 # Database
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
 
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'missland_db',  # The name of the database you just created
-        'USER': 'radinamri',  # Your macOS username (from your terminal prompt)
-        'PASSWORD': '',  # Leave empty if you don't have a password set
-        'HOST': 'localhost',  # Or '127.0.0.1'
-        'PORT': '5432',  # Default PostgreSQL port
+        'NAME': os.environ.get('POSTGRES_DB', 'missland_db'),
+        'USER': os.environ.get('POSTGRES_USER', 'missland_user'),
+        'PASSWORD': os.environ.get('POSTGRES_PASSWORD', ''),
+        'HOST': os.environ.get('POSTGRES_HOST', 'localhost'),
+        'PORT': os.environ.get('POSTGRES_PORT', '5432'),
     }
 }
 
@@ -131,6 +153,7 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/5.2/howto/static-files/
 
 STATIC_URL = 'static/'
+STATIC_ROOT = BASE_DIR / 'staticfiles'
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
@@ -145,6 +168,29 @@ REST_FRAMEWORK = {
     )
 }
 
+# JWT Configuration
+SIMPLE_JWT = {
+    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=60),
+    'REFRESH_TOKEN_LIFETIME': timedelta(days=7),
+    'ROTATE_REFRESH_TOKENS': True,
+    'BLACKLIST_AFTER_ROTATION': True,
+    'UPDATE_LAST_LOGIN': True,
+    
+    'ALGORITHM': 'HS256',
+    'SIGNING_KEY': SECRET_KEY,
+    'VERIFYING_KEY': None,
+    
+    'AUTH_HEADER_TYPES': ('Bearer',),
+    'AUTH_HEADER_NAME': 'HTTP_AUTHORIZATION',
+    'USER_ID_FIELD': 'id',
+    'USER_ID_CLAIM': 'user_id',
+    
+    'AUTH_TOKEN_CLASSES': ('rest_framework_simplejwt.tokens.AccessToken',),
+    'TOKEN_TYPE_CLAIM': 'token_type',
+    
+    'JTI_CLAIM': 'jti',
+}
+
 # Tell dj-rest-auth to use JWT authentication
 REST_AUTH = {
     'USE_JWT': True,
@@ -152,10 +198,10 @@ REST_AUTH = {
     'SESSION_LOGIN': False,
 }
 
-CORS_ALLOWED_ORIGINS = [
-    "http://localhost:3000",
-    "http://127.0.0.1:3000",
-]
+CORS_ALLOWED_ORIGINS = os.environ.get(
+    'CORS_ALLOWED_ORIGINS',
+    'http://localhost:3000,http://127.0.0.1:3000'
+).split(',')
 
 AUTHENTICATION_BACKENDS = [
     # Needed to login by username in Django admin, regardless of `allauth`
@@ -189,14 +235,34 @@ SOCIALACCOUNT_PROVIDERS = {
     }
 }
 
-# You will need to set these in your environment variables for production,
-# but for development, you can add them here directly for now.
-# Replace with the keys you got from Google Cloud Console.
-os.environ['GOOGLE_CLIENT_ID'] = '665407123210-20j9tne8tqgfi5t7dn6jr6taj51o0elk.apps.googleusercontent.com'
-os.environ['GOOGLE_CLIENT_SECRET'] = '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'
+# Google OAuth credentials - set these in your .env file
+# Get credentials from: https://console.cloud.google.com/apis/credentials
+if not os.environ.get('GOOGLE_CLIENT_ID'):
+    print("⚠️  Warning: GOOGLE_CLIENT_ID not set in environment variables")
+if not os.environ.get('GOOGLE_CLIENT_SECRET'):
+    print("⚠️  Warning: GOOGLE_CLIENT_SECRET not set in environment variables")
 
 # For development, print emails to the console instead of sending them.
 EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
+
+# MongoDB Configuration
+MONGODB_SETTINGS = {
+    'uri': os.environ.get('MONGODB_URI', 'mongodb://localhost:27017/?replicaSet=rs0'),
+    'database': os.environ.get('MONGO_DATABASE', 'missland_db'),
+    'collections': {
+        'posts': 'posts',
+        'collections': 'collections',
+        'tryons': 'tryons',
+        'annotations': os.environ.get('MONGO_COLLECTION', 'nail_images'),  # Dashboard collection
+    }
+}
+
+# Feature flag for MongoDB migration
+USE_MONGODB = os.environ.get('USE_MONGODB', 'False').lower() in ('true', '1', 'yes')
+
+# Nail Search Microservice Configuration
+NAIL_SEARCH_API_URL = os.environ.get('NAIL_SEARCH_API_URL', 'http://localhost:3000')
+NAIL_SEARCH_API_KEY = os.environ.get('NAIL_SEARCH_API_KEY', None)  # Optional API key for authentication

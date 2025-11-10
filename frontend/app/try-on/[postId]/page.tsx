@@ -101,14 +101,16 @@ export default function TryOnPage() {
         <div className="w-full max-w-4xl mx-auto bg-white rounded-3xl shadow-xl overflow-hidden">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-0">
             <div className="relative w-full aspect-[4/5]">
-              <Image
-                src={post.try_on_image_url}
-                alt={`Try-on result for ${post.title}`}
-                fill
-                style={{ objectFit: "cover" }}
-                sizes="(max-width: 768px) 100vw, 50vw"
-                priority
-              />
+              {post.try_on_image_url && (
+                <Image
+                  src={post.try_on_image_url}
+                  alt={`Try-on result for ${post.title}`}
+                  fill
+                  style={{ objectFit: "cover" }}
+                  sizes="(max-width: 768px) 100vw, 50vw"
+                  priority
+                />
+              )}
             </div>
             <div className="flex flex-col p-6 md:p-8">
               <div className="flex items-center justify-end space-x-3 mb-6">
@@ -139,15 +141,23 @@ export default function TryOnPage() {
                   </div>
                 </div>
                 <div className="flex flex-wrap gap-2 pt-4">
-                  {post.tags?.map((tag) => (
+                  {post.colors && post.colors.map((color) => (
                     <span
-                      key={tag}
+                      key={color}
                       className="bg-gray-100 text-gray-600 text-sm font-medium px-3 py-1 rounded-md"
                     >
-                      {tag}
+                      {color}
                     </span>
-                  )) ?? (
-                    <p className="text-gray-500 text-sm">No tags available</p>
+                  ))}
+                  {post.shape && (
+                    <span className="bg-gray-100 text-gray-600 text-sm font-medium px-3 py-1 rounded-md">
+                      {post.shape}
+                    </span>
+                  )}
+                  {post.pattern && (
+                    <span className="bg-gray-100 text-gray-600 text-sm font-medium px-3 py-1 rounded-md">
+                      {post.pattern}
+                    </span>
                   )}
                 </div>
               </div>

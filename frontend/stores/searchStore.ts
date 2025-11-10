@@ -62,6 +62,23 @@ interface SearchState {
   correctionSuggestion: string | null;
   addToSearchHistory: (term: string) => void;
   clearSearchHistory: () => void;
+  
+  // Image search state
+  searchMode: "text" | "image";
+  setSearchMode: (mode: "text" | "image") => void;
+  imageFile: File | null;
+  setImageFile: (file: File | null) => void;
+  imagePreviewUrl: string | null;
+  setImagePreviewUrl: (url: string | null) => void;
+  isClassifying: boolean;
+  classificationResult: {
+    pattern: string;
+    shape: string;
+    size: string;
+    colors: string[];
+  } | null;
+  performImageSearch: (file: File) => Promise<void>;
+  clearImageSearch: () => void;
 }
 
 export const initialFilters: Filters = {
@@ -268,5 +285,52 @@ export const useSearchStore = create<SearchState>((set, get) => ({
     }
 
     set({ searchSuggestions: Array.from(suggestionsSet).slice(0, 10) });
+  },
+  
+  // Image search state and actions
+  searchMode: "text",
+  setSearchMode: (mode) => set({ searchMode: mode }),
+  
+  imageFile: null,
+  setImageFile: (file) => set({ imageFile: file }),
+  
+  imagePreviewUrl: null,
+  setImagePreviewUrl: (url) => set({ imagePreviewUrl: url }),
+  
+  isClassifying: false,
+  classificationResult: null,
+  
+  performImageSearch: async (file: File) => {
+    set({ isClassifying: true, imageFile: file });
+    
+    // Create preview URL
+    const previewUrl = URL.createObjectURL(file);
+    set({ imagePreviewUrl: previewUrl });
+    
+    try {
+      // This will be implemented in the API utils
+      // For now, just set loading state
+      // The actual classification will be triggered from the page component
+      set({ isClassifying: false });
+    } catch (error) {
+      console.error("Image search failed:", error);
+      set({ isClassifying: false });
+    }
+  },
+  
+  clearImageSearch: () => {
+    const { imagePreviewUrl } = get();
+    
+    // Revoke the preview URL to free memory
+    if (imagePreviewUrl) {
+      URL.revokeObjectURL(imagePreviewUrl);
+    }
+    
+    set({
+      imageFile: null,
+      imagePreviewUrl: null,
+      classificationResult: null,
+      isClassifying: false,
+    });
   },
 }));

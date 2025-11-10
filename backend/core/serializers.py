@@ -1,7 +1,60 @@
 import requests
 from django.contrib.auth.password_validation import validate_password
 from rest_framework import serializers
+from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 from .models import User, Post, Article, Collection, TryOn
+
+
+class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
+    """
+    Custom JWT serializer that adds user role and additional info to token payload
+    """
+    @classmethod
+    def get_token(cls, user):
+        token = super().get_token(user)
+        
+        # Add custom claims
+        token['email'] = user.email
+        token['username'] = user.username
+        token['role'] = user.role
+        token['is_staff'] = user.is_staff
+        token['is_superuser'] = user.is_superuser
+        
+        return token
+
+
+class UserSerializer(serializers.ModelSerializer):
+    """
+    Serializer for current user info with role
+    """
+    class Meta:
+        model = User
+        fields = ('id', 'email', 'username', 'role', 'is_staff', 'is_superuser', 'profile_picture')
+        read_only_fields = ('id', 'email', 'is_staff', 'is_superuser')
+
+
+class UserRoleUpdateSerializer(serializers.ModelSerializer):
+    """
+    Serializer for updating user role (admin only)
+    """
+    class Meta:
+        model = User
+        fields = ('role',)
+    
+    def validate_role(self, value):
+        if value not in ['USER', 'ANNOTATOR', 'ADMIN']:
+            raise serializers.ValidationError('Invalid role. Choose from USER, ANNOTATOR, or ADMIN.')
+        return value
+
+
+class UserListSerializer(serializers.ModelSerializer):
+    """
+    Serializer for listing users in dashboard
+    """
+    class Meta:
+        model = User
+        fields = ('id', 'email', 'username', 'role', 'is_staff', 'is_superuser', 'date_joined')
+        read_only_fields = ('id', 'email', 'username', 'is_staff', 'is_superuser', 'date_joined')
 
 
 class UserRegistrationSerializer(serializers.ModelSerializer):

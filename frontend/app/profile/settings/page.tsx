@@ -82,7 +82,6 @@ export default function AccountSettingsPage() {
   const [showNewPass, setShowNewPass] = useState(false);
   const [pictureFile, setPictureFile] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
-  const [fileName, setFileName] = useState<string | null>(null);
 
   if (isLoading || !user) {
     return <LoadingSpinner />;
@@ -93,7 +92,6 @@ export default function AccountSettingsPage() {
       const file = e.target.files[0];
       setPictureFile(file);
       setPreviewUrl(URL.createObjectURL(file));
-      setFileName(file.name);
     }
   };
 

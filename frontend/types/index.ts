@@ -26,6 +26,9 @@ export interface User {
   username: string;
   has_password: boolean;
   profile_picture: string | null;
+  role: 'USER' | 'ANNOTATOR' | 'ADMIN' | 'SUPERUSER';
+  is_staff: boolean;
+  is_superuser: boolean;
 }
 
 export interface Post {
@@ -53,6 +56,9 @@ export interface PaginatedPostResponse {
   count?: number; // Total number of posts
   next?: string | null; // URL for the next page
   previous?: string | null; // URL for the previous page
+  fallback_triggered?: boolean; // Whether AI similar search fallback was triggered
+  fallback_added?: number; // Number of results added from fallback
+  fallback_error?: string; // Error message if fallback failed
 }
 
 export interface Collection {
@@ -74,4 +80,20 @@ export interface NavigationState {
   posts: Post[];
   seed: string;
   parentPost?: Post;
+}
+
+export interface NailAnnotation {
+  id: string;
+  _id: string;
+  image_name: string;
+  image_path: string;
+  shape: string;
+  shape_source: string;
+  pattern: string;
+  pattern_source: string;
+  colors: string[];
+  size: string;
+  num_nails_detected: number;
+  created_at: string;
+  is_verified?: boolean;
 }

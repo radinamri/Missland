@@ -11,6 +11,14 @@ class User(AbstractUser):
     We use email as the primary identifier for authentication instead of username.
     A phone_number field is also added for OTP authentication.
     """
+    
+    ROLE_CHOICES = [
+        ('SUPERUSER', 'Superuser'),
+        ('ADMIN', 'Admin'),
+        ('ANNOTATOR', 'Annotator'),
+        ('USER', 'User'),
+    ]
+    
     # We don't need first_name and last_name, so we'll make them optional.
     first_name = None
     last_name = None
@@ -22,6 +30,9 @@ class User(AbstractUser):
     phone_number = models.CharField(max_length=15, blank=True, null=True, unique=True)
 
     profile_picture = models.ImageField(upload_to='profile_pictures/', null=True, blank=True)
+    
+    # Role field for dashboard access control
+    role = models.CharField(max_length=20, choices=ROLE_CHOICES, default='USER')
 
     # This is what the user will log in with
     USERNAME_FIELD = 'email'
