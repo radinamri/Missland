@@ -102,7 +102,7 @@ export default function TryOnPage() {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-0">
             <div className="relative w-full aspect-[4/5]">
               <Image
-                src={post.try_on_image_url}
+                src={post.try_on_image_url || post.image_url}
                 alt={`Try-on result for ${post.title}`}
                 fill
                 style={{ objectFit: "cover" }}
@@ -139,12 +139,12 @@ export default function TryOnPage() {
                   </div>
                 </div>
                 <div className="flex flex-wrap gap-2 pt-4">
-                  {post.tags?.map((tag) => (
+                  {post.colors?.map((color) => (
                     <span
-                      key={tag}
+                      key={color}
                       className="bg-gray-100 text-gray-600 text-sm font-medium px-3 py-1 rounded-md"
                     >
-                      {tag}
+                      {color}
                     </span>
                   )) ?? (
                     <p className="text-gray-500 text-sm">No tags available</p>

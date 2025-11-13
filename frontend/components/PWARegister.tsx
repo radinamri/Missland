@@ -48,7 +48,10 @@ export default function PWARegister() {
         // Trigger background sync if supported
         navigator.serviceWorker.ready.then((reg) => {
           if ('sync' in reg) {
-            (reg as any).sync.register('sync-saves').catch(console.error);
+            const syncReg = reg as ServiceWorkerRegistration & {
+              sync: { register: (tag: string) => Promise<void> };
+            };
+            syncReg.sync.register('sync-saves').catch(console.error);
           }
         });
       });

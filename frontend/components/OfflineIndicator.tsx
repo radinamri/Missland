@@ -84,7 +84,7 @@ export default function OfflineIndicator() {
               />
             </svg>
             <span className="text-sm font-medium">
-              You're offline - Some features may be limited
+              You&apos;re offline - Some features may be limited
             </span>
           </>
         )}
