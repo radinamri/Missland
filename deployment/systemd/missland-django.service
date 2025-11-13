@@ -1,0 +1,22 @@
+[Unit]
+Description=Missland Django Application
+After=network.target postgresql.service redis-server.service
+
+[Service]
+Type=notify
+User=YOUR_USERNAME
+Group=www-data
+WorkingDirectory=/var/www/missland/backend
+Environment="PATH=/var/www/missland/backend/venv/bin"
+Environment="DJANGO_SETTINGS_MODULE=config.settings_production"
+Environment="DJANGO_SECRET_KEY=YOUR_SECRET_KEY_HERE"
+ExecStart=/var/www/missland/backend/venv/bin/gunicorn \
+    --workers 4 \
+    --bind 127.0.0.1:8000 \
+    --timeout 120 \
+    --access-logfile /var/log/missland/gunicorn-access.log \
+    --error-logfile /var/log/missland/gunicorn-error.log \
+    config.wsgi:application
+
+[Install]
+WantedBy=multi-user.target

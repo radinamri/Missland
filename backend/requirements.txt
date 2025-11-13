@@ -1,29 +1,43 @@
-asgiref==3.9.1
-certifi==2025.7.14
-cffi==1.17.1
-charset-normalizer==3.4.2
-cryptography==45.0.5
-dj-rest-auth==7.0.1
-Django==5.2.4
-django-allauth==65.10.0
-django-cors-headers==4.7.0
-djangorestframework==3.16.0
-djangorestframework_simplejwt==5.5.0
-idna==3.10
-pillow==11.3.0
-psycopg2-binary==2.9.11
-pycparser==2.22
-PyJWT==2.9.0
-requests==2.32.4
+# Core Django & Framework
+Django==5.2.8
+djangorestframework==3.16.1
+djangorestframework-simplejwt==5.5.1
+asgiref==3.10.0
 sqlparse==0.5.3
+
+# Authentication & Authorization
+dj-rest-auth==7.0.1
+django-allauth==65.13.0
+PyJWT==2.10.1
+
+# Database
+psycopg2-binary==2.9.11
+
+# CORS & Security
+django-cors-headers==4.9.0
+cryptography==46.0.3
+
+# Image Processing
+pillow==12.0.0
+
+# HTTP & Requests
+requests==2.32.5
 urllib3==2.5.0
+certifi==2025.11.12
+charset-normalizer==3.4.4
+idna==3.11
 
 # Performance & Caching
-django-redis==5.4.0
-redis==5.2.1
+django-redis==6.0.0
+redis==7.0.1
 
 # Production Server
 gunicorn==23.0.0
+packaging==25.0
 
 # Monitoring & Error Tracking
-sentry-sdk==2.20.0
+sentry-sdk==2.44.0
+
+# Other Dependencies
+cffi==2.0.0
+pycparser==2.23
