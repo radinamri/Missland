@@ -32,6 +32,7 @@ from .serializers import (
 )
 from .keyword_extractor import extract_nail_keywords
 from .color_constants import COLOR_SIMPLIFICATION_MAP
+from .recommendations import RecommendationEngine
 from functools import reduce
 import operator
 
@@ -257,22 +258,16 @@ class ForYouPostListView(generics.ListAPIView):
 
     def get_queryset(self):
         user = self.request.user
+        
+        # Use the advanced recommendation engine
         try:
-            tag_scores = user.interest_profile.tag_scores
-            if not tag_scores: raise InterestProfile.DoesNotExist
-            all_posts = list(Post.objects.all())
-            scored_posts = []
-            for post in all_posts:
-                score = 0
-                post_tags = get_tags_from_post(post)
-                for tag in post_tags:
-                    score += tag_scores.get(tag, 0)
-                if score > 0:
-                    scored_posts.append({'post': post, 'score': score})
-            scored_posts.sort(key=lambda x: x['score'], reverse=True)
-            return [item['post'] for item in scored_posts]
-        except (InterestProfile.DoesNotExist, AttributeError):
-            return Post.objects.all().order_by('?')
+            recommended_posts = RecommendationEngine.get_personalized_feed(
+                user, limit=100
+            )
+            return recommended_posts
+        except Exception as e:
+            # Fallback to random posts
+            return Post.objects.all().order_by('?')[:100]
 
 
 class MorePostsView(generics.ListAPIView):
@@ -281,52 +276,20 @@ class MorePostsView(generics.ListAPIView):
 
     def get_queryset(self):
         exclude_id = self.kwargs.get('post_id')
-
-        # --- HIGHLIGHT: INCREASED THE DESIRED FEED SIZE ---
-        feed_size = 48
-
-        random.seed(int(time.time()))
-
+        
         try:
             current_post = Post.objects.get(id=exclude_id)
-            q_objects = Q()
-            if current_post.shape: q_objects |= Q(shape=current_post.shape)
-            if current_post.pattern: q_objects |= Q(pattern=current_post.pattern)
-            if current_post.colors:
-                for color in current_post.colors: q_objects |= Q(colors__contains=color)
-
-            base_queryset = Post.objects.exclude(id=exclude_id)
-
-            relevant_posts = []
-            if q_objects:
-                # Find all relevant posts and shuffle them
-                relevant_posts = list(base_queryset.filter(q_objects).distinct())
-                random.shuffle(relevant_posts)
-
-            # --- HIGHLIGHT: NEW FALLBACK LOGIC ---
-            # Check if we have enough relevant posts to fill the feed
-            if len(relevant_posts) < feed_size:
-                # If not, we need to get some filler posts
-
-                # First, get the IDs of the posts we've already selected
-                existing_ids = {p.id for p in relevant_posts}
-                existing_ids.add(exclude_id)
-
-                # Calculate how many filler posts we need
-                needed = feed_size - len(relevant_posts)
-
-                # Get random posts from the rest of the database
-                filler_posts = list(Post.objects.exclude(id__in=existing_ids).order_by('?')[:needed])
-
-                # Combine the relevant posts with the filler posts
-                return relevant_posts + filler_posts
-            else:
-                # If we have enough relevant posts, just return a slice of them
-                return relevant_posts[:feed_size]
-
+            
+            # Use recommendation engine for better similar posts
+            similar_posts = RecommendationEngine.get_similar_posts(
+                current_post, limit=48
+            )
+            
+            return similar_posts
+            
         except Post.DoesNotExist:
-            # Fallback if the original post doesn't exist for some reason
-            return Post.objects.exclude(id=exclude_id).order_by('?')[:feed_size]
+            # Fallback to trending posts
+            return RecommendationEngine._get_trending_posts(48)
 
     def list(self, request, *args, **kwargs):
         queryset = self.get_queryset()
@@ -364,20 +327,22 @@ class PostListView(generics.ListAPIView):  # This is likely a legacy/unused view
 # --- TRACKING VIEWS ---
 
 class TrackPostClickView(APIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [AllowAny]
 
-    def post(self, request, *args, **kwargs):
-        post_id = request.data.get('post_id')
-        try:
-            post = Post.objects.get(id=post_id)
-            profile, _ = InterestProfile.objects.get_or_create(user=request.user)
-            post_tags = get_tags_from_post(post)
-            for tag in post_tags:
-                profile.tag_scores[tag] = profile.tag_scores.get(tag, 0) + 0.1
-            profile.save()
-            return Response(status=status.HTTP_204_NO_CONTENT)
-        except Post.DoesNotExist:
-            return Response(status=status.HTTP_404_NOT_FOUND)
+    def post(self, request, post_id):
+        # Update user interests based on view interaction
+        if request.user.is_authenticated:
+            try:
+                post = Post.objects.get(id=post_id)
+                RecommendationEngine.update_user_interests(
+                    request.user, 
+                    post, 
+                    interaction_type='view'
+                )
+            except Post.DoesNotExist:
+                pass
+
+        return Response({'status': 'tracked'}, status=200)
 
 
 class TrackSearchQueryView(APIView):
@@ -402,11 +367,14 @@ class TrackTryOnView(APIView):
         post_id = request.data.get('post_id')
         try:
             post = Post.objects.get(id=post_id)
-            profile, _ = InterestProfile.objects.get_or_create(user=request.user)
-            post_tags = get_tags_from_post(post)
-            for tag in post_tags:
-                profile.tag_scores[tag] = profile.tag_scores.get(tag, 0) + 1.5
-            profile.save()
+            
+            # Update user interests with high weight for try-on
+            RecommendationEngine.update_user_interests(
+                request.user, 
+                post, 
+                interaction_type='try_on'
+            )
+            
             return Response(status=status.HTTP_204_NO_CONTENT)
         except Post.DoesNotExist:
             return Response(status=status.HTTP_404_NOT_FOUND)
