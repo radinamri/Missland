@@ -130,8 +130,8 @@ self.addEventListener('push', (event) => {
   const data = event.data ? event.data.json() : {};
   const options = {
     body: data.body || 'New nail art designs available!',
-    icon: '/icon-192.png',
-    badge: '/icon-192.png',
+    icon: '/icon192.png',
+    badge: '/icon192.png',
     vibrate: [200, 100, 200],
     data: {
       url: data.url || '/',

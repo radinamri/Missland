@@ -1,0 +1,62 @@
+{
+  "name": "Missland - Nail Art Inspiration",
+  "short_name": "Missland",
+  "description": "Discover and save beautiful nail art designs",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#ec4899",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "/icon192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icon512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "screenshots": [
+    {
+      "src": "/screenshot-mobile.png",
+      "sizes": "390x844",
+      "type": "image/png",
+      "form_factor": "narrow"
+    },
+    {
+      "src": "/screenshot-desktop.png",
+      "sizes": "1920x1080",
+      "type": "image/png",
+      "form_factor": "wide"
+    }
+  ],
+  "categories": ["lifestyle", "beauty", "shopping"],
+  "shortcuts": [
+    {
+      "name": "Home Feed",
+      "short_name": "Home",
+      "description": "View personalized nail art feed",
+      "url": "/home",
+      "icons": [{ "src": "/icon192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Saved Collections",
+      "short_name": "Saved",
+      "description": "View your saved designs",
+      "url": "/profile?tab=saved",
+      "icons": [{ "src": "/icon192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Try On",
+      "short_name": "Try On",
+      "description": "Try on nail designs virtually",
+      "url": "/try-on",
+      "icons": [{ "src": "/icon192.png", "sizes": "192x192" }]
+    }
+  ]
+}
