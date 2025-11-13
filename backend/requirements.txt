@@ -17,3 +17,13 @@ PyJWT==2.9.0
 requests==2.32.4
 sqlparse==0.5.3
 urllib3==2.5.0
+
+# Performance & Caching
+django-redis==5.4.0
+redis==5.2.1
+
+# Production Server
+gunicorn==23.0.0
+
+# Monitoring & Error Tracking
+sentry-sdk==2.20.0

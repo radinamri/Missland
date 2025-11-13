@@ -5,10 +5,14 @@ import time
 from itertools import chain
 from django.conf import settings
 from django.contrib.auth.tokens import default_token_generator
+from django.core.cache import cache
 from django.core.mail import send_mail
-from django.db.models import Q
+from django.db.models import Q, Prefetch, F
+from django.db import models
 from django.utils.encoding import force_bytes, force_str
 from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
+from django.views.decorators.cache import cache_page
+from django.utils.decorators import method_decorator
 from rest_framework import generics, status
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.parsers import MultiPartParser, FormParser
@@ -146,13 +150,22 @@ class FilteredPostListView(generics.ListAPIView):
     pagination_class = StandardResultsSetPagination
 
     def get_queryset(self):
-        queryset = Post.objects.all()
+        # Build cache key from query parameters
+        cache_key = f"posts:filtered:{self.request.GET.urlencode()}"
+        cached_result = cache.get(cache_key)
+        
+        if cached_result is not None:
+            return cached_result
+        
+        queryset = Post.objects.all().select_related().only(
+            'id', 'title', 'image_url', 'width', 'height', 
+            'shape', 'pattern', 'size', 'colors', 'created_at', 'try_on_image_url'
+        )
+        
         query = self.request.query_params.get('q', None)
         shape = self.request.query_params.get('shape', None)
         pattern = self.request.query_params.get('pattern', None)
         size = self.request.query_params.get('size', None)
-        color_query = self.request.query_params.get('color', None)
-
         color_query = self.request.query_params.get('color', None)
 
         query_filters = Q()
@@ -227,10 +240,14 @@ class FilteredPostListView(generics.ListAPIView):
 
         if query_filters:
             # Use .distinct() to avoid duplicate results if a post matches multiple criteria
-            return queryset.filter(query_filters).distinct().order_by('-created_at')
+            result = queryset.filter(query_filters).distinct().order_by('-created_at')
+            cache.set(cache_key, result, timeout=300)  # Cache for 5 minutes
+            return result
 
         # If no query or filters were provided, return the default unfiltered list
-        return queryset.order_by('-created_at')
+        result = queryset.order_by('-created_at')
+        cache.set(cache_key, result, timeout=300)
+        return result
 
 
 class ForYouPostListView(generics.ListAPIView):
@@ -322,6 +339,13 @@ class PostDetailView(generics.RetrieveAPIView):
     serializer_class = PostSerializer
     permission_classes = [AllowAny]
 
+    def retrieve(self, request, *args, **kwargs):
+        instance = self.get_object()
+        # Increment views count
+        Post.objects.filter(pk=instance.pk).update(views_count=models.F('views_count') + 1)
+        serializer = self.get_serializer(instance)
+        return Response(serializer.data)
+
 
 class PostListView(generics.ListAPIView):  # This is likely a legacy/unused view but included for safety
     serializer_class = PostSerializer
@@ -411,7 +435,9 @@ class CollectionListView(generics.ListCreateAPIView):
         return CollectionListSerializer
 
     def get_queryset(self):
-        return self.request.user.collections.all().order_by('-created_at')
+        return self.request.user.collections.prefetch_related(
+            Prefetch('posts', queryset=Post.objects.only('id', 'image_url'))
+        ).all().order_by('-created_at')
 
     def perform_create(self, serializer):
         serializer.save(user=self.request.user)
@@ -422,7 +448,7 @@ class CollectionDetailView(generics.RetrieveUpdateDestroyAPIView):
     serializer_class = CollectionDetailSerializer
 
     def get_queryset(self):
-        return self.request.user.collections.all()
+        return self.request.user.collections.prefetch_related('posts').all()
 
     def get_serializer_class(self):
         if self.request.method in ['PUT', 'PATCH']: return CollectionCreateSerializer
@@ -445,13 +471,19 @@ class ManagePostInCollectionView(APIView):
             post = Post.objects.get(id=post_id)
             if post in collection.posts.all():
                 collection.posts.remove(post)
+                Post.objects.filter(pk=post_id).update(saves_count=models.F('saves_count') - 1)
                 message = f'Post removed from {collection.name}.'
             else:
                 collection.posts.add(post)
+                Post.objects.filter(pk=post_id).update(saves_count=models.F('saves_count') + 1)
                 message = f'Post saved to {collection.name}.'
             default_collection, _ = request.user.collections.get_or_create(name="All Posts")
             if default_collection.id != collection.id and post not in default_collection.posts.all():
                 default_collection.posts.add(post)
+            
+            # Invalidate cache
+            cache.delete_pattern('posts:*')
+            
             return Response({'detail': message}, status=status.HTTP_200_OK)
         except Collection.DoesNotExist:
             return Response({'detail': 'Collection not found.'}, status=status.HTTP_404_NOT_FOUND)

@@ -54,7 +54,7 @@ class Post(models.Model):
     """
     Represents a single nail or hair-style post with structured annotations.
     """
-    title = models.CharField(max_length=200)
+    title = models.CharField(max_length=200, db_index=True)
     image_url = models.URLField(max_length=500)
     width = models.IntegerField()
     height = models.IntegerField()
@@ -68,11 +68,25 @@ class Post(models.Model):
     # Storing the list of colors in a JSONField is efficient for querying.
     colors = models.JSONField(default=list, blank=True)
 
+    # Performance tracking fields
+    views_count = models.IntegerField(default=0, db_index=True)
+    saves_count = models.IntegerField(default=0, db_index=True)
+
     # REMOVED: The old tags field is no longer needed
     # tags = models.JSONField(default=list, blank=True)
 
-    created_at = models.DateTimeField(auto_now_add=True)
+    created_at = models.DateTimeField(auto_now_add=True, db_index=True)
     try_on_image_url = models.URLField(max_length=500, blank=True)
+
+    class Meta:
+        indexes = [
+            models.Index(fields=['shape', 'pattern'], name='post_shape_pattern_idx'),
+            models.Index(fields=['shape', 'size'], name='post_shape_size_idx'),
+            models.Index(fields=['-created_at'], name='post_created_desc_idx'),
+            models.Index(fields=['-views_count'], name='post_views_desc_idx'),
+            models.Index(fields=['-saves_count'], name='post_saves_desc_idx'),
+        ]
+        ordering = ['-created_at']
 
     def __str__(self):
         return self.title
