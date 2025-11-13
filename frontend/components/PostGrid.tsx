@@ -38,36 +38,45 @@ export default function PostGrid({
   return (
     <>
       <style jsx global>{`
-        .masonry-grid {
+        .pinterest-grid {
           column-count: 2;
-          column-gap: 1rem;
+          column-gap: 0.75rem;
+          width: 100%;
         }
-        @media (min-width: 768px) {
-          .masonry-grid {
+        @media (min-width: 640px) {
+          .pinterest-grid {
             column-count: 3;
           }
         }
         @media (min-width: 1024px) {
-          .masonry-grid {
+          .pinterest-grid {
+            column-count: 4;
+          }
+        }
+        @media (min-width: 1280px) {
+          .pinterest-grid {
             column-count: 5;
           }
         }
-        .masonry-item {
+        .pinterest-grid-item {
           break-inside: avoid;
-          margin-bottom: 1rem;
+          margin-bottom: 0.75rem;
+          display: inline-block;
+          width: 100%;
         }
       `}</style>
-      <div className="masonry-grid">
+      <div className="pinterest-grid">
         {posts.map((post) => (
-          <PostCard
-            key={post.id}
-            post={post}
-            variant={variant}
-            onSave={onSave}
-            onRemove={onRemove}
-            onPostClick={handlePostClick}
-            isSaved={isSaved ? isSaved(post) : undefined}
-          />
+          <div key={post.id} className="pinterest-grid-item">
+            <PostCard
+              post={post}
+              variant={variant}
+              onSave={onSave}
+              onRemove={onRemove}
+              onPostClick={handlePostClick}
+              isSaved={isSaved ? isSaved(post) : undefined}
+            />
+          </div>
         ))}
       </div>
     </>

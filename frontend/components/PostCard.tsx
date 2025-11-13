@@ -88,16 +88,25 @@ PostCardProps) {
   //   setIsMenuOpen(!isMenuOpen);
   // };
 
+  // Generate consistent random height multiplier based on post ID (like Pinterest)
+  // This ensures same post always gets same height (no flickering)
+  const seed = post.id * 9301 + 49297; // Simple hash for consistency
+  const randomHeightMultiplier = 0.7 + ((seed % 60) / 100); // Range: 0.7 to 1.3
+  
+  // Calculate varied height while maintaining aspect ratio
+  const baseHeight = post.height;
+  const variedHeight = Math.round(baseHeight * randomHeightMultiplier);
+
   return (
     <div
       onClick={handleCardClick}
-      className="masonry-item group relative rounded-2xl overflow-hidden shadow-lg hover:shadow-xl transition-shadow duration-300 block cursor-pointer"
+      className="group relative rounded-2xl overflow-hidden shadow-lg hover:shadow-xl transition-shadow duration-300 block cursor-pointer w-full"
     >
       <Image
         src={post.image_url}
         alt={post.title}
         width={post.width}
-        height={post.height}
+        height={variedHeight}
         className="w-full h-auto block transition-transform duration-300 group-hover:scale-105"
       />
 
