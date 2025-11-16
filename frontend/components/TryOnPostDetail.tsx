@@ -83,8 +83,8 @@ export default function TryOnPostDetail({
         onClose={() => setShowCollectionsModal(false)}
         postToSave={post}
       />
-      <div className="md:px-8 pb-22">
-        <header className="mb-4">
+      <div className="md:px-4 pb-22">
+        <header className="md:pt-4">
           <Link
             href="/profile/my-try-ons"
             className="inline-flex items-center text-[#D98B99] hover:text-[#C47C8A] font-semibold transition-colors"
@@ -108,7 +108,7 @@ export default function TryOnPostDetail({
 
         {/* --- HIGHLIGHT: REFACTORED LAYOUT TO MATCH SavedPostDetail --- */}
         <div className="w-full max-w-4xl mx-auto bg-white rounded-3xl shadow-xl overflow-hidden mt-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-0">
+          <div className="grid grid-cols-1 md:grid-cols-2">
             {/* --- LEFT COLUMN: IMAGE --- */}
             <div className="relative w-full aspect-[4/5]">
               <Image

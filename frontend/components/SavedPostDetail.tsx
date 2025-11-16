@@ -79,8 +79,8 @@ export default function SavedPostDetail({
   };
 
   return (
-    <div className="md:px-8 pb-22">
-      <header className="mb-4">
+    <div className="md:px-4 pb-22">
+      <header className="md:pt-4">
         <Link
           href={`/profile/saved/${collectionId}`}
           className="inline-flex items-center text-[#D98B99] hover:text-[#C47C8A] font-semibold transition-colors"
@@ -103,7 +103,7 @@ export default function SavedPostDetail({
       </header>
 
       <div className="w-full max-w-4xl mx-auto bg-white rounded-3xl shadow-xl overflow-hidden mt-4">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-0">
+        <div className="grid grid-cols-1 md:grid-cols-2">
           {/* --- LEFT COLUMN: IMAGE --- */}
           <div className="relative w-full aspect-[4/5]">
             <Image
@@ -199,7 +199,7 @@ export default function SavedPostDetail({
               </h1>
 
               <div className="space-y-3 pt-4">
-                <h3 className="font-semibold text-gray-700">Details:</h3>
+                <h3 className="font-semibold text-[#3D5A6C]">Details:</h3>
                 <div className="flex flex-wrap gap-2">
                   {post.shape && (
                     <span className="bg-blue-100 text-blue-800 text-sm font-medium px-3 py-1 rounded-lg">
@@ -259,7 +259,7 @@ export default function SavedPostDetail({
       </div>
 
       <div className="mt-12">
-        <h2 className="text-2xl font-bold text-gray-800 mb-6 text-center">
+        <h2 className="text-2xl font-bold text-[#3D5A6C] mb-6 text-center">
           More in this collection
         </h2>
         {morePosts.length > 0 ? (
