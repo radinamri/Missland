@@ -120,21 +120,28 @@ export const useSearchStore = create<SearchState>((set, get) => ({
     let words = state.searchTerm.toLowerCase().split(" ").filter(Boolean);
     const filterValue = value; // `value` is guaranteed to be a string here.
 
+    // Check if this filter is currently active BEFORE modifying words
+    const isCurrentlyActive = 
+      filterName === "color" 
+        ? state.filters.color.includes(filterValue)
+        : state.filters[filterName] === filterValue;
+
+    // Remove old value for single-select filters
     if (filterName !== "color" && state.filters[filterName]) {
       words = words.filter(
         (w) => w !== state.filters[filterName as "shape" | "pattern" | "size"]
       );
     }
 
-    if (words.includes(filterValue)) {
-      if (
-        (filterName === "color" && state.filters.color.includes(filterValue)) ||
-        filterName !== "color"
-      ) {
-        words = words.filter((w) => w !== filterValue);
-      }
+    // Toggle the filter: remove if active, add if inactive
+    if (isCurrentlyActive) {
+      // Remove it
+      words = words.filter((w) => w !== filterValue);
     } else {
-      words.push(filterValue);
+      // Add it (only if not already there)
+      if (!words.includes(filterValue)) {
+        words.push(filterValue);
+      }
     }
 
     const newSearchTerm = [...new Set(words)].join(" ");

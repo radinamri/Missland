@@ -1,54 +1,87 @@
 # Missland Development Guide
 
-## 🚀 Quick Start
+## ⚠️ Important: Local Development vs Production
 
-### Local Development (Your Mac)
-```bash
-# 1. Activate virtual environment
-source .venv/bin/activate
+- **Local Development**: Use native Python and Node.js (fast, simple, no Docker needed)
+- **Production Server**: Use Docker Compose (containerized, production-ready)
 
-# 2. Start Django backend
-cd backend
-python manage.py runserver
-
-# 3. In another terminal, start Next.js frontend
-cd frontend
-npm run dev
-```
-
-**Access:**
-- Frontend: http://localhost:3000
-- Backend API: http://localhost:8000/api/
-- Admin Panel: http://localhost:8000/admin
-
-**Admin Credentials:**
-- Username: `admin`
-- Password: `MissYazdan78Radin79Vargha80land2025`
+**DO NOT use Docker for local development** - it's slower, more complex, and unnecessary.
 
 ---
 
-## 📦 Production Deployment Workflow
+## Quick Start (Local Development)
 
-### 1. Make Changes Locally
+### Prerequisites
+- Python 3.13 (or 3.11+)
+- Node.js 20+
+- PostgreSQL (or use SQLite for local dev)
+- Redis (optional for local dev)
+
+### 1. Backend Setup
+
 ```bash
-# Edit files
-vim backend/core/views.py
+# Navigate to project root
+cd Missland
 
-# Test locally
+# Create and activate virtual environment
+python3 -m venv .venv
+source .venv/bin/activate  # macOS/Linux
+
+# Install dependencies
+cd backend
+pip install -r requirements.txt
+
+# Run migrations
+python manage.py migrate
+
+# Create superuser (optional)
+python manage.py createsuperuser
+
+# Start Django development server
 python manage.py runserver
-# Visit http://localhost:8000
+# Backend will run at http://127.0.0.1:8000
 ```
 
-### 2. Commit & Push to GitHub
+### 2. Frontend Setup
+
+```bash
+# In a NEW terminal, navigate to frontend
+cd Missland/frontend
+
+# Install dependencies (first time only)
+npm install
+
+# Start Next.js development server
+npm run dev
+# Frontend will run at http://localhost:3000
+```
+
+### 3. Access the Application
+
+- **Frontend**: http://localhost:3000
+- **Backend API**: http://127.0.0.1:8000/api/
+- **Django Admin**: http://127.0.0.1:8000/admin/
+
+---
+
+## Production Deployment Workflow
+
+### Step 1: Develop and Test Locally
+```bash
+# Make changes to code
+# Test on local dev servers (Django + Next.js)
+```
+
+### Step 2: Commit and Push
 ```bash
 git add .
-git commit -m "Add new feature"
+git commit -m "Description of changes"
 git push origin main
 ```
 
-### 3. Deploy to Server
+### Step 3: Deploy to Server
 ```bash
-# SSH to server
+# SSH to production server
 ssh root@46.249.102.155
 
 # Navigate to project
@@ -57,301 +90,238 @@ cd ~/Missland
 # Pull latest changes
 git pull origin main
 
-# Rebuild affected services (example for backend changes)
-docker-compose up --build -d django
-
-# OR rebuild frontend for frontend changes
-docker-compose up --build -d nextjs
-
-# OR rebuild all services
+# Rebuild and restart Docker containers
 docker-compose up --build -d
 
-# Check logs
-docker-compose logs -f django
-docker-compose logs -f nextjs
+# Check logs if needed
+docker-compose logs -f
+
+# Exit SSH
+exit
 ```
 
-### 4. Verify Deployment
-```bash
-# Test API
-curl http://46.249.102.155/api/posts/ | head
-
-# Visit in browser
-open http://46.249.102.155
-```
+### Step 4: Verify Deployment
+Visit http://46.249.102.155 to confirm changes are live.
 
 ---
 
-## 🔧 Common Tasks
+## Common Development Tasks
 
-### Run Django Migrations
-**Local:**
+### Database Operations
+
+#### Local Development (Native Django)
 ```bash
-cd backend
+# Create migrations
 python manage.py makemigrations
+
+# Apply migrations
+python manage.py migrate
+
+# Reset database (CAUTION: Deletes all data)
+rm db.sqlite3  # if using SQLite
 python manage.py migrate
 ```
 
-**Server:**
+#### Production Server (Docker)
 ```bash
+ssh root@46.249.102.155
+cd ~/Missland
+
+# Run migrations in Docker
 docker-compose exec django python manage.py makemigrations
 docker-compose exec django python manage.py migrate
-```
 
-### Create Superuser
-**Local:**
-```bash
-python manage.py createsuperuser
-```
-
-**Server:**
-```bash
+# Create superuser in Docker
 docker-compose exec django python manage.py createsuperuser
 ```
 
-### Import Nail Images Data
-**Local:**
+### Import Nail Design Data
+
+#### Local Development
 ```bash
+# Make sure you have the data files in backend/data/
 python manage.py import_real_posts
+
+# Seed articles
 python manage.py seed_articles
 ```
 
-**Server:**
+#### Production Server
 ```bash
+# Data is automatically imported on first container startup
+# if IMPORT_REAL_POSTS=true in .env.docker
+
+# Manual import:
 docker-compose exec django python manage.py import_real_posts
 docker-compose exec django python manage.py seed_articles
 ```
 
-### View Logs
-**Server:**
-```bash
-# All services
-docker-compose logs -f
+---
 
-# Specific service
-docker-compose logs -f django
-docker-compose logs -f nextjs
-docker-compose logs -f nginx
+## Troubleshooting
+
+### Redis Connection Error (Local)
+**Error**: `Module 'redis.connection' does not define a 'HiredisParser'`
+
+**Solution**: Already fixed in `backend/config/settings.py`. If you see this:
+1. Make sure you pulled latest code
+2. Redis is optional for local dev - the app will work without it
+
+### PostgreSQL Connection Error (Local)
+If you don't want to install PostgreSQL locally, use SQLite:
+1. Comment out PostgreSQL config in `backend/config/settings.py`
+2. Uncomment SQLite config
+3. Run `python manage.py migrate`
+
+### Frontend Won't Start
+```bash
+cd frontend
+
+# Clear cache and reinstall
+rm -rf node_modules .next
+npm install
+npm run dev
 ```
 
-### Restart Services
-**Server:**
+### Backend Port Already in Use
 ```bash
-# Restart specific service
-docker-compose restart django
-docker-compose restart nextjs
+# Kill process on port 8000
+lsof -ti:8000 | xargs kill -9
 
-# Restart all
-docker-compose restart
-```
-
-### Stop Services
-**Server:**
-```bash
-docker-compose down
+# Or use a different port
+python manage.py runserver 8001
 ```
 
 ---
 
-## 🐛 Troubleshooting
-
-### Redis Connection Error
-If you see "Redis connection refused" locally:
-```bash
-# Install Redis
-brew install redis
-
-# Start Redis
-brew services start redis
-
-# OR run Redis manually
-redis-server
-```
-
-### PostgreSQL Connection Error
-If you see "PostgreSQL connection refused" locally:
-```bash
-# Install PostgreSQL
-brew install postgresql@14
-
-# Start PostgreSQL
-brew services start postgresql@14
-
-# Create database
-psql postgres
-CREATE DATABASE missland_db;
-\q
-```
-
-### Images Not Displaying on Server
-```bash
-# Check if images exist
-docker-compose exec django ls -lh /app/media/nails/ | head
-
-# Check nginx serving media files
-curl -I http://46.249.102.155/media/nails/nail_image001.jpg
-
-# Check database URLs
-docker-compose exec django python manage.py shell -c "from core.models import Post; print(Post.objects.first().image_url)"
-```
-
-### Frontend Not Loading
-```bash
-# Rebuild without cache
-docker-compose stop nextjs
-docker-compose rm -f nextjs
-docker-compose build --no-cache nextjs
-docker-compose up -d nextjs
-```
-
----
-
-## 📁 Project Structure
+## Project Structure
 
 ```
 Missland/
-├── backend/                # Django backend
-│   ├── config/            # Django settings
-│   │   ├── settings.py           # Local development settings
-│   │   └── settings_production.py # Production settings
-│   ├── core/              # Main app
-│   │   ├── models.py      # Database models
-│   │   ├── views.py       # API endpoints
-│   │   ├── serializers.py # DRF serializers
-│   │   └── urls.py        # URL routing
-│   └── manage.py
-│
-├── frontend/              # Next.js frontend
-│   ├── app/              # Next.js 15 app directory
-│   ├── components/       # React components
-│   ├── utils/           # Utility functions (api.ts)
-│   └── package.json
-│
-├── nginx/               # Nginx configuration
-│   └── nginx.conf      # Reverse proxy config
-│
-├── scripts/            # Deployment scripts
-│   ├── entrypoint-django.sh
-│   └── entrypoint-nextjs.sh
-│
-├── docker-compose.yml  # Docker orchestration
-├── Dockerfile.django   # Django container
-└── Dockerfile.nextjs   # Next.js container
+├── backend/              # Django backend
+│   ├── config/          # Django settings
+│   ├── core/            # Main app (models, views, serializers)
+│   ├── data/            # Data files (annotations.json)
+│   ├── media/           # Uploaded files (nail images)
+│   ├── manage.py        # Django management
+│   └── requirements.txt # Python dependencies
+├── frontend/            # Next.js frontend
+│   ├── app/            # Next.js 15 App Router pages
+│   ├── components/     # React components
+│   ├── context/        # React context providers
+│   ├── public/         # Static files
+│   ├── types/          # TypeScript types
+│   └── utils/          # Utility functions
+├── docker-compose.yml   # PRODUCTION ONLY
+├── Dockerfile.django    # PRODUCTION ONLY
+├── Dockerfile.nextjs    # PRODUCTION ONLY
+├── nginx/              # PRODUCTION ONLY
+└── scripts/            # PRODUCTION ONLY
 ```
 
 ---
 
-## 🌐 Environment Variables
+## Environment Variables
 
 ### Local Development
-Edit `backend/config/settings.py` for local settings.
-Frontend API URL is set in `frontend/utils/api.ts`.
+No `.env` file needed! Settings are in:
+- `backend/config/settings.py` (local Django settings)
+- `frontend/.env.local` (optional Next.js variables)
 
-### Production (Server)
-Settings are in `.env.docker` (not committed to Git).
-
-**Key Variables:**
-- `NEXT_PUBLIC_API_URL` - Frontend API URL
-- `MEDIA_BASE_URL` - Base URL for media files
-- `ALLOWED_HOSTS` - Django allowed hosts
-- `CORS_ALLOWED_ORIGINS` - CORS settings
+### Production Server
+- `.env.docker` (on server, contains secrets - NOT committed to Git)
 
 ---
 
-## 📝 Git Workflow
+## Git Workflow
 
 ```bash
+# Check current status
+git status
+
 # Create feature branch (optional)
 git checkout -b feature/new-feature
 
-# Make changes and commit
+# Stage changes
 git add .
-git commit -m "Add new feature"
+
+# Commit with descriptive message
+git commit -m "Add new feature: description"
 
 # Push to GitHub
-git push origin feature/new-feature
+git push origin main  # or your branch name
 
-# Merge to main (via PR or directly)
-git checkout main
-git merge feature/new-feature
-git push origin main
-
-# Deploy to server (see Production Deployment above)
+# Deploy to server (see Production Deployment Workflow above)
 ```
 
 ---
 
-## 🔐 Security Notes
+## Important Notes
 
-- Never commit `.env.docker` (contains sensitive credentials)
-- Never commit `.env` or `.env.local`
-- Server uses HTTPS-ready nginx config (add SSL certificate later)
-- Change default passwords in production
+### Security
+- **NEVER** commit `.env.docker` to Git (it's in .gitignore)
+- **NEVER** commit API keys or passwords
+- Production uses `settings_production.py` with DEBUG=False
+- Local uses `settings.py` with DEBUG=True
+
+### Database
+- **Local**: Use SQLite for simplicity or PostgreSQL if you prefer
+- **Production**: PostgreSQL in Docker container
+
+### Media Files
+- **Local**: Media files stored in `backend/media/`
+- **Production**: Media files in Docker volume, served by Nginx
+
+### API Endpoints
+- **Local**: http://127.0.0.1:8000/api/auth/posts/
+- **Production**: http://46.249.102.155/api/posts/ (Nginx rewrites to /api/auth/posts/)
 
 ---
 
-## 📚 Useful Commands Reference
-
-### Docker
-```bash
-# Build and start all services
-docker-compose up --build -d
-
-# Stop all services
-docker-compose down
-
-# View logs
-docker-compose logs -f [service_name]
-
-# Execute command in container
-docker-compose exec [service_name] [command]
-
-# Rebuild specific service
-docker-compose up --build -d [service_name]
-```
+## Quick Reference Commands
 
 ### Django
 ```bash
-# Run migrations
-python manage.py migrate
-
-# Create superuser
-python manage.py createsuperuser
-
-# Shell
-python manage.py shell
-
-# Run tests
-python manage.py test
+python manage.py runserver          # Start dev server
+python manage.py makemigrations     # Create migrations
+python manage.py migrate            # Apply migrations
+python manage.py createsuperuser    # Create admin user
+python manage.py shell              # Django shell
+python manage.py collectstatic      # Collect static files (production)
 ```
 
 ### Next.js
 ```bash
-# Development mode
-npm run dev
+npm run dev          # Development server
+npm run build        # Production build
+npm start            # Start production server
+npm run lint         # Run ESLint
+```
 
-# Production build
-npm run build
-
-# Start production server
-npm start
+### Docker (Production Server Only)
+```bash
+docker-compose up -d                    # Start all containers
+docker-compose down                     # Stop all containers
+docker-compose up --build -d            # Rebuild and start
+docker-compose logs -f                  # View logs
+docker-compose logs -f django           # View Django logs only
+docker-compose exec django bash         # Shell into Django container
+docker-compose exec django python manage.py migrate  # Run Django commands
+docker-compose ps                       # List running containers
+docker-compose restart django           # Restart specific service
 ```
 
 ---
 
-## 🎯 Development Tips
+## Getting Help
 
-1. **Always test locally before pushing to server**
-2. **Use meaningful commit messages**
-3. **Check Docker logs if something doesn't work on server**
-4. **Keep local and production settings in sync**
-5. **Backup database before major migrations**
+1. Check this guide first
+2. Check Django docs: https://docs.djangoproject.com/
+3. Check Next.js docs: https://nextjs.org/docs
+4. Review error messages carefully
+5. Check Docker logs: `docker-compose logs -f` (production)
+6. Check Django logs: Look for red error messages in terminal
 
 ---
 
-## 🆘 Need Help?
-
-- Check logs: `docker-compose logs -f`
-- Restart service: `docker-compose restart [service_name]`
-- Rebuild: `docker-compose up --build -d [service_name]`
-- Connect to container: `docker-compose exec [service_name] sh`
+**Remember**: Develop locally with native tools, deploy to production with Docker! 🚀

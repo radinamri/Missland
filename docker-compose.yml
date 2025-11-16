@@ -77,8 +77,8 @@ services:
 
   nextjs:
     build:
-      context: ./frontend
-      dockerfile: ../Dockerfile.nextjs
+      context: .
+      dockerfile: Dockerfile.nextjs
     container_name: missland_nextjs
     volumes:
       - ./frontend:/app

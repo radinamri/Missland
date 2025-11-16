@@ -14,25 +14,24 @@ const FilterPill = ({
 }) => (
   <button
     onClick={onClick}
-    className={`flex-shrink-0 px-4 py-2 text-sm font-semibold rounded-xl transition-colors flex items-center ${
+    className={`flex-shrink-0 px-4 py-2 text-sm font-semibold rounded-xl transition-all duration-200 flex items-center gap-2 ${
       isActive
-        ? "bg-[#3D5A6C] text-white"
+        ? "bg-[#3D5A6C] text-white hover:bg-[#2d4654]"
         : "bg-[#E7E7E7] text-[#3D5A6C] hover:bg-[#dcdcdc]"
     }`}
   >
     {label}
     {isActive && (
-      <span className="ml-2">
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          width="16"
-          height="16"
-          fill="currentColor"
-          viewBox="0 0 16 16"
-        >
-          <path d="M2.146 2.854a.5.5 0 1 1 .708-.708L8 7.293l5.146-5.147a.5.5 0 0 1 .708.708L8.707 8l5.147 5.146a.5.5 0 0 1-.708.708L8 8.707l-5.146 5.147a.5.5 0 0 1-.708-.708L7.293 8z" />
-        </svg>
-      </span>
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        width="14"
+        height="14"
+        fill="currentColor"
+        viewBox="0 0 16 16"
+        className="transition-transform hover:scale-110"
+      >
+        <path d="M2.146 2.854a.5.5 0 1 1 .708-.708L8 7.293l5.146-5.147a.5.5 0 0 1 .708.708L8.707 8l5.147 5.146a.5.5 0 0 1-.708.708L8 8.707l-5.146 5.147a.5.5 0 0 1-.708-.708L7.293 8z" />
+      </svg>
     )}
   </button>
 );
@@ -128,7 +127,24 @@ export default function FilterBar() {
     return null;
   }
 
-  const suggestionsToShow = [];
+  // Check if there are any active filters
+  const hasActiveFilters =
+    filters.shape !== null ||
+    filters.pattern !== null ||
+    filters.size !== null ||
+    filters.color.length > 0;
+
+  // If no active filters, hide the FilterBar completely
+  if (!hasActiveFilters) {
+    return null;
+  }
+
+  type PillItem = {
+    type: "shape" | "pattern" | "size" | "color";
+    value: string;
+  };
+
+  const allPills: PillItem[] = [];
 
   // Logic for single-select categories
   const singleSelectCategories: Array<"shapes" | "patterns" | "sizes"> = [
@@ -136,61 +152,57 @@ export default function FilterBar() {
     "patterns",
     "sizes",
   ];
+  
   singleSelectCategories.forEach((category) => {
     const filterKey = category.slice(0, -1) as "shape" | "pattern" | "size";
     const activeFilter = filters[filterKey];
+    
     if (activeFilter) {
-      suggestionsToShow.push({ type: filterKey, value: activeFilter });
+      // Show only the active filter for this category
+      allPills.push({ type: filterKey, value: activeFilter });
     } else {
-      suggestionsToShow.push(
-        ...filterSuggestions[category].map((value) => ({
-          type: filterKey,
-          value,
-        }))
-      );
+      // Show all options for this category
+      filterSuggestions[category].forEach((value) => {
+        allPills.push({ type: filterKey, value });
+      });
     }
   });
 
-  // Always show all color options for multi-selection
-  suggestionsToShow.push(
-    ...filterSuggestions.colors.map((value) => ({
-      type: "color" as const,
-      value,
-    }))
-  );
+  // Always show all color options (multi-select)
+  filterSuggestions.colors.forEach((value) => {
+    allPills.push({ type: "color" as const, value });
+  });
 
-  const activePills = suggestionsToShow.filter(({ type, value }) => {
+  // Separate active and inactive pills for sorting
+  const activePills = allPills.filter(({ type, value }) => {
     if (type === "color") {
       return filters.color.includes(value);
     }
-    return filters[type] === value;
+    return filters[type as "shape" | "pattern" | "size"] === value;
   });
 
-  const inactivePills = suggestionsToShow.filter(({ type, value }) => {
+  const inactivePills = allPills.filter(({ type, value }) => {
     if (type === "color") {
       return !filters.color.includes(value);
     }
-    return filters[type] !== value;
+    return filters[type as "shape" | "pattern" | "size"] !== value;
   });
 
+  // Show active pills first, then inactive ones
   const sortedPills = [...activePills, ...inactivePills];
-  const uniqueSortedPills = sortedPills.filter(
-    (pill, index, self) =>
-      index ===
-      self.findIndex((p) => p.type === pill.type && p.value === pill.value)
-  );
 
   return (
-    <div className="w-full bg-white relative">
+    <div className="w-full bg-white relative py-3">
       <div
         ref={scrollContainerRef}
         className="flex items-center space-x-3 overflow-x-auto pl-4 md:pl-8 pr-12 md:pr-14 no-scrollbar"
       >
-        {uniqueSortedPills.map(({ type, value }) => {
+        {sortedPills.map(({ type, value }) => {
           const isActive =
             type === "color"
               ? filters.color.includes(value)
-              : filters[type] === value;
+              : filters[type as "shape" | "pattern" | "size"] === value;
+          
           return (
             <FilterPill
               key={`${type}-${value}`}
