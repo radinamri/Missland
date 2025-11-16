@@ -57,6 +57,21 @@ docs/.env.*
 !**/.env.example
 !**/.env.template
 
+# Database backups and sensitive data exports
+*.sql
+*.dump
+*.backup
+backup.sql
+*_backup.sql
+*_backup.tar.gz
+media_backup.tar.gz
+
+# Sensitive configuration files
+secrets.yml
+secrets.json
+credentials.json
+service-account*.json
+
 # Frontend
 node_modules/
 .next/
