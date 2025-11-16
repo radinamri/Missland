@@ -7,6 +7,7 @@ import PostGrid from "./PostGrid";
 import { useAuth } from "@/context/AuthContext";
 import Link from "next/link";
 import SaveToCollectionModal from "./SaveToCollectionModal";
+import LoginModal from "./LoginModal";
 import InfiniteScroll from "react-infinite-scroll-component";
 import PostGridSkeleton from "./PostGridSkeleton";
 
@@ -32,6 +33,7 @@ export default function PostDetail({
 }: PostDetailProps) {
   const { user, collections, showToastWithMessage } = useAuth();
   const [showCollectionsModal, setShowCollectionsModal] = useState(false);
+  const [showLoginModal, setShowLoginModal] = useState(false);
   const [visibleMorePosts, setVisibleMorePosts] = useState<Post[]>(
     morePosts.slice(0, MORE_POSTS_INITIAL_LOAD)
   );
@@ -108,8 +110,20 @@ export default function PostDetail({
     }
   };
 
+  const handleSaveClick = () => {
+    if (!user) {
+      setShowLoginModal(true);
+    } else {
+      setShowCollectionsModal(true);
+    }
+  };
+
   return (
     <>
+      <LoginModal
+        isOpen={showLoginModal}
+        onClose={() => setShowLoginModal(false)}
+      />
       <SaveToCollectionModal
         isOpen={showCollectionsModal}
         onClose={() => setShowCollectionsModal(false)}
@@ -157,13 +171,7 @@ export default function PostDetail({
               <div className="flex flex-row pb-8 w-full justify-between">
                 <div className="flex flex-row">
                   <button
-                    onClick={() => {
-                      if (!user && onOpenLoginModal) {
-                        onOpenLoginModal();
-                      } else {
-                        setShowCollectionsModal(true);
-                      }
-                    }}
+                    onClick={handleSaveClick}
                     className="flex items-center justify-center font-bold text-[#3D5A6C] hover:bg-gray-100 rounded-2xl pl-3 p-1 transition"
                     aria-label={isSaved ? "Saved" : "Save"}
                     title={
@@ -450,13 +458,7 @@ export default function PostDetail({
                 <div className="flex flex-row pb-32 w-full justify-between">
                   <div className="flex flex-row">
                     <button
-                      onClick={() => {
-                        if (!user && onOpenLoginModal) {
-                          onOpenLoginModal();
-                        } else {
-                          setShowCollectionsModal(true);
-                        }
-                      }}
+                      onClick={handleSaveClick}
                       className="flex items-center justify-center font-bold text-[#3D5A6C] hover:bg-gray-100 rounded-2xl pl-3 p-1 transition"
                       aria-label={isSaved ? "Saved" : "Save"}
                       title={
