@@ -73,9 +73,10 @@ class Command(BaseCommand):
                     width = 400
                     height = 600
 
-                # Use real image URLs instead of placeholders
-                image_url = f"http://127.0.0.1:8000/media/nails/{image_name}"
-                try_on_image_url = f"http://127.0.0.1:8000/media/nails/{image_name}"  # Same image for try-on (Option A)
+                # Use real image URLs with dynamic base URL from settings
+                base_url = getattr(settings, 'MEDIA_BASE_URL', 'http://127.0.0.1:8000')
+                image_url = f"{base_url}/media/nails/{image_name}"
+                try_on_image_url = f"{base_url}/media/nails/{image_name}"  # Same image for try-on
 
                 shape = post_data.get('shape')
                 pattern = post_data.get('pattern')

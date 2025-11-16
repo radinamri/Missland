@@ -66,6 +66,9 @@ STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
+# Base URL for media files (used in data import)
+MEDIA_BASE_URL = os.environ.get('MEDIA_BASE_URL', 'http://46.249.102.155')
+
 # Security Settings (HTTP-only configuration - no SSL)
 # WARNING: These are disabled for HTTP-only deployment
 # Enable them if you add a domain and SSL certificate later
