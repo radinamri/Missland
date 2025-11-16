@@ -125,7 +125,7 @@ PostCardProps) {
         `}
       >
         <div className="flex justify-between items-start">
-          <p className="text-white text-sm font-semibold drop-shadow-md">
+          <p className="hidden md:block text-white text-sm font-semibold drop-shadow-md">
             {post.title}
           </p>
           {/* <div className="relative">
