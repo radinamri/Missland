@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import {
   ArrowRight,
   Camera,
@@ -11,14 +12,23 @@ import {
   ChevronDown,
 } from "lucide-react";
 
-export default function HomePage() {
+export default function LandingPage() {
   const [scrollY, setScrollY] = useState(0);
+  const router = useRouter();
 
   useEffect(() => {
     const handleScroll = () => setScrollY(window.scrollY);
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
+
+  // Function to mark landing as seen and navigate
+  const handleCTAClick = (path: string) => {
+    if (typeof window !== "undefined") {
+      localStorage.setItem("hasSeenLanding", "true");
+    }
+    router.push(path);
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-pink-50 via-blue-50 to-pink-50">
@@ -53,19 +63,19 @@ export default function HomePage() {
 
           {/* CTA Buttons */}
           <div className="flex flex-col sm:flex-row gap-2.5 md:gap-4 justify-center md:pt-4 px-4">
-            <Link
-              href="/try-on"
-              className="inline-flex items-center justify-center px-7 sm:px-10 py-3.5 sm:py-5 bg-[#3D5A6C] text-white font-semibold rounded-2xl hover:bg-[#2F4A58] transition-all duration-300 gap-2 md:gap-3 text-base md:text-lg group shadow-lg shadow-[#3D5A6C]/20"
+            <button
+              onClick={() => handleCTAClick("/try-on")}
+              className="inline-flex items-center justify-center px-7 sm:px-10 py-3.5 sm:py-5 bg-[#3D5A6C] text-white font-semibold rounded-2xl hover:bg-[#2F4A58] transition-all duration-300 gap-2 md:gap-3 text-base md:text-lg group shadow-lg shadow-[#3D5A6C]/20 cursor-pointer"
             >
               Try Now
               <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
-            </Link>
-            <Link
-              href="/"
-              className="inline-flex items-center justify-center px-7 sm:px-10 py-3.5 sm:py-5 bg-white/80 backdrop-blur-sm border border-gray-200 text-[#3D5A6C] font-semibold rounded-2xl hover:bg-white hover:border-[#D98B99] transition-all duration-300 text-base md:text-lg shadow-sm"
+            </button>
+            <button
+              onClick={() => handleCTAClick("/")}
+              className="inline-flex items-center justify-center px-7 sm:px-10 py-3.5 sm:py-5 bg-white/80 backdrop-blur-sm border border-gray-200 text-[#3D5A6C] font-semibold rounded-2xl hover:bg-white hover:border-[#D98B99] transition-all duration-300 text-base md:text-lg shadow-sm cursor-pointer"
             >
               Explore Gallery
-            </Link>
+            </button>
           </div>
         </div>
       </section>
@@ -103,12 +113,12 @@ export default function HomePage() {
                 real-time. Our advanced AR technology shows you exactly how each
                 design looks before you commit.
               </p>
-              <Link
-                href="/try-on"
-                className="inline-flex items-center gap-2 md:gap-3 text-[#D98B99] font-semibold text-base md:text-lg hover:gap-4 transition-all group pt-2"
+              <button
+                onClick={() => handleCTAClick("/try-on")}
+                className="inline-flex items-center gap-2 md:gap-3 text-[#D98B99] font-semibold text-base md:text-lg hover:gap-4 transition-all group pt-2 cursor-pointer"
               >
                 Try it now <ArrowRight className="w-4 h-4 md:w-5 md:h-5" />
-              </Link>
+              </button>
             </div>
           </div>
         </div>
@@ -133,12 +143,12 @@ export default function HomePage() {
                 and trending styles. Filter by color, style, pattern, or size to
                 find exactly what matches your aesthetic.
               </p>
-              <Link
-                href="/"
-                className="inline-flex items-center gap-2 md:gap-3 text-[#3D5A6C] font-semibold text-base md:text-lg hover:gap-4 transition-all group pt-2"
+              <button
+                onClick={() => handleCTAClick("/")}
+                className="inline-flex items-center gap-2 md:gap-3 text-[#3D5A6C] font-semibold text-base md:text-lg hover:gap-4 transition-all group pt-2 cursor-pointer"
               >
                 Explore designs <ArrowRight className="w-4 h-4 md:w-5 md:h-5" />
-              </Link>
+              </button>
             </div>
 
             {/* Right: Visual */}
@@ -191,12 +201,12 @@ export default function HomePage() {
                 intelligent AI understands your aesthetic and finds similar
                 designs instantly.
               </p>
-              <Link
-                href="/"
-                className="inline-flex items-center gap-2 md:gap-3 text-[#D98B99] font-semibold text-base md:text-lg hover:gap-4 transition-all group pt-2"
+              <button
+                onClick={() => handleCTAClick("/")}
+                className="inline-flex items-center gap-2 md:gap-3 text-[#D98B99] font-semibold text-base md:text-lg hover:gap-4 transition-all group pt-2 cursor-pointer"
               >
                 Search now <ArrowRight className="w-4 h-4 md:w-5 md:h-5" />
-              </Link>
+              </button>
             </div>
           </div>
         </div>
@@ -220,12 +230,12 @@ export default function HomePage() {
                 Discover talented nail artists, explore their portfolios, read
                 reviews from other users, and book consultations directly.
               </p>
-              <Link
-                href="/"
-                className="inline-flex items-center gap-2 md:gap-3 text-[#3D5A6C] font-semibold text-base md:text-lg hover:gap-4 transition-all group pt-2"
+              <button
+                onClick={() => handleCTAClick("/")}
+                className="inline-flex items-center gap-2 md:gap-3 text-[#3D5A6C] font-semibold text-base md:text-lg hover:gap-4 transition-all group pt-2 cursor-pointer"
               >
                 Find artists <ArrowRight className="w-4 h-4 md:w-5 md:h-5" />
-              </Link>
+              </button>
             </div>
 
             {/* Right: Visual */}
@@ -261,19 +271,19 @@ export default function HomePage() {
           </div>
 
           <div className="flex flex-col sm:flex-row gap-3 md:gap-4 justify-center pt-2 md:pt-4 px-4">
-            <Link
-              href="/register"
-              className="inline-flex items-center justify-center px-8 sm:px-10 py-4 sm:py-5 bg-[#3D5A6C] text-white font-semibold rounded-2xl hover:bg-[#2F4A58] transition-all duration-300 gap-2 md:gap-3 text-base md:text-lg group shadow-lg shadow-[#3D5A6C]/20"
+            <button
+              onClick={() => handleCTAClick("/register")}
+              className="inline-flex items-center justify-center px-8 sm:px-10 py-4 sm:py-5 bg-[#3D5A6C] text-white font-semibold rounded-2xl hover:bg-[#2F4A58] transition-all duration-300 gap-2 md:gap-3 text-base md:text-lg group shadow-lg shadow-[#3D5A6C]/20 cursor-pointer"
             >
               Get Started
               <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
-            </Link>
-            <Link
-              href="/"
-              className="inline-flex items-center justify-center px-8 sm:px-10 py-4 sm:py-5 bg-white/80 backdrop-blur-sm border border-gray-200 text-[#3D5A6C] font-semibold rounded-2xl hover:bg-white hover:border-[#D98B99] transition-all duration-300 text-base md:text-lg shadow-sm"
+            </button>
+            <button
+              onClick={() => handleCTAClick("/")}
+              className="inline-flex items-center justify-center px-8 sm:px-10 py-4 sm:py-5 bg-white/80 backdrop-blur-sm border border-gray-200 text-[#3D5A6C] font-semibold rounded-2xl hover:bg-white hover:border-[#D98B99] transition-all duration-300 text-base md:text-lg shadow-sm cursor-pointer"
             >
               Browse Designs
-            </Link>
+            </button>
           </div>
         </div>
       </section>

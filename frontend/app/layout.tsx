@@ -10,6 +10,7 @@ import AppInitializer from "@/components/AppInitializer";
 import PWARegister from "@/components/PWARegister";
 import InstallPrompt from "@/components/InstallPrompt";
 import OfflineIndicator from "@/components/OfflineIndicator";
+import LandingRedirect from "@/components/LandingRedirect";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -80,6 +81,7 @@ export default function RootLayout({
             <PWARegister />
             <InstallPrompt />
             <OfflineIndicator />
+            <LandingRedirect />
             <AppInitializer>
               <div className="fixed top-0 left-0 w-full h-screen bg-gradient-to-r from-pink-50 to-blue-50 -z-10" />
               <div className="relative min-h-screen">
