@@ -91,7 +91,7 @@ export default function LoginPage() {
   });
 
   return (
-    <div className="flex items-center justify-center p-4 pb-24">
+    <div className="flex items-center justify-center p-4 pb-20">
       <div className="w-full max-w-5xl bg-white rounded-2xl shadow-2xl flex flex-col md:flex-row overflow-hidden md:my-8 my-1">
         {/* Left Column: Branding Panel */}
         <div className="hidden md:flex md:w-1/2 items-center justify-center p-12 bg-[#3D5A6C] relative">
