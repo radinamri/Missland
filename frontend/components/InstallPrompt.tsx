@@ -63,7 +63,7 @@ export default function InstallPrompt() {
   if (!showPrompt || !deferredPrompt) return null;
 
   return (
-    <div className="fixed bottom-20 left-4 right-4 z-50 md:left-auto md:right-4 md:max-w-sm">
+    <div className="fixed bottom-20 md:bottom-4 left-4 right-4 z-50 md:left-auto md:right-4 md:max-w-sm">
       <div className="bg-white rounded-2xl shadow-2xl border-2 border-[#D98B99]/20 p-6 animate-slide-up backdrop-blur-sm">
         <button
           onClick={handleDismiss}

@@ -102,7 +102,7 @@ export default function BottomNav() {
 
   return (
     <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-white/80 backdrop-blur-lg shadow-[0_-2px_10px_rgba(0,0,0,0.05)] z-40">
-      <div className="flex justify-around items-center h-20">
+      <div className="flex justify-around items-center h-16">
         {navItems.map((item) => {
           let isActive = false;
           if (item.href === "/") {
