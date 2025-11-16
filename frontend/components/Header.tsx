@@ -110,7 +110,7 @@ export default function Header() {
 
   return (
     <>
-      <header className="bg-white shadow-sm sticky top-0 z-30 h-auto flex flex-col items-center py-4 gap-4">
+      <header className="bg-white shadow-sm sticky top-0 z-30 h-auto flex flex-col items-center py-2 md:py-2 gap-2">
         <div className="flex items-center justify-between w-full md:px-8 px-4">
           <div className="flex items-center space-x-4">
             <Link href="/" className="flex items-center space-x-2">
