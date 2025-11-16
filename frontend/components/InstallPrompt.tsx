@@ -64,11 +64,31 @@ export default function InstallPrompt() {
 
   return (
     <div className="fixed bottom-20 left-4 right-4 z-50 md:left-auto md:right-4 md:max-w-sm">
-      <div className="bg-white rounded-lg shadow-2xl border border-pink-100 p-4 animate-slide-up">
-        <div className="flex items-start gap-3">
-          <div className="flex-shrink-0 w-12 h-12 bg-gradient-to-br from-pink-500 to-purple-500 rounded-xl flex items-center justify-center">
+      <div className="bg-white rounded-2xl shadow-2xl border-2 border-[#D98B99]/20 p-6 animate-slide-up backdrop-blur-sm">
+        <button
+          onClick={handleDismiss}
+          className="absolute top-3 right-3 text-gray-400 hover:text-gray-600 transition-colors"
+          aria-label="Dismiss"
+        >
+          <svg
+            className="w-5 h-5"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M6 18L18 6M6 6l12 12"
+            />
+          </svg>
+        </button>
+
+        <div className="flex items-start gap-4">
+          <div className="flex-shrink-0 w-14 h-14 bg-gradient-to-br from-[#D98B99] to-[#E8A5B4] rounded-2xl flex items-center justify-center shadow-lg">
             <svg
-              className="w-6 h-6 text-white"
+              className="w-7 h-7 text-white"
               fill="none"
               stroke="currentColor"
               viewBox="0 0 24 24"
@@ -82,25 +102,24 @@ export default function InstallPrompt() {
             </svg>
           </div>
           <div className="flex-1">
-            <h3 className="font-semibold text-gray-900 mb-1">
+            <h3 className="font-bold text-[#3D5A6C] text-lg mb-1">
               Install Missland
             </h3>
-            <p className="text-sm text-gray-600 mb-3">
-              Install our app for a better experience, offline access, and quick
-              access from your home screen.
+            <p className="text-sm text-gray-600 mb-4 leading-relaxed">
+              Get the app for faster access, offline browsing, and a seamless experience right from your home screen.
             </p>
-            <div className="flex gap-2">
+            <div className="flex gap-3">
               <button
                 onClick={handleInstallClick}
-                className="flex-1 bg-gradient-to-r from-pink-500 to-purple-500 text-white px-4 py-2 rounded-lg font-medium text-sm hover:shadow-lg transition-shadow"
+                className="flex-1 bg-[#3D5A6C] text-white px-5 py-2.5 rounded-xl font-semibold text-sm hover:bg-[#314A5A] transition-all duration-200 shadow-md hover:shadow-lg"
               >
-                Install
+                Install Now
               </button>
               <button
                 onClick={handleDismiss}
-                className="px-4 py-2 text-gray-600 text-sm hover:text-gray-800 transition-colors"
+                className="px-5 py-2.5 text-gray-500 text-sm font-medium hover:text-gray-700 transition-colors"
               >
-                Not now
+                Later
               </button>
             </div>
           </div>
