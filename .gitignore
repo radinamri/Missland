@@ -27,17 +27,35 @@ build/
 db.sqlite3
 staticfiles/
 
-# Environment variables
+# Environment variables - NEVER commit these files with secrets!
 .env
 .env.local
 .env.*.local
 .env.production
 .env.docker
+.env.local.docker
 *.env
 
-# Exclude example files from ignore
+# All .env files in all directories
+backend/.env
+backend/.env.*
+frontend/.env
+frontend/.env.*
+deployment/.env
+deployment/.env.*
+nginx/.env
+nginx/.env.*
+scripts/.env
+scripts/.env.*
+docs/.env
+docs/.env.*
+
+# Exclude example/template files from ignore
 !.env.example
 !.env.production.example
+!.env.template
+!**/.env.example
+!**/.env.template
 
 # Frontend
 node_modules/
