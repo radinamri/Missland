@@ -7,58 +7,95 @@ interface BeforeInstallPromptEvent extends Event {
   userChoice: Promise<{ outcome: 'accepted' | 'dismissed' }>;
 }
 
+const INSTALL_PROMPT_STORAGE_KEY = 'missland-pwa-prompt-interacted';
+const SHOW_DELAY_MS = 30000; // Show after 30 seconds of app usage
+
 export default function InstallPrompt() {
   const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | null>(null);
   const [showPrompt, setShowPrompt] = useState(false);
 
+  // Check if user has already interacted with the install prompt
+  const hasUserInteracted = () => {
+    if (typeof window === 'undefined') return true;
+    return localStorage.getItem(INSTALL_PROMPT_STORAGE_KEY) === 'true';
+  };
+
+  // Check if app is already installed (different on iOS vs Android/Desktop)
+  const isAppInstalled = () => {
+    if (typeof window === 'undefined') return false;
+    
+    // Check if running as PWA
+    if (window.matchMedia('(display-mode: standalone)').matches) {
+      return true;
+    }
+    
+    // Check if iOS standalone mode
+    if ((navigator as any).standalone === true) {
+      return true;
+    }
+    
+    return false;
+  };
+
   useEffect(() => {
-    const handler = (e: Event) => {
+    // Don't show if user already interacted or app is installed
+    if (hasUserInteracted() || isAppInstalled()) {
+      return;
+    }
+
+    const handleBeforeInstallPrompt = (e: Event) => {
       e.preventDefault();
       setDeferredPrompt(e as BeforeInstallPromptEvent);
       
-      // Show install prompt after user has interacted with the app
-      setTimeout(() => {
+      // Show install prompt after user has engaged with the app
+      const timer = setTimeout(() => {
         setShowPrompt(true);
-      }, 30000); // 30 seconds delay
+      }, SHOW_DELAY_MS);
+
+      return () => clearTimeout(timer);
     };
 
-    window.addEventListener('beforeinstallprompt', handler);
+    window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
 
     return () => {
-      window.removeEventListener('beforeinstallprompt', handler);
+      window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
     };
   }, []);
 
   const handleInstallClick = async () => {
     if (!deferredPrompt) return;
 
-    deferredPrompt.prompt();
-    const { outcome } = await deferredPrompt.userChoice;
-    
-    if (outcome === 'accepted') {
-      console.log('User accepted the install prompt');
+    try {
+      await deferredPrompt.prompt();
+      const { outcome } = await deferredPrompt.userChoice;
+      
+      if (outcome === 'accepted') {
+        console.log('User installed Missland PWA');
+      } else {
+        console.log('User declined install');
+      }
+    } catch (error) {
+      console.error('Install prompt error:', error);
+    } finally {
+      // Mark interaction regardless of outcome
+      markPromptInteraction();
+      setDeferredPrompt(null);
+      setShowPrompt(false);
     }
-    
-    setDeferredPrompt(null);
-    setShowPrompt(false);
   };
 
   const handleDismiss = () => {
     setShowPrompt(false);
-    localStorage.setItem('pwa-prompt-dismissed', Date.now().toString());
+    // Mark that user has dismissed the prompt - never show again
+    markPromptInteraction();
+    setDeferredPrompt(null);
   };
 
-  // Don't show if already dismissed in last 7 days
-  useEffect(() => {
-    const dismissed = localStorage.getItem('pwa-prompt-dismissed');
-    if (dismissed) {
-      const dismissedTime = parseInt(dismissed);
-      const daysSince = (Date.now() - dismissedTime) / (1000 * 60 * 60 * 24);
-      if (daysSince < 7) {
-        setShowPrompt(false);
-      }
+  const markPromptInteraction = () => {
+    if (typeof window !== 'undefined') {
+      localStorage.setItem(INSTALL_PROMPT_STORAGE_KEY, 'true');
     }
-  }, []);
+  };
 
   if (!showPrompt || !deferredPrompt) return null;
 
@@ -68,7 +105,8 @@ export default function InstallPrompt() {
         <button
           onClick={handleDismiss}
           className="absolute top-3 right-3 text-gray-400 hover:text-gray-600 transition-colors"
-          aria-label="Dismiss"
+          aria-label="Dismiss install prompt"
+          title="Don't show again"
         >
           <svg
             className="w-5 h-5"
@@ -118,8 +156,9 @@ export default function InstallPrompt() {
               <button
                 onClick={handleDismiss}
                 className="px-5 py-2.5 text-gray-500 text-sm font-medium hover:text-gray-700 transition-colors"
+                title="Don't show again"
               >
-                Later
+                Not Now
               </button>
             </div>
           </div>
