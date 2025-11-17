@@ -62,6 +62,9 @@ interface SearchState {
   correctionSuggestion: string | null;
   addToSearchHistory: (term: string) => void;
   clearSearchHistory: () => void;
+  // Global refresh state for UI (pull-to-refresh)
+  isRefreshing: boolean;
+  setIsRefreshing: (v: boolean) => void;
 }
 
 export const initialFilters: Filters = {
@@ -276,4 +279,7 @@ export const useSearchStore = create<SearchState>((set, get) => ({
 
     set({ searchSuggestions: Array.from(suggestionsSet).slice(0, 10) });
   },
+  // Global refresh state so UI (header/page) can react
+  isRefreshing: false,
+  setIsRefreshing: (v: boolean) => set({ isRefreshing: v }),
 }));

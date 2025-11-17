@@ -4,7 +4,8 @@ import Link from "next/link";
 import { useAuth } from "@/context/AuthContext";
 import { usePathname } from "next/navigation";
 import { useNavigationStore } from "@/stores/navigationStore";
-import React from "react";
+import { useSearchStore } from "@/stores/searchStore";
+import React, { useRef } from "react";
 
 // --- Icon Components ---
 const ExploreIcon = ({ active }: { active: boolean }) => (
@@ -92,6 +93,49 @@ export default function BottomNav() {
   const { user } = useAuth();
   const pathname = usePathname();
   const { stack } = useNavigationStore();
+  const setIsRefreshing = useSearchStore((s) => s.setIsRefreshing);
+  
+  // Double-tap detection for home icon refresh
+  const lastTapRef = useRef<number>(0);
+  const tapCountRef = useRef<number>(0);
+  const tapTimeoutRef = useRef<NodeJS.Timeout | undefined>(undefined);
+
+  const handleHomeIconDoubleTap = async (e: React.MouseEvent<HTMLAnchorElement>) => {
+    const now = Date.now();
+    const DOUBLE_TAP_DELAY = 300;
+
+    if (now - lastTapRef.current < DOUBLE_TAP_DELAY) {
+      tapCountRef.current += 1;
+    } else {
+      tapCountRef.current = 1;
+    }
+
+    lastTapRef.current = now;
+
+    // Clear previous timeout
+    if (tapTimeoutRef.current) clearTimeout(tapTimeoutRef.current);
+
+    if (tapCountRef.current === 2 && pathname === "/") {
+      // Double tap detected on home page - trigger refresh
+      e.preventDefault();
+      tapCountRef.current = 0;
+      try {
+        setIsRefreshing(true);
+        await new Promise((r) => setTimeout(r, 2000));
+        // Note: fetchPosts(true) is called via the refresh mechanism from page.tsx
+        // This just triggers the global state which will be read by page.tsx
+        setIsRefreshing(false);
+      } catch (error) {
+        console.error("Refresh failed:", error);
+        setIsRefreshing(false);
+      }
+    } else {
+      // Reset count after delay if not double-tapped
+      tapTimeoutRef.current = setTimeout(() => {
+        tapCountRef.current = 0;
+      }, DOUBLE_TAP_DELAY);
+    }
+  };
 
   const navItems = [
     { href: "/", label: "Explore", icon: ExploreIcon },
@@ -122,6 +166,7 @@ export default function BottomNav() {
             <Link
               key={item.label}
               href={item.href}
+              onClick={(e) => item.label === "Explore" && handleHomeIconDoubleTap(e)}
               className="flex flex-col items-center justify-center space-y-1 w-full h-full"
             >
               <IconComponent active={isActive} />

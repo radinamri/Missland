@@ -24,6 +24,7 @@ const RETRY_DELAY_MS = 1000;
 
 export default function ExplorePage() {
   const { searchTerm, filters } = useSearchStore();
+  const setIsRefreshing = useSearchStore((s) => s.setIsRefreshing);
 
   const [posts, setPosts] = useState<Post[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -251,6 +252,18 @@ export default function ExplorePage() {
                   next={() => fetchPosts(false)}
                   hasMore={hasMore && !error}
                   loader={<PostGridSkeleton count={postsPerPage} />}
+                  pullDownToRefresh={typeof window !== "undefined" && ("ontouchstart" in window || navigator.maxTouchPoints > 0)}
+                  pullDownToRefreshThreshold={80}
+                  pullDownToRefreshContent={null}
+                  refreshFunction={async () => {
+                    try {
+                      setIsRefreshing(true);
+                      await new Promise((r) => setTimeout(r, 2000));
+                      await fetchPosts(true);
+                    } finally {
+                      setIsRefreshing(false);
+                    }
+                  }}
                   endMessage={
                     <div className="col-span-full flex flex-col items-center justify-center py-12 mt-8">
                       <div className="text-center">

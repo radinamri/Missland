@@ -5,3 +5,13 @@ export default function LoadingSpinner() {
     </div>
   );
 }
+
+// Compact spinner for mobile/bottom loader
+export function SmallLoadingSpinner() {
+  return (
+    <div className="flex justify-center items-center py-4" role="status" aria-live="polite">
+      <div className="w-6 h-6 border-2 border-dashed rounded-full animate-spin border-[#3D5A6C]"></div>
+      <span className="sr-only">Loading</span>
+    </div>
+  );
+}

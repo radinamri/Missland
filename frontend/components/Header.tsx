@@ -6,6 +6,7 @@ import { usePathname, useRouter } from "next/navigation";
 import { useState, useEffect, useRef } from "react";
 import SearchInput from "./SearchInput";
 import { useSearchStore } from "@/stores/searchStore";
+import { SmallLoadingSpinner } from "@/components/LoadingSpinner";
 import Icon from "@/public/icon";
 import Image from "next/image";
 import FilterBar from "./FilterBar";
@@ -107,9 +108,15 @@ export default function Header() {
   };
 
   const showSearch = pathname === "/" || pathname.startsWith("/post/");
+  const isRefreshing = useSearchStore((s) => s.isRefreshing);
 
   return (
     <>
+      {isRefreshing && (
+        <div className="w-full bg-white z-40">
+          <SmallLoadingSpinner />
+        </div>
+      )}
       <header className="bg-white shadow-sm sticky top-0 z-30 h-auto flex flex-col items-center py-2 gap-2">
         <div className="flex items-center justify-between w-full md:px-8 px-4">
           <div className="flex items-center space-x-4">
