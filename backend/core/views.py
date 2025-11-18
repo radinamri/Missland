@@ -151,12 +151,20 @@ class FilteredPostListView(generics.ListAPIView):
     pagination_class = StandardResultsSetPagination
 
     def get_queryset(self):
-        # Build cache key from query parameters
-        cache_key = f"posts:filtered:{self.request.GET.urlencode()}"
-        cached_result = cache.get(cache_key)
+        # Check if cache_bust parameter is present (used on page refresh for fresh data)
+        cache_bust_param = self.request.query_params.get('cache_bust', None)
+        should_bypass_cache = cache_bust_param is not None
         
-        if cached_result is not None:
-            return cached_result
+        # Build cache key from query parameters (excluding cache_bust itself)
+        params_for_cache = self.request.GET.copy()
+        params_for_cache.pop('cache_bust', None)  # Remove cache_bust from cache key
+        cache_key = f"posts:filtered:{params_for_cache.urlencode()}"
+        
+        # Check cache only if not explicitly bypassed
+        if not should_bypass_cache:
+            cached_result = cache.get(cache_key)
+            if cached_result is not None:
+                return cached_result
         
         queryset = Post.objects.all().select_related().only(
             'id', 'title', 'image_url', 'width', 'height', 
@@ -241,13 +249,23 @@ class FilteredPostListView(generics.ListAPIView):
 
         if query_filters:
             # Use .distinct() to avoid duplicate results if a post matches multiple criteria
-            result = queryset.filter(query_filters).distinct().order_by('-created_at')
-            cache.set(cache_key, result, timeout=300)  # Cache for 5 minutes
+            # Use random order when cache is busted (page refresh), otherwise use created_at
+            order_by_field = '?' if should_bypass_cache else '-created_at'
+            result = queryset.filter(query_filters).distinct().order_by(order_by_field)
+            
+            # Cache the result (unless cache was explicitly bypassed)
+            if not should_bypass_cache:
+                cache.set(cache_key, result, timeout=300)  # Cache for 5 minutes
             return result
 
         # If no query or filters were provided, return the default unfiltered list
-        result = queryset.order_by('-created_at')
-        cache.set(cache_key, result, timeout=300)
+        # Use random order when cache is busted (page refresh), otherwise use created_at
+        order_by_field = '?' if should_bypass_cache else '-created_at'
+        result = queryset.order_by(order_by_field)
+        
+        # Cache the result (unless cache was explicitly bypassed)
+        if not should_bypass_cache:
+            cache.set(cache_key, result, timeout=300)
         return result
 
 

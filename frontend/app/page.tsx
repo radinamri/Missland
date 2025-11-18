@@ -129,6 +129,12 @@ export default function ExplorePage() {
           params.append("color", filters.color.join(","));
         }
 
+        // Add cache-busting timestamp on page refresh (isNewSearch = true)
+        // This ensures backend fetches fresh data and skips its 5-minute cache
+        if (isNewSearch) {
+          params.append("cache_bust", String(Date.now()));
+        }
+
         const pageToFetch = isNewSearch ? 1 : pageRef.current;
         params.append("page", String(pageToFetch));
         params.append("page_size", String(postsPerPage));

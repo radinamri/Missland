@@ -1,8 +1,9 @@
 "use client";
 
 import { useAuth } from "@/context/AuthContext";
+import { useSearchStore } from "@/stores/searchStore";
 import SplashScreen from "./SplashScreen";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 
 export default function AppInitializer({
   children,
@@ -10,11 +11,38 @@ export default function AppInitializer({
   children: React.ReactNode;
 }) {
   const { isLoading: isAuthLoading } = useAuth();
+  const { restoreFiltersFromStorage, fetchFilterSuggestions } = useSearchStore();
 
   // State to control the fade-out animation
   const [isFadingOut, setIsFadingOut] = useState(false);
   // State to unmount the splash screen after the animation
   const [isSplashMounted, setIsSplashMounted] = useState(true);
+
+  // Prevent multiple initializations
+  const hasInitialized = useRef(false);
+
+  // Initialize filters and suggestions on app mount
+  useEffect(() => {
+    if (hasInitialized.current) return;
+    hasInitialized.current = true;
+
+    const initialize = async () => {
+      try {
+        // Restore filters from localStorage
+        const filtersRestored = restoreFiltersFromStorage();
+        console.log('[AppInitializer] Filters restored:', filtersRestored);
+
+        // Fetch filter suggestions for search UI
+        await fetchFilterSuggestions();
+        console.log('[AppInitializer] Filter suggestions fetched');
+      } catch (error) {
+        console.error('[AppInitializer] Initialization error:', error);
+        // Continue anyway - don't break app on initialization errors
+      }
+    };
+
+    initialize();
+  }, [restoreFiltersFromStorage, fetchFilterSuggestions]);
 
   useEffect(() => {
     if (!isAuthLoading) {

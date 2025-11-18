@@ -22,6 +22,9 @@ interface Filters {
   color: string[];
 }
 
+// LocalStorage key for persisting filters
+const FILTERS_STORAGE_KEY = "missland-filters";
+
 // Levenshtein distance function
 const levenshteinDistance = (a: string, b: string): number => {
   if (a.length === 0) return b.length;
@@ -65,6 +68,9 @@ interface SearchState {
   // Global refresh state for UI (pull-to-refresh)
   isRefreshing: boolean;
   setIsRefreshing: (v: boolean) => void;
+  // Filter persistence methods
+  persistFiltersToStorage: () => void;
+  restoreFiltersFromStorage: () => boolean;
 }
 
 export const initialFilters: Filters = {
@@ -149,6 +155,8 @@ export const useSearchStore = create<SearchState>((set, get) => ({
 
     const newSearchTerm = [...new Set(words)].join(" ");
     get().setSearchTerm(newSearchTerm);
+    // Persist filters after setting new search term
+    setTimeout(() => get().persistFiltersToStorage(), 0);
   },
 
   resetFilters: () => {
@@ -159,6 +167,10 @@ export const useSearchStore = create<SearchState>((set, get) => ({
       searchSuggestions: [],
       correctionSuggestion: null,
     });
+    // Clear persisted filters on reset
+    if (typeof window !== "undefined") {
+      localStorage.removeItem(FILTERS_STORAGE_KEY);
+    }
   },
 
   // `performTextSearch` handles "submit" actions: correcting typos and then calling setSearchTerm.
@@ -282,4 +294,50 @@ export const useSearchStore = create<SearchState>((set, get) => ({
   // Global refresh state so UI (header/page) can react
   isRefreshing: false,
   setIsRefreshing: (v: boolean) => set({ isRefreshing: v }),
+
+  // Persist filters to localStorage
+  persistFiltersToStorage: () => {
+    const state = get();
+    if (typeof window !== "undefined") {
+      try {
+        localStorage.setItem(FILTERS_STORAGE_KEY, JSON.stringify(state.filters));
+      } catch (error) {
+        console.error("Failed to persist filters to localStorage:", error);
+      }
+    }
+  },
+
+  // Restore filters from localStorage
+  restoreFiltersFromStorage: () => {
+    if (typeof window === "undefined") return false;
+    try {
+      const stored = localStorage.getItem(FILTERS_STORAGE_KEY);
+      if (stored) {
+        const restoredFilters = JSON.parse(stored) as Filters;
+        // Validate restored filters structure
+        if (
+          typeof restoredFilters === "object" &&
+          restoredFilters !== null &&
+          "shape" in restoredFilters &&
+          "pattern" in restoredFilters &&
+          "size" in restoredFilters &&
+          "color" in restoredFilters
+        ) {
+          set({ filters: restoredFilters });
+          // Rebuild search term from restored filters
+          const words: string[] = [];
+          if (restoredFilters.shape) words.push(restoredFilters.shape);
+          if (restoredFilters.pattern) words.push(restoredFilters.pattern);
+          if (restoredFilters.size) words.push(restoredFilters.size);
+          words.push(...restoredFilters.color);
+          const searchTerm = [...new Set(words)].join(" ");
+          set({ searchTerm });
+          return true;
+        }
+      }
+    } catch (error) {
+      console.error("Failed to restore filters from localStorage:", error);
+    }
+    return false;
+  },
 }));
