@@ -76,6 +76,12 @@ class GoogleLogin(SocialLoginView):
     callback_url = 'http://localhost:3000'
     client_class = OAuth2Client
 
+    def process_login(self):
+        """Override to skip session creation - use JWT only"""
+        # Don't call the parent's process_login() which creates a session
+        # The parent LoginView will handle JWT token generation via get_response()
+        pass
+
 
 class UserProfileView(generics.RetrieveUpdateAPIView):
     queryset = User.objects.all()
