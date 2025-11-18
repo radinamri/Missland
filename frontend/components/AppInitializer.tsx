@@ -30,13 +30,10 @@ export default function AppInitializer({
       try {
         // Restore filters from localStorage
         const filtersRestored = restoreFiltersFromStorage();
-        console.log('[AppInitializer] Filters restored:', filtersRestored);
 
         // Fetch filter suggestions for search UI
         await fetchFilterSuggestions();
-        console.log('[AppInitializer] Filter suggestions fetched');
       } catch (error) {
-        console.error('[AppInitializer] Initialization error:', error);
         // Continue anyway - don't break app on initialization errors
       }
     };

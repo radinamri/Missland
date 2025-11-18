@@ -70,12 +70,12 @@ export default function InstallPrompt() {
       const { outcome } = await deferredPrompt.userChoice;
       
       if (outcome === 'accepted') {
-        console.log('User installed Missland PWA');
+        // PWA installed
       } else {
-        console.log('User declined install');
+        // PWA install declined
       }
     } catch (error) {
-      console.error('Install prompt error:', error);
+      // Install prompt error
     } finally {
       // Mark interaction regardless of outcome
       markPromptInteraction();

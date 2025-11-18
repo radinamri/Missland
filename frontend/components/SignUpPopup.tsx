@@ -45,7 +45,7 @@ export default function SignUpPopup({
       onClose();
     },
     onError: () => {
-      console.log("Login Failed");
+      // Login error handled silently
     },
   });
 

@@ -11,6 +11,8 @@ import LoadingSpinner from "@/components/LoadingSpinner";
 import { useNavigationStore } from "@/stores/navigationStore";
 import { useAuth } from "@/context/AuthContext";
 
+const POST_DETAIL_STATE_KEY = "post-detail-state";
+
 export default function PostPage() {
   const params = useParams();
   const router = useRouter();
@@ -22,6 +24,21 @@ export default function PostPage() {
   const [isLoading, setIsLoading] = useState(true);
   const { setStack } = useNavigationStore();
   const { user, trackPostClick, showToastWithMessage } = useAuth();
+
+  // Save current post detail state on mount (for when clicking "more" posts)
+  useEffect(() => {
+    return () => {
+      // Save state before unmounting (when navigating away)
+      if (data && typeof window !== "undefined") {
+        const stateToSave = {
+          post: data.post,
+          morePosts: data.morePosts,
+          scrollPosition: window.scrollY,
+        };
+        sessionStorage.setItem(POST_DETAIL_STATE_KEY, JSON.stringify(stateToSave));
+      }
+    };
+  }, [data]);
 
   useEffect(() => {
     async function getPostData() {
@@ -80,6 +97,11 @@ export default function PostPage() {
     }
   };
 
+  const handleBackToExplore = () => {
+    console.log("[PostPage] Back button clicked, returning to explore");
+    router.push("/");
+  };
+
   if (isLoading) {
     return <LoadingSpinner />;
   }
@@ -99,7 +121,7 @@ export default function PostPage() {
           router.push(`/post/${post.id}`);
         }}
         onSave={openSaveModal}
-        onBack={() => router.push("/")} // Go back to the main explore page
+        onBack={handleBackToExplore} // Go back to the main explore page
         onOpenLoginModal={() => router.push("/login")}
       />
     </div>

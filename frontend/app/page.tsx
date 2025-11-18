@@ -19,6 +19,7 @@ const getPostsPerPage = () => {
 };
 
 const SCROLL_POSITION_KEY = "explore-scroll-position";
+const EXPLORE_POSTS_STATE_KEY = "explore-posts-state";
 const MAX_RETRY_ATTEMPTS = 3;
 const RETRY_DELAY_MS = 1000;
 
@@ -38,6 +39,7 @@ export default function ExplorePage() {
   const pageRef = useRef(1);
   const postIdsSet = useRef<Set<number>>(new Set());
   const isFetchingRef = useRef(false);
+  const isRestoringRef = useRef(false);
 
   // Update posts per page on mount and window resize
   useEffect(() => {
@@ -48,6 +50,44 @@ export default function ExplorePage() {
     updatePostsPerPage();
     window.addEventListener("resize", updatePostsPerPage);
     return () => window.removeEventListener("resize", updatePostsPerPage);
+  }, []);
+
+  // Restore posts state on mount (when coming back from post detail)
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const savedStateJson = sessionStorage.getItem(EXPLORE_POSTS_STATE_KEY);
+      if (savedStateJson) {
+        try {
+          isRestoringRef.current = true;
+          const savedState = JSON.parse(savedStateJson);
+
+          // Restore the saved state
+          setPosts(savedState.posts);
+          pageRef.current = savedState.pageNumber;
+          setHasMore(savedState.hasMore);
+          postIdsSet.current = new Set(savedState.postIds);
+          setIsLoading(false);
+
+          // Schedule scroll restoration after DOM updates
+          setTimeout(() => {
+            const savedPosition = sessionStorage.getItem(SCROLL_POSITION_KEY);
+            if (savedPosition) {
+              const position = parseInt(savedPosition, 10);
+              window.scrollTo(0, position);
+              sessionStorage.removeItem(SCROLL_POSITION_KEY);
+            }
+            isRestoringRef.current = false;
+          }, 100);
+
+          // Clean up the saved state so it's not used again
+          sessionStorage.removeItem(EXPLORE_POSTS_STATE_KEY);
+        } catch (error) {
+          console.error("[ExplorePage] Failed to restore saved state:", error);
+          sessionStorage.removeItem(EXPLORE_POSTS_STATE_KEY);
+          isRestoringRef.current = false;
+        }
+      }
+    }
   }, []);
 
   /**
@@ -64,7 +104,6 @@ export default function ExplorePage() {
     async (isNewSearch = false, retryAttempt = 0) => {
       // Prevent concurrent requests
       if (isFetchingRef.current) {
-        console.log("[fetchPosts] Request already in progress, skipping");
         return;
       }
       isFetchingRef.current = true;
@@ -139,14 +178,10 @@ export default function ExplorePage() {
         params.append("page", String(pageToFetch));
         params.append("page_size", String(postsPerPage));
 
-        console.log(`[fetchPosts] Fetching page ${pageToFetch}, posts per page: ${postsPerPage}, current posts: ${posts.length}`);
-
         const response = await api.get<PaginatedPostResponse>(
           `/api/auth/posts/filter/?${params.toString()}`
         );
         const newPosts = response.data.results;
-
-        console.log(`[fetchPosts] Received ${newPosts.length} posts, next: ${response.data.next ? 'yes' : 'no'}, total count: ${response.data.count}`);
 
         // Implement duplicate prevention
         setPosts((prevPosts) => {
@@ -161,18 +196,15 @@ export default function ExplorePage() {
               (post) => !postIdsSet.current.has(post.id)
             );
             uniqueNewPosts.forEach((post) => postIdsSet.current.add(post.id));
-            console.log(`[fetchPosts] Added ${uniqueNewPosts.length} unique posts (filtered ${newPosts.length - uniqueNewPosts.length} duplicates)`);
             return [...prevPosts, ...uniqueNewPosts];
           }
         });
 
         const hasMorePosts = response.data.next !== null;
         setHasMore(hasMorePosts);
-        console.log(`[fetchPosts] hasMore set to: ${hasMorePosts}`);
 
         // Always increment page after successful fetch for next request
         pageRef.current += 1;
-        console.log(`[fetchPosts] Page incremented to: ${pageRef.current} for next fetch`);
 
         // Clear error on successful fetch
         setError(null);
@@ -183,7 +215,6 @@ export default function ExplorePage() {
         // Implement exponential backoff retry
         if (retryAttempt < MAX_RETRY_ATTEMPTS) {
           const delay = RETRY_DELAY_MS * Math.pow(2, retryAttempt);
-          console.log(`[fetchPosts] Retrying in ${delay}ms...`);
           setRetryCount(retryAttempt + 1);
 
           setTimeout(() => {
@@ -196,7 +227,6 @@ export default function ExplorePage() {
         // Max retries reached
         setError("Failed to load posts. Please try again.");
         setHasMore(false);
-        console.error("[fetchPosts] Max retries reached, giving up");
       } finally {
         if (isNewSearch) {
           setIsLoading(false);
@@ -213,6 +243,11 @@ export default function ExplorePage() {
 
   // Effect to trigger a new search when filters or search term change
   useEffect(() => {
+    // Skip if we're in the middle of restoring state
+    if (isRestoringRef.current) {
+      return;
+    }
+
     const handler = setTimeout(() => {
       fetchPosts(true);
     }, 500); // Debounce to prevent rapid-fire requests
@@ -220,20 +255,47 @@ export default function ExplorePage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchTerm, filters]);
 
-  // Restore scroll position after posts are loaded (for back navigation)
+  // Save posts state before leaving the page (when navigating to post detail)
   useEffect(() => {
-    if (posts.length > 0 && typeof window !== "undefined") {
-      const savedPosition = sessionStorage.getItem(SCROLL_POSITION_KEY);
-      if (savedPosition) {
-        const position = parseInt(savedPosition, 10);
-        // Use requestAnimationFrame to ensure DOM is ready
-        requestAnimationFrame(() => {
-          window.scrollTo(0, position);
-          sessionStorage.removeItem(SCROLL_POSITION_KEY);
-        });
+    const handleBeforeUnload = () => {
+      if (posts.length > 0 && typeof window !== "undefined") {
+        const stateToSave = {
+          posts,
+          pageNumber: pageRef.current,
+          hasMore,
+          postIds: Array.from(postIdsSet.current),
+          scrollPosition: window.scrollY,
+        };
+        sessionStorage.setItem(EXPLORE_POSTS_STATE_KEY, JSON.stringify(stateToSave));
+        sessionStorage.setItem(SCROLL_POSITION_KEY, String(window.scrollY));
       }
-    }
-  }, [posts.length]);
+    };
+
+    // Listen for route changes (Next.js navigation)
+    const handleRouteChange = () => {
+      handleBeforeUnload();
+    };
+
+    // Use the window's popstate for browser back button
+    window.addEventListener("popstate", handleBeforeUnload);
+
+    // For Next.js router changes, we need to save state when component unmounts
+    return () => {
+      window.removeEventListener("popstate", handleBeforeUnload);
+      // Save state before unmounting
+      if (posts.length > 0 && typeof window !== "undefined") {
+        const stateToSave = {
+          posts,
+          pageNumber: pageRef.current,
+          hasMore,
+          postIds: Array.from(postIdsSet.current),
+          scrollPosition: window.scrollY,
+        };
+        sessionStorage.setItem(EXPLORE_POSTS_STATE_KEY, JSON.stringify(stateToSave));
+        sessionStorage.setItem(SCROLL_POSITION_KEY, String(window.scrollY));
+      }
+    };
+  }, [posts, hasMore]);
 
   // Manual retry function
   const handleRetry = () => {

@@ -126,7 +126,7 @@ export default function BottomNav() {
         // This just triggers the global state which will be read by page.tsx
         setIsRefreshing(false);
       } catch (error) {
-        console.error("Refresh failed:", error);
+        // Refresh failed silently
         setIsRefreshing(false);
       }
     } else {

@@ -13,8 +13,6 @@ export default function PWARegister() {
       navigator.serviceWorker
         .register('/sw.js', { scope: '/' })
         .then((registration) => {
-          console.log('Service Worker registered:', registration.scope);
-
           // Check for updates every hour
           setInterval(() => {
             registration.update();
@@ -39,25 +37,24 @@ export default function PWARegister() {
           });
         })
         .catch((error) => {
-          console.error('Service Worker registration failed:', error);
+          // Service Worker registration failed
         });
 
       // Handle offline/online events
       window.addEventListener('online', () => {
-        console.log('Back online');
         // Trigger background sync if supported
         navigator.serviceWorker.ready.then((reg) => {
           if ('sync' in reg) {
             const syncReg = reg as ServiceWorkerRegistration & {
               sync: { register: (tag: string) => Promise<void> };
             };
-            syncReg.sync.register('sync-saves').catch(console.error);
+            syncReg.sync.register('sync-saves').catch(() => {});
           }
         });
       });
 
       window.addEventListener('offline', () => {
-        console.log('Gone offline');
+        // User went offline
       });
 
       // Request notification permission for engagement

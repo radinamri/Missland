@@ -53,7 +53,6 @@ export default function SavedPostDetail({
       window.URL.revokeObjectURL(url);
       showToastWithMessage("Image downloaded successfully!");
     } catch (error) {
-      console.error("Failed to download image:", error);
       showToastWithMessage("Failed to download image. Please try again.");
     }
   };
@@ -73,7 +72,6 @@ export default function SavedPostDetail({
         showToastWithMessage("Link copied to clipboard!");
       }
     } catch (error) {
-      console.error("Failed to share:", error);
       showToastWithMessage("Failed to share. Please try again.");
     }
   };
