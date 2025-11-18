@@ -29,6 +29,10 @@ urlpatterns = [
     path('sessions/<uuid:session_id>/revoke/', RevokeSessionView.as_view(), name='revoke-session'),
     path('sessions/revoke-all/', RevokeAllSessionsView.as_view(), name='revoke-all-sessions'),
     path('logout/', LogoutView.as_view(), name='logout'),
+
+    # Posts
+    path('posts/', PostListView.as_view(), name='post-list'),
+    path('posts/<int:pk>/', PostDetailView.as_view(), name='post-detail'),
     path('posts/<int:post_id>/more/', MorePostsView.as_view(), name='more-posts'),
     path('posts/<int:post_id>/save-try-on/', SaveTryOnView.as_view(), name='save-try-on'),
 
