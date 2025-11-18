@@ -47,7 +47,11 @@ urlpatterns = [
     path('track/search/', TrackSearchQueryView.as_view(), name='track-search-query'),
     path('track/try-on/', TrackTryOnView.as_view(), name='track-post-try-on'),
 
-    # Add these two paths for password reset
+    # Posts filtering
+    path('posts/filter/', FilteredPostListView.as_view(), name='filtered-posts'),
+    path('posts/filter-suggestions/', FilterSuggestionsView.as_view(), name='filter-suggestions'),
+
+    # Password reset
     path('password/reset/', PasswordResetRequestView.as_view(), name='password-reset-request'),
     path('password/reset/confirm/', PasswordResetConfirmView.as_view(), name='password-reset-confirm'),
 ]
