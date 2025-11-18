@@ -2,39 +2,113 @@
 
 import { useSearchStore } from "@/stores/searchStore";
 import { useRef, useState, useEffect, useCallback } from "react";
+import Image from "next/image";
+
+const colorHexMap: { [key: string]: string } = {
+  red: "#f87171",
+  pink: "#f9a8d4",
+  orange: "#fb923c",
+  yellow: "#facc15",
+  green: "#34d399",
+  blue: "#60a5fa",
+  purple: "#c084fc",
+  brown: "#d2b48c",
+  gray: "#9ca3af",
+  black: "#1f2937",
+  white: "#f1f5f9",
+  cream: "#fef3c7",
+  turquoise: "#2dd4bf",
+};
+
+const sizeSymbols: { [key: string]: string } = {
+  short: "S",
+  medium: "M",
+  long: "L",
+};
+
+interface FilterPillProps {
+  label: string;
+  isActive: boolean;
+  onClick: () => void;
+  type: "shape" | "pattern" | "size" | "color";
+  value: string;
+}
 
 const FilterPill = ({
   label,
   isActive,
   onClick,
-}: {
-  label: string;
-  isActive: boolean;
-  onClick: () => void;
-}) => (
-  <button
-    onClick={onClick}
-    className={`flex-shrink-0 px-4 py-2 text-sm font-semibold rounded-xl transition-all duration-200 flex items-center gap-2 ${
-      isActive
-        ? "bg-[#3D5A6C] text-white hover:bg-[#2d4654]"
-        : "bg-[#E7E7E7] text-[#3D5A6C] hover:bg-[#dcdcdc]"
-    }`}
-  >
-    {label}
-    {isActive && (
-      <svg
-        xmlns="http://www.w3.org/2000/svg"
-        width="14"
-        height="14"
-        fill="currentColor"
-        viewBox="0 0 16 16"
-        className="transition-transform hover:scale-110"
-      >
-        <path d="M2.146 2.854a.5.5 0 1 1 .708-.708L8 7.293l5.146-5.147a.5.5 0 0 1 .708.708L8.707 8l5.147 5.146a.5.5 0 0 1-.708.708L8 8.707l-5.146 5.147a.5.5 0 0 1-.708-.708L7.293 8z" />
-      </svg>
-    )}
-  </button>
-);
+  type,
+  value,
+}: FilterPillProps) => {
+  // Determine if label should be hidden on mobile (only hide for colors)
+  const shouldHideLabelOnMobile = type === "color";
+
+  // Render image/icon content based on type
+  const renderVisual = () => {
+    if ((type === "shape" || type === "pattern") && value) {
+      return (
+        <div className="relative w-10 h-10 overflow-hidden flex-shrink-0 rounded-l-md">
+          <Image
+            src={`/nail-categories/${value}.png`}
+            alt={label}
+            width={40}
+            height={40}
+            className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-200"
+          />
+        </div>
+      );
+    }
+
+    if (type === "color" && value) {
+      return (
+        <div
+          className={`w-11 h-full flex-shrink-0 rounded-l-md md:rounded-r-none md:border-r md:border-gray-300 sm:rounded-r-md`}
+          style={{ backgroundColor: colorHexMap[value] || "#ccc" }}
+        ></div>
+      );
+    }
+
+    if (type === "size" && value) {
+      const sizeSymbol = sizeSymbols[value] || value.toUpperCase()[0];
+      return (
+        <div className="w-10 h-full flex-shrink-0 rounded-l-md bg-gray-200 flex items-center justify-center font-bold text-sm text-gray-700 border-r border-gray-300">
+          {sizeSymbol}
+        </div>
+      );
+    }
+
+    return null;
+  };
+
+  return (
+    <button
+      onClick={onClick}
+      className={`flex-shrink-0 text-sm font-semibold rounded-lg transition-all duration-200 flex items-center overflow-hidden group sm:h-10 h-9 ${
+        isActive
+          ? "bg-[#3D5A6C] text-white hover:bg-[#2d4654]"
+          : "bg-[#E7E7E7] text-[#3D5A6C] hover:bg-[#dcdcdc]"
+      }`}
+    >
+      {renderVisual()}
+      <span className={`px-3 ${shouldHideLabelOnMobile ? "hidden sm:inline" : "inline"}`}>
+        {label}
+      </span>
+      {isActive && (
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          width="14"
+          height="14"
+          fill="currentColor"
+          viewBox="0 0 16 16"
+          className="transition-transform hover:scale-110 flex-shrink-0 mr-2"
+        >
+          <path d="M2.146 2.854a.5.5 0 1 1 .708-.708L8 7.293l5.146-5.147a.5.5 0 0 1 .708.708L8.707 8l5.147 5.146a.5.5 0 0 1-.708.708L8 8.707l-5.146 5.147a.5.5 0 0 1-.708-.708L7.293 8z" />
+        </svg>
+      )}
+    </button>
+  );
+};
 
 const ScrollButton = ({
   direction,
@@ -209,6 +283,8 @@ export default function FilterBar() {
               label={value.charAt(0).toUpperCase() + value.slice(1)}
               isActive={isActive}
               onClick={() => setFilter(type, value)}
+              type={type}
+              value={value}
             />
           );
         })}
