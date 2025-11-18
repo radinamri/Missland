@@ -41,7 +41,10 @@ class CustomTokenObtainPairView(TokenObtainPairView):
         
         # If authentication was successful, create a session
         if response.status_code == status.HTTP_200_OK:
-            user = self.request.user
+            # Get the user from the serializer (not from request.user)
+            serializer = self.get_serializer(data=request.data)
+            serializer.is_valid(raise_exception=True)
+            user = serializer.user
             
             # Create a new session for this login
             session = SessionManager.create_device_session(user, request)
