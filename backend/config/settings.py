@@ -148,8 +148,24 @@ REST_FRAMEWORK = {
 # Tell dj-rest-auth to use JWT authentication
 REST_AUTH = {
     'USE_JWT': True,
-    'JWT_AUTH_HTTPONLY': False,
+    'JWT_AUTH_HTTPONLY': True,  # Store JWT in HttpOnly cookies (more secure)
     'SESSION_LOGIN': False,
+}
+
+# SimpleJWT Configuration - Explicit settings for production-safe defaults
+from datetime import timedelta
+
+SIMPLE_JWT = {
+    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=15),  # Access token expires in 15 minutes
+    'REFRESH_TOKEN_LIFETIME': timedelta(days=7),    # Refresh token expires in 7 days
+    'ROTATE_REFRESH_TOKENS': True,                  # Issue new refresh token on each refresh
+    'BLACKLIST_AFTER_ROTATION': True,               # Blacklist old refresh tokens
+    'ALGORITHM': 'HS256',
+    'SIGNING_KEY': SECRET_KEY,
+    'AUTH_HEADER_TYPES': ('Bearer',),
+    'USER_ID_FIELD': 'id',
+    'USER_ID_CLAIM': 'user_id',
+    'AUTH_TOKEN_CLASSES': ('rest_framework_simplejwt.tokens.AccessToken',),
 }
 
 CORS_ALLOWED_ORIGINS = [

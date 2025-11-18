@@ -28,7 +28,7 @@ from .serializers import (
     EmailChangeInitiateSerializer, EmailChangeConfirmSerializer, PostSerializer,
     ArticleListSerializer, ArticleDetailSerializer, UserDeleteSerializer, CollectionDetailSerializer,
     CollectionCreateSerializer, CollectionListSerializer, TryOnSerializer, PasswordResetRequestSerializer,
-    PasswordResetConfirmSerializer
+    PasswordResetConfirmSerializer, UserSessionSerializer
 )
 from .keyword_extractor import extract_nail_keywords
 from .color_constants import COLOR_SIMPLIFICATION_MAP
@@ -577,3 +577,84 @@ class FilterSuggestionsView(APIView):
                        "white", "gray", "black"]
         }
         return Response(suggestions)
+
+# --- MULTI-DEVICE SESSION MANAGEMENT ---
+
+class ActiveSessionsView(generics.ListAPIView):
+    """
+    List all active sessions (devices) where the user is logged in.
+    Shows device name, type, OS, browser, and last activity.
+    """
+    serializer_class = UserSessionSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        return UserSession.objects.filter(user=self.request.user, is_active=True)
+
+
+class RevokeSessionView(APIView):
+    """
+    Logout from a specific device/session.
+    User can only revoke their own sessions.
+    """
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request, session_id):
+        from .auth_utils import SessionManager
+        
+        try:
+            session = UserSession.objects.get(session_id=session_id, user=request.user)
+            session.is_active = False
+            session.save()
+            return Response(
+                {'detail': f'Session "{session.device_name}" has been logged out.'},
+                status=status.HTTP_200_OK
+            )
+        except UserSession.DoesNotExist:
+            return Response(
+                {'detail': 'Session not found or you do not have permission to revoke it.'},
+                status=status.HTTP_404_NOT_FOUND
+            )
+
+
+class RevokeAllSessionsView(APIView):
+    """
+    Logout from all devices except the current one.
+    Equivalent to "Logout from all other devices" feature.
+    """
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        from .auth_utils import SessionManager
+        
+        # Get current session ID from request (passed by frontend in header or token)
+        current_session_id = request.META.get('HTTP_X_SESSION_ID')
+        
+        revoked = SessionManager.revoke_all_sessions(request.user, except_session_id=current_session_id)
+        
+        return Response(
+            {'detail': f'Logged out from {revoked} other device(s).'},
+            status=status.HTTP_200_OK
+        )
+
+
+class LogoutView(APIView):
+    """
+    Logout endpoint that revokes the current session.
+    Replaces the need for frontend to just clear localStorage.
+    """
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        # Get current session ID from request
+        current_session_id = request.META.get('HTTP_X_SESSION_ID')
+        
+        if current_session_id:
+            try:
+                session = UserSession.objects.get(session_id=current_session_id)
+                session.is_active = False
+                session.save()
+            except UserSession.DoesNotExist:
+                pass  # Session already doesn't exist
+        
+        return Response({'detail': 'Successfully logged out.'}, status=status.HTTP_200_OK)

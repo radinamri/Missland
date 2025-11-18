@@ -23,6 +23,7 @@ import api from "@/utils/api";
 interface AuthContextType {
   user: User | null;
   tokens: AuthTokens | null;
+  sessionId: string | null;
   isLoading: boolean;
   interactionCount: number;
   toastMessage: string;
@@ -64,6 +65,7 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
   const [tokens, setTokens] = useState<AuthTokens | null>(null);
+  const [sessionId, setSessionId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [interactionCount, setInteractionCount] = useState(0);
   const [toastMessage, setToastMessage] = useState("");
@@ -218,14 +220,31 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
-  const logoutUser = useCallback(() => {
-    setTokens(null);
-    setUser(null);
-    setCollections(null);
-    localStorage.removeItem("authTokens");
-    localStorage.removeItem("pendingSavePostId");
-    router.push("/login");
-  }, [router]);
+  const logoutUser = useCallback(async () => {
+    try {
+      // Notify backend about logout (optional but recommended)
+      if (sessionId) {
+        try {
+          await api.post("/api/auth/logout/");
+        } catch (error) {
+          console.warn("Could not notify backend of logout:", error);
+          // Continue with logout even if backend notification fails
+        }
+      }
+    } finally {
+      // Clear all auth data
+      setTokens(null);
+      setUser(null);
+      setSessionId(null);
+      setCollections(null);
+      localStorage.removeItem("authTokens");
+      localStorage.removeItem("sessionId");
+      localStorage.removeItem("pendingSavePostId");
+      // Remove session ID from API headers
+      delete api.defaults.headers.common["X-Session-ID"];
+      router.push("/login");
+    }
+  }, [router, sessionId]);
 
   const fetchUserProfile = useCallback(async () => {
     try {
@@ -240,9 +259,21 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   useEffect(() => {
     const initializeAuth = async () => {
       const storedTokens = localStorage.getItem("authTokens");
-      if (storedTokens) {
+      const storedSessionId = localStorage.getItem("sessionId");
+      
+      if (storedTokens && storedSessionId) {
         setTokens(JSON.parse(storedTokens));
-        await fetchUserProfile();
+        setSessionId(storedSessionId);
+        // Restore session ID in API headers
+        api.defaults.headers.common["X-Session-ID"] = storedSessionId;
+        
+        try {
+          await fetchUserProfile();
+        } catch (error) {
+          console.error("Failed to fetch user profile during initialization:", error);
+          // If profile fetch fails, user will be logged out
+          // This is intentional - don't keep invalid sessions
+        }
       }
       setLoading(false);
     };
@@ -335,10 +366,22 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   const loginUser = async (credentials: LoginCredentials) => {
     try {
-      const response = await api.post<AuthTokens>("/api/token/", credentials);
+      const response = await api.post<AuthTokens & { session_id?: string }>("/api/token/", credentials);
       if (response.status === 200) {
-        setTokens(response.data);
-        localStorage.setItem("authTokens", JSON.stringify(response.data));
+        const data = response.data;
+        
+        // Store tokens
+        setTokens(data);
+        localStorage.setItem("authTokens", JSON.stringify(data));
+        
+        // Store session ID (unique identifier for this device)
+        if (data.session_id) {
+          setSessionId(data.session_id);
+          localStorage.setItem("sessionId", data.session_id);
+          // Pass session ID to API client for future requests
+          api.defaults.headers.common["X-Session-ID"] = data.session_id;
+        }
+        
         await fetchUserProfile();
         router.push("/");
         showToastWithMessage("Login successful!");
@@ -357,12 +400,23 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   const googleLogin = async (accessToken: string) => {
     try {
-      const response = await api.post<AuthTokens>("/api/auth/google/", {
+      const response = await api.post<AuthTokens & { session_id?: string }>("/api/auth/google/", {
         access_token: accessToken,
       });
       if (response.status === 200) {
-        setTokens(response.data);
-        localStorage.setItem("authTokens", JSON.stringify(response.data));
+        const data = response.data;
+        
+        // Store tokens
+        setTokens(data);
+        localStorage.setItem("authTokens", JSON.stringify(data));
+        
+        // Store session ID
+        if (data.session_id) {
+          setSessionId(data.session_id);
+          localStorage.setItem("sessionId", data.session_id);
+          api.defaults.headers.common["X-Session-ID"] = data.session_id;
+        }
+        
         await fetchUserProfile();
         router.push("/");
         showToastWithMessage("Google login successful!");
@@ -430,6 +484,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const contextData: AuthContextType = {
     user,
     tokens,
+    sessionId,
     isLoading: loading,
     interactionCount,
     toastMessage,

@@ -2,6 +2,8 @@ from django.contrib.auth.models import AbstractUser
 from django.db import models
 from django.utils.translation import gettext_lazy as _
 from django.conf import settings
+import uuid
+import hashlib
 
 
 class User(AbstractUser):
@@ -31,6 +33,79 @@ class User(AbstractUser):
 
     def __str__(self):
         return self.email
+
+
+class UserSession(models.Model):
+    """
+    Tracks user authentication sessions across devices.
+    Allows users to be logged in from multiple devices simultaneously.
+    Each session represents one device/login instance.
+    """
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='sessions')
+    
+    # Unique session identifier
+    session_id = models.UUIDField(default=uuid.uuid4, unique=True, db_index=True)
+    
+    # Device information
+    device_name = models.CharField(max_length=255, help_text="Device name (e.g., 'iPhone 14', 'Chrome on MacBook')")
+    device_type = models.CharField(
+        max_length=20, 
+        choices=[
+            ('mobile', 'Mobile'),
+            ('tablet', 'Tablet'),
+            ('desktop', 'Desktop'),
+            ('unknown', 'Unknown'),
+        ],
+        default='unknown'
+    )
+    os_name = models.CharField(max_length=100, blank=True, help_text="Operating system (e.g., 'iOS 17', 'Windows 11')")
+    browser_name = models.CharField(max_length=100, blank=True, help_text="Browser (e.g., 'Chrome', 'Safari')")
+    
+    # Location/Network info (optional)
+    ip_address = models.GenericIPAddressField(blank=True, null=True)
+    user_agent_hash = models.CharField(max_length=64, blank=True, db_index=True, help_text="Hash of User-Agent for additional security")
+    
+    # Session lifecycle
+    created_at = models.DateTimeField(auto_now_add=True, db_index=True)
+    last_activity_at = models.DateTimeField(auto_now=True)
+    is_active = models.BooleanField(default=True, db_index=True, help_text="Whether this session is still valid")
+    
+    class Meta:
+        ordering = ['-last_activity_at']
+        indexes = [
+            models.Index(fields=['user', 'is_active'], name='usersession_user_active_idx'),
+        ]
+
+    def __str__(self):
+        return f"{self.user.email} - {self.device_name} ({self.session_id})"
+
+    @classmethod
+    def create_session(cls, user, device_info, ip_address=None):
+        """
+        Helper method to create a new session for a user.
+        
+        Args:
+            user: User instance
+            device_info: Dict with keys: device_name, device_type, os_name, browser_name, user_agent
+            ip_address: User's IP address
+            
+        Returns:
+            UserSession instance
+        """
+        user_agent = device_info.get('user_agent', '')
+        user_agent_hash = hashlib.sha256(user_agent.encode()).hexdigest() if user_agent else ''
+        
+        session = cls(
+            user=user,
+            device_name=device_info.get('device_name', 'Unknown Device'),
+            device_type=device_info.get('device_type', 'unknown'),
+            os_name=device_info.get('os_name', ''),
+            browser_name=device_info.get('browser_name', ''),
+            ip_address=ip_address,
+            user_agent_hash=user_agent_hash,
+        )
+        session.save()
+        return session
 
 
 class Collection(models.Model):

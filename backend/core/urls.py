@@ -5,7 +5,8 @@ from .views import (
     PostDetailView, UserDeleteView, MorePostsView, ForYouPostListView,
     TrackPostClickView, TrackSearchQueryView, TrackTryOnView, CollectionListView,
     CollectionDetailView, ManagePostInCollectionView, SaveTryOnView, MyTryOnsListView,
-    DeleteTryOnView, PasswordResetRequestView, PasswordResetConfirmView, FilteredPostListView, FilterSuggestionsView
+    DeleteTryOnView, PasswordResetRequestView, PasswordResetConfirmView, FilteredPostListView, FilterSuggestionsView,
+    ActiveSessionsView, RevokeSessionView, RevokeAllSessionsView, LogoutView
 )
 from dj_rest_auth.views import PasswordChangeView
 
@@ -23,12 +24,11 @@ urlpatterns = [
     path('email/change/initiate/', EmailChangeInitiateView.as_view(), name='email_change_initiate'),
     path('email/change/confirm/', EmailChangeConfirmView.as_view(), name='email_change_confirm'),
 
-    # Posts & Feeds
-    path('posts/', PostListView.as_view(), name='post-list'),
-    path('posts/filter/', FilteredPostListView.as_view(), name='post-filter'),
-    path('posts/filter-suggestions/', FilterSuggestionsView.as_view(), name='filter-suggestions'),
-    path('posts/for-you/', ForYouPostListView.as_view(), name='for-you-post-list'),
-    path('posts/<int:pk>/', PostDetailView.as_view(), name='post-detail'),
+    # Sessions & Devices (Multi-device authentication)
+    path('sessions/', ActiveSessionsView.as_view(), name='active-sessions'),
+    path('sessions/<uuid:session_id>/revoke/', RevokeSessionView.as_view(), name='revoke-session'),
+    path('sessions/revoke-all/', RevokeAllSessionsView.as_view(), name='revoke-all-sessions'),
+    path('logout/', LogoutView.as_view(), name='logout'),
     path('posts/<int:post_id>/more/', MorePostsView.as_view(), name='more-posts'),
     path('posts/<int:post_id>/save-try-on/', SaveTryOnView.as_view(), name='save-try-on'),
 

@@ -1,7 +1,7 @@
 import requests
 from django.contrib.auth.password_validation import validate_password
 from rest_framework import serializers
-from .models import User, Post, Article, Collection, TryOn
+from .models import User, Post, Article, Collection, TryOn, UserSession
 
 
 class UserRegistrationSerializer(serializers.ModelSerializer):
@@ -208,3 +208,38 @@ class PasswordResetConfirmSerializer(serializers.Serializer):
         if attrs['new_password1'] != attrs['new_password2']:
             raise serializers.ValidationError({"password": "Password fields didn't match."})
         return attrs
+
+class UserSessionSerializer(serializers.ModelSerializer):
+    """
+    Serializer for user sessions (devices/logins).
+    Shows which devices a user is logged in on.
+    """
+    time_since_activity = serializers.SerializerMethodField()
+    
+    class Meta:
+        model = UserSession
+        fields = (
+            'session_id', 'device_name', 'device_type', 'os_name', 'browser_name',
+            'ip_address', 'created_at', 'last_activity_at', 'time_since_activity', 'is_active'
+        )
+        read_only_fields = (
+            'session_id', 'created_at', 'last_activity_at', 'time_since_activity'
+        )
+
+    def get_time_since_activity(self, obj):
+        """Return human-readable time since last activity"""
+        from django.utils.timezone import now
+        from datetime import timedelta
+        
+        delta = now() - obj.last_activity_at
+        if delta < timedelta(minutes=1):
+            return "Just now"
+        elif delta < timedelta(hours=1):
+            minutes = delta.total_seconds() / 60
+            return f"{int(minutes)}m ago"
+        elif delta < timedelta(days=1):
+            hours = delta.total_seconds() / 3600
+            return f"{int(hours)}h ago"
+        else:
+            days = delta.total_seconds() / 86400
+            return f"{int(days)}d ago"
