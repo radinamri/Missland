@@ -258,5 +258,5 @@ CACHE_TTL = {
 }
 
 # Session cache
-SESSION_ENGINE = 'django.contrib.sessions.backends.cache'
+SESSION_ENGINE = 'core.session_backend'
 SESSION_CACHE_ALIAS = 'default'
