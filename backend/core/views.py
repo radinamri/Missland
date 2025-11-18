@@ -22,6 +22,7 @@ from rest_framework.views import APIView
 from allauth.socialaccount.providers.google.views import GoogleOAuth2Adapter
 from allauth.socialaccount.providers.oauth2.client import OAuth2Client
 from dj_rest_auth.registration.views import SocialLoginView
+from .auth_utils import SessionManager
 from .models import User, Post, Article, InterestProfile, Collection, TryOn
 from .serializers import (
     UserRegistrationSerializer, UserProfileSerializer, UserProfileUpdateSerializer,
@@ -81,6 +82,20 @@ class GoogleLogin(SocialLoginView):
         # Don't call the parent's process_login() which creates a session
         # The parent LoginView will handle JWT token generation via get_response()
         pass
+
+    def get_response(self):
+        """Override to add session ID to response"""
+        response = super().get_response()
+        
+        # After parent processes login, create a device session
+        # The user should be available after parent's process_login() is called
+        if hasattr(self, 'user') and self.user:
+            session = SessionManager.create_device_session(self.user, self.request)
+            response.data['session_id'] = str(session.session_id)
+            response.data['device_name'] = session.device_name
+            response.data['device_type'] = session.device_type
+        
+        return response
 
 
 class UserProfileView(generics.RetrieveUpdateAPIView):
