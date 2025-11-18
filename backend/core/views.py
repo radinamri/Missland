@@ -83,13 +83,13 @@ class GoogleLogin(SocialLoginView):
         # The parent LoginView will handle JWT token generation via get_response()
         pass
 
-    def get_response(self):
-        """Override to add session ID to response"""
-        response = super().get_response()
+    def post(self, request, *args, **kwargs):
+        """Override post to capture user and create session after parent processing"""
+        # Call parent to authenticate and get response
+        response = super().post(request, *args, **kwargs)
         
-        # After parent processes login, create a device session
-        # The user should be available after parent's process_login() is called
-        if hasattr(self, 'user') and self.user:
+        # If authentication was successful and user is available, create a session
+        if response.status_code == 200 and hasattr(self, 'user') and self.user:
             session = SessionManager.create_device_session(self.user, self.request)
             response.data['session_id'] = str(session.session_id)
             response.data['device_name'] = session.device_name
