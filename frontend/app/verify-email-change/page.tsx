@@ -14,12 +14,11 @@ function VerifyEmailContent() {
   useEffect(() => {
     const uid = searchParams.get("uid");
     const token = searchParams.get("token");
-    const email = searchParams.get("email");
 
-    if (uid && token && email) {
+    if (uid && token) {
       const api = axios.create({ baseURL: process.env.NEXT_PUBLIC_API_URL });
       api
-        .post("/api/auth/email/change/confirm/", { uid, token, email })
+        .post("/api/auth/email/change/confirm/", { uid, token })
         .then(() => {
           setMessage(
             "Your email has been successfully changed! You will be logged out for security. Please log in again with your new email address."

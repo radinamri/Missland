@@ -140,17 +140,38 @@ class EmailChangeInitiateView(APIView):
     permission_classes = [IsAuthenticated]
 
     def post(self, request, *args, **kwargs):
-        serializer = EmailChangeInitiateSerializer(data=request.data)
+        # Pass user context to serializer for validation
+        serializer = EmailChangeInitiateSerializer(
+            data=request.data,
+            context={'user': request.user}
+        )
         if serializer.is_valid():
             new_email = serializer.validated_data['new_email']
             user = request.user
             uid = urlsafe_base64_encode(force_bytes(user.pk))
             token = default_token_generator.make_token(user)
-            verification_link = f"{settings.CORS_ALLOWED_ORIGINS[0]}/verify-email-change?uid={uid}&token={token}&email={new_email}"
-            send_mail('Verify your new email address for NANA-AI',
-                      f'Please click the link to confirm your new email address: {verification_link}',
-                      'noreply@nana-ai.com', [new_email], fail_silently=False)
-            return Response({'detail': 'Verification link sent to your new email address.'}, status=status.HTTP_200_OK)
+            
+            # Store new email in cache with token as key (expires in 24 hours)
+            cache_key = f"email_change:{token}"
+            cache.set(cache_key, new_email, timeout=86400)  # 24 hours
+            
+            # Build verification link WITHOUT email parameter
+            verification_link = f"{settings.CORS_ALLOWED_ORIGINS[0]}/verify-email-change?uid={uid}&token={token}"
+            
+            try:
+                send_mail(
+                    'Verify your new email address for Missland',
+                    f'Please click the link to confirm your new email address: {verification_link}',
+                    'noreply@missland.com',
+                    [new_email],
+                    fail_silently=False
+                )
+                return Response({'detail': 'Verification link sent to your new email address.'}, status=status.HTTP_200_OK)
+            except Exception as e:
+                return Response(
+                    {'detail': f'Failed to send verification email: {str(e)}'},
+                    status=status.HTTP_500_INTERNAL_SERVER_ERROR
+                )
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
@@ -162,19 +183,40 @@ class EmailChangeConfirmView(APIView):
         if serializer.is_valid():
             uidb64 = serializer.validated_data['uid']
             token = serializer.validated_data['token']
-            new_email = request.data.get('email')
+            
+            # Retrieve new email from cache using token
+            cache_key = f"email_change:{token}"
+            new_email = cache.get(cache_key)
+            
+            if not new_email:
+                return Response(
+                    {'detail': 'Invalid or expired verification link.'},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+            
             try:
                 uid = force_str(urlsafe_base64_decode(uidb64))
                 user = User.objects.get(pk=uid)
             except (TypeError, ValueError, OverflowError, User.DoesNotExist):
                 user = None
+            
             if user is not None and default_token_generator.check_token(user, token):
+                # Update only the email, keep username separate
                 user.email = new_email
-                user.username = new_email
                 user.save()
-                return Response({'detail': 'Email address successfully changed.'}, status=status.HTTP_200_OK)
+                
+                # Clear the cache entry
+                cache.delete(cache_key)
+                
+                return Response(
+                    {'detail': 'Email address successfully changed. Please log in again.'},
+                    status=status.HTTP_200_OK
+                )
             else:
-                return Response({'detail': 'Invalid verification link.'}, status=status.HTTP_400_BAD_REQUEST)
+                return Response(
+                    {'detail': 'Invalid verification link.'},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 

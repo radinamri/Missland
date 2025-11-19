@@ -70,13 +70,34 @@ class UserProfileUpdateSerializer(serializers.ModelSerializer):
 class EmailChangeInitiateSerializer(serializers.Serializer):
     """
     Serializer to validate the new email address for the change process.
+    Ensures the email is valid, different from current, and not already in use.
     """
     new_email = serializers.EmailField(required=True)
+
+    def validate_new_email(self, value):
+        """
+        Validate that:
+        1. New email is different from current user email
+        2. New email is not already registered to another user
+        """
+        user = self.context.get('user')
+        if not user:
+            raise serializers.ValidationError("User context is required.")
+        
+        if value.lower() == user.email.lower():
+            raise serializers.ValidationError("New email must be different from current email.")
+        
+        # Check if email is already registered
+        if User.objects.filter(email__iexact=value).exists():
+            raise serializers.ValidationError("This email address is already registered.")
+        
+        return value
 
 
 class EmailChangeConfirmSerializer(serializers.Serializer):
     """
     Serializer to validate the token and uid from the verification link.
+    The new_email is NOT included here as it's retrieved from cache using the token.
     """
     uid = serializers.CharField(required=True)
     token = serializers.CharField(required=True)
