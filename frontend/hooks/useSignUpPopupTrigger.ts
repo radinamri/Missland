@@ -6,16 +6,14 @@ import { useEffect, useState } from "react";
  * Hook to trigger signup popup at the optimal time
  * Best practice: Show after 3-5 seconds OR on first scroll (whichever comes first)
  * This engages users without being intrusive
- * 
- * @param shouldTrigger - Pass true when user is NOT logged in (e.g., !user)
  */
-export const useSignUpPopupTrigger = (shouldTrigger: boolean) => {
+export const useSignUpPopupTrigger = (isAuthenticated: boolean) => {
   const [shouldShowPopup, setShouldShowPopup] = useState(false);
   const [hasShownPopup, setHasShownPopup] = useState(false);
 
   useEffect(() => {
-    // Only trigger if shouldTrigger is true
-    if (!shouldTrigger) {
+    // Only trigger for unauthenticated users
+    if (isAuthenticated) {
       return;
     }
 
@@ -75,7 +73,7 @@ export const useSignUpPopupTrigger = (shouldTrigger: boolean) => {
         clearTimeout(timeoutId);
       }
     };
-  }, [shouldTrigger, hasShownPopup]);
+  }, [isAuthenticated, hasShownPopup]);
 
   const closePopup = () => {
     setShouldShowPopup(false);
