@@ -192,7 +192,7 @@ export default function SaveToCollectionModal({
                           }}
                           className="p-3 hover:bg-gray-100 cursor-pointer flex items-center space-x-3"
                         >
-                          <div className="w-12 h-12 rounded-md overflow-hidden bg-gray-200 flex-shrink-0">
+                          <div className="w-12 h-12 rounded-md overflow-hidden bg-gray-200 shrink-0">
                             {collection.posts_preview &&
                             collection.posts_preview.length > 0 ? (
                               <div className="w-full h-full grid grid-cols-2 grid-rows-2">

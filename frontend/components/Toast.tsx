@@ -196,7 +196,7 @@ export default function Toast({
             className={`w-full rounded-2xl shadow-lg border backdrop-blur-sm overflow-hidden ${variantStyles[type]}`}
           >
             <div className="flex items-center gap-3 px-4 py-3">
-              <div className="flex-shrink-0">{iconVariants[type]}</div>
+              <div className="shrink-0">{iconVariants[type]}</div>
               <div className="flex-1 min-w-0">
                 <p className="text-sm font-medium leading-5 truncate">
                   {message}
@@ -207,7 +207,7 @@ export default function Toast({
                   setIsVisible(false);
                   if (onClose) onClose();
                 }}
-                className="flex-shrink-0 ml-2 inline-flex text-white hover:opacity-70 transition-opacity"
+                className="shrink-0 ml-2 inline-flex text-white hover:opacity-70 transition-opacity"
                 aria-label="Close notification"
               >
                 <svg
@@ -241,7 +241,7 @@ export default function Toast({
             className={`w-full rounded-xl shadow-2xl border backdrop-blur-sm overflow-hidden ${variantStyles[type]}`}
           >
             <div className="flex items-center gap-3 px-4 py-4">
-              <div className="flex-shrink-0">{iconVariants[type]}</div>
+              <div className="shrink-0">{iconVariants[type]}</div>
               <div className="flex-1 min-w-0">
                 <p className="text-sm font-medium leading-5">{message}</p>
               </div>
@@ -250,7 +250,7 @@ export default function Toast({
                   setIsVisible(false);
                   if (onClose) onClose();
                 }}
-                className="flex-shrink-0 ml-3 inline-flex text-white hover:opacity-70 transition-opacity"
+                className="shrink-0 ml-3 inline-flex text-white hover:opacity-70 transition-opacity"
                 aria-label="Close notification"
               >
                 <svg
