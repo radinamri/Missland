@@ -2,6 +2,7 @@
 
 import { useAuth } from "@/context/AuthContext";
 import DeleteAccountModal from "@/components/DeleteAccountModal";
+import ProfilePictureModal from "@/components/ProfilePictureModal";
 import { useState, ReactNode } from "react";
 import LoadingSpinner from "@/components/LoadingSpinner";
 import Link from "next/link";
@@ -68,9 +69,9 @@ export default function AccountSettingsPage() {
     initiateEmailChange,
     changePassword,
     isLoading,
-    updateProfilePicture,
   } = useAuth();
   const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [showProfilePictureModal, setShowProfilePictureModal] = useState(false);
 
   // State for forms
   const [newUsername, setNewUsername] = useState(user?.username || "");
@@ -80,30 +81,10 @@ export default function AccountSettingsPage() {
   const [newPassword2, setNewPassword2] = useState("");
   const [showOldPass, setShowOldPass] = useState(false);
   const [showNewPass, setShowNewPass] = useState(false);
-  const [pictureFile, setPictureFile] = useState<File | null>(null);
-  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
-  const [fileName, setFileName] = useState<string | null>(null);
 
   if (isLoading || !user) {
     return <LoadingSpinner />;
   }
-
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files[0]) {
-      const file = e.target.files[0];
-      setPictureFile(file);
-      setPreviewUrl(URL.createObjectURL(file));
-      setFileName(file.name);
-    }
-  };
-
-  const handlePictureSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (pictureFile) {
-      await updateProfilePicture(pictureFile);
-      setPreviewUrl(null); // Clear preview after upload
-    }
-  };
 
   const handleUsernameSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -166,59 +147,54 @@ export default function AccountSettingsPage() {
       </header>
 
       <SettingsCard title="Profile Picture">
-        <form
-          onSubmit={handlePictureSubmit}
-          className="flex flex-col sm:flex-row sm:items-center sm:space-x-4"
-        >
-          <div className="w-20 h-20 bg-gray-200 rounded-full relative overflow-hidden flex-shrink-0 mb-4 sm:mb-0">
-            {(previewUrl || user.profile_picture) && (
+        <div className="flex flex-col sm:flex-row sm:items-center sm:space-x-6">
+          {/* Profile Picture Display with Edit Overlay */}
+          <div
+            className="relative w-28 h-28 bg-linear-to-br from-[#A4BBD0] to-[#8FA3B8] rounded-full overflow-hidden shrink-0 mb-6 sm:mb-0 flex items-center justify-center cursor-pointer group"
+            onClick={() => setShowProfilePictureModal(true)}
+          >
+            {user.profile_picture && (
               <Image
-                src={previewUrl || user.profile_picture!}
-                alt="Profile preview"
+                src={user.profile_picture}
+                alt="Profile picture"
                 fill
                 style={{ objectFit: "cover" }}
               />
             )}
-            {/* Fallback for when there is no image at all */}
-            {!(previewUrl || user.profile_picture) && (
-              <div className="w-full h-full bg-[#A4BBD0] flex items-center justify-center">
-                <span className="text-3xl font-bold text-white">
-                  {user.email.charAt(0).toUpperCase()}
-                </span>
-              </div>
-            )}
-          </div>
-          <div className="flex-grow">
-            {/* Custom Styled File Input */}
-            <div className="flex items-center">
-              <label
-                htmlFor="profile-picture-upload"
-                className="cursor-pointer bg-[#E7E7E7] text-gray-700 font-bold py-2 px-4 rounded-lg hover:bg-[#dcdcdc] transition"
-              >
-                Choose File
-              </label>
-              <input
-                type="file"
-                accept="image/png, image/jpeg"
-                onChange={handleFileChange}
-                id="profile-picture-upload"
-                className="hidden"
-              />
-              <span className="ml-4 text-sm text-gray-500">
-                {pictureFile ? pictureFile.name : "No file selected."}
+            {!user.profile_picture && (
+              <span className="text-4xl font-bold text-white">
+                {user.email.charAt(0).toUpperCase()}
               </span>
+            )}
+
+            {/* Edit Icon Overlay */}
+            <div className="absolute inset-0 bg-black/0 group-hover:bg-black/40 flex items-center justify-center transition-all duration-200 rounded-full">
+              <svg
+                className="w-8 h-8 text-white opacity-0 group-hover:opacity-100 transition-opacity duration-200"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth="2"
+                  d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
+                ></path>
+              </svg>
             </div>
-            <p className="text-xs text-gray-500 mt-2">PNG or JPG, up to 2MB.</p>
           </div>
-          {previewUrl && (
-            <button
-              type="submit"
-              className="mt-4 sm:mt-0 bg-[#3D5A6C] text-white font-bold py-2 px-4 rounded-lg hover:bg-[#314A5A] transition"
-            >
-              Upload
-            </button>
-          )}
-        </form>
+
+          {/* Profile Picture Info */}
+          <div className="grow">
+            <h3 className="text-lg font-semibold text-[#3D5A6C] mb-2">
+              Your Profile Picture
+            </h3>
+            <p className="text-sm text-gray-600 mb-4">
+              Click on your picture above to upload or change it. PNG or JPG (max 2MB).
+            </p>
+          </div>
+        </div>
       </SettingsCard>
 
       {/* --- Edit Username Card --- */}
@@ -381,6 +357,12 @@ export default function AccountSettingsPage() {
       <DeleteAccountModal
         isOpen={showDeleteModal}
         onClose={() => setShowDeleteModal(false)}
+      />
+
+      <ProfilePictureModal
+        show={showProfilePictureModal}
+        onClose={() => setShowProfilePictureModal(false)}
+        currentProfilePicture={user.profile_picture || undefined}
       />
     </div>
   );
