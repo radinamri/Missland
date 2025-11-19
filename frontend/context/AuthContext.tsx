@@ -366,69 +366,111 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   const loginUser = async (credentials: LoginCredentials) => {
     try {
-      const response = await api.post<AuthTokens & { session_id?: string }>("/api/token/", credentials);
+      const response = await api.post<AuthTokens & { session_id?: string }>(
+        "/api/token/",
+        credentials
+      );
+
       if (response.status === 200) {
         const data = response.data;
-        
-        // Store tokens
+
+        // Validate that we have required tokens
+        if (!data.access || !data.refresh) {
+          throw new Error("Invalid response: missing access or refresh token");
+        }
+
+        // Store tokens in localStorage
         setTokens(data);
         localStorage.setItem("authTokens", JSON.stringify(data));
-        
-        // Store session ID (unique identifier for this device)
+
+        // Store session ID if provided
         if (data.session_id) {
           setSessionId(data.session_id);
           localStorage.setItem("sessionId", data.session_id);
-          // Pass session ID to API client for future requests
-          api.defaults.headers.common["X-Session-ID"] = data.session_id;
         }
-        
+
+        // Fetch user profile with the new tokens
         await fetchUserProfile();
+
+        // Navigate to home page
         router.push("/");
         showToastWithMessage("Login successful!");
       }
     } catch (error) {
       console.error("Login failed:", error);
+      // Clear any partial tokens on error
+      localStorage.removeItem("authTokens");
+      localStorage.removeItem("sessionId");
+      setTokens(null);
+      setSessionId(null);
+
       if (isAxiosError(error)) {
-        showToastWithMessage(
-          "Login failed: " + JSON.stringify(error.response?.data)
-        );
+        const errorMessage =
+          error.response?.data?.detail ||
+          error.response?.data?.error ||
+          error.message ||
+          "Login failed";
+        showToastWithMessage(`Login failed: ${errorMessage}`);
       } else {
-        showToastWithMessage("Login failed.");
+        showToastWithMessage(
+          "Login failed: " + (error instanceof Error ? error.message : "Unknown error")
+        );
       }
     }
   };
 
   const googleLogin = async (accessToken: string) => {
     try {
-      const response = await api.post<AuthTokens & { session_id?: string }>("/api/auth/google/", {
-        access_token: accessToken,
-      });
+      const response = await api.post<AuthTokens & { session_id?: string; email?: string }>(
+        "/api/auth/google/",
+        { access_token: accessToken }
+      );
+
       if (response.status === 200) {
         const data = response.data;
-        
-        // Store tokens
+
+        // Validate that we have required tokens
+        if (!data.access || !data.refresh) {
+          throw new Error("Invalid response: missing access or refresh token");
+        }
+
+        // Store tokens in localStorage
         setTokens(data);
         localStorage.setItem("authTokens", JSON.stringify(data));
-        
-        // Store session ID
+
+        // Store session ID if provided
         if (data.session_id) {
           setSessionId(data.session_id);
           localStorage.setItem("sessionId", data.session_id);
-          api.defaults.headers.common["X-Session-ID"] = data.session_id;
+          // Note: Don't set on api.defaults.headers here - interceptors handle it
         }
-        
+
+        // Fetch user profile with the new tokens
         await fetchUserProfile();
+
+        // Navigate to home page
         router.push("/");
         showToastWithMessage("Google login successful!");
       }
     } catch (error) {
       console.error("Google login failed:", error);
+      // Clear any partial tokens on error
+      localStorage.removeItem("authTokens");
+      localStorage.removeItem("sessionId");
+      setTokens(null);
+      setSessionId(null);
+
       if (isAxiosError(error)) {
-        showToastWithMessage(
-          "Google login failed: " + JSON.stringify(error.response?.data)
-        );
+        const errorMessage =
+          error.response?.data?.detail ||
+          error.response?.data?.error ||
+          error.message ||
+          "Google login failed";
+        showToastWithMessage(`Google login failed: ${errorMessage}`);
       } else {
-        showToastWithMessage("Google login failed.");
+        showToastWithMessage(
+          "Google login failed: " + (error instanceof Error ? error.message : "Unknown error")
+        );
       }
     }
   };

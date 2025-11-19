@@ -148,29 +148,54 @@ REST_FRAMEWORK = {
 # Tell dj-rest-auth to use JWT authentication
 REST_AUTH = {
     'USE_JWT': True,
-    'JWT_AUTH_HTTPONLY': True,  # Store JWT in HttpOnly cookies (more secure)
-    'SESSION_LOGIN': False,
+    'JWT_AUTH_HTTPONLY': False,  # Return JWT in response body for frontend to manage
+    'JWT_AUTH_REFRESH_COOKIE': False,  # Don't use cookie for refresh
+    'SESSION_LOGIN': False,  # Don't create Django sessions
+    'OLD_PASSWORD_FIELD_ENABLED': True,
+    'LOGOUT_ON_PASSWORD_CHANGE': False,
 }
 
-# SimpleJWT Configuration - Explicit settings for production-safe defaults
+# SimpleJWT Configuration - Professional-grade security settings
 from datetime import timedelta
 
 SIMPLE_JWT = {
-    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=15),  # Access token expires in 15 minutes
-    'REFRESH_TOKEN_LIFETIME': timedelta(days=7),    # Refresh token expires in 7 days
-    'ROTATE_REFRESH_TOKENS': True,                  # Issue new refresh token on each refresh
-    'BLACKLIST_AFTER_ROTATION': True,               # Blacklist old refresh tokens
+    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=15),
+    'REFRESH_TOKEN_LIFETIME': timedelta(days=7),
+    'ROTATE_REFRESH_TOKENS': True,
+    'BLACKLIST_AFTER_ROTATION': True,
+    'UPDATE_LAST_LOGIN': True,  # Track last login for security audits
     'ALGORITHM': 'HS256',
     'SIGNING_KEY': SECRET_KEY,
+    'VERIFYING_KEY': None,
+    'AUDIENCE': None,
+    'ISSUER': None,
+    'JTI_CLAIM': 'jti',
+    'TOKEN_TYPE_CLAIM': 'token_type',
     'AUTH_HEADER_TYPES': ('Bearer',),
     'USER_ID_FIELD': 'id',
     'USER_ID_CLAIM': 'user_id',
+    'USER_AUTHENTICATION_RULE': 'rest_framework_simplejwt.authentication.default_user_authentication_rule',
     'AUTH_TOKEN_CLASSES': ('rest_framework_simplejwt.tokens.AccessToken',),
 }
 
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:3000",
     "http://127.0.0.1:3000",
+]
+
+# Allow credentials in CORS requests (for token refresh, etc.)
+CORS_ALLOW_CREDENTIALS = True
+CORS_ALLOW_HEADERS = [
+    'accept',
+    'accept-encoding',
+    'authorization',
+    'content-type',
+    'dnt',
+    'origin',
+    'user-agent',
+    'x-csrftoken',
+    'x-requested-with',
+    'x-session-id',  # Custom header for multi-device tracking
 ]
 
 AUTHENTICATION_BACKENDS = [
@@ -186,13 +211,17 @@ SITE_ID = 1
 # Custom allauth adapter
 SOCIALACCOUNT_ADAPTER = 'core.adapters.CustomSocialAccountAdapter'
 
-# Additional allauth settings
-ACCOUNT_EMAIL_VERIFICATION = 'none'
-ACCOUNT_UNIQUE_EMAIL = True
+# Allauth Configuration - Professional OAuth handling
+ACCOUNT_EMAIL_VERIFICATION = 'none'  # Email verification can be added later
+ACCOUNT_UNIQUE_EMAIL = True  # Ensure email uniqueness
 ACCOUNT_LOGIN_ON_EMAIL_CONFIRMATION = True
-SOCIALACCOUNT_AUTO_SIGNUP = True  # Automatically sign up the user
+ACCOUNT_AUTHENTICATION_METHOD = 'email'  # Use email instead of username
+ACCOUNT_EMAIL_REQUIRED = True
+SOCIALACCOUNT_AUTO_SIGNUP = True  # Automatically create user from social account
+SOCIALACCOUNT_EMAIL_VERIFICATION = 'none'
+SOCIALACCOUNT_STORE_TOKENS = True  # Store OAuth tokens for future use
 
-# Provider specific settings
+# Google OAuth Provider Configuration
 SOCIALACCOUNT_PROVIDERS = {
     'google': {
         'SCOPE': [
@@ -201,7 +230,9 @@ SOCIALACCOUNT_PROVIDERS = {
         ],
         'AUTH_PARAMS': {
             'access_type': 'online',
-        }
+        },
+        'VERIFIED_EMAIL': True,
+        'VERSION': 'v2',
     }
 }
 
@@ -216,6 +247,67 @@ EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
+
+# Logging Configuration - For debugging authentication and other issues
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'formatters': {
+        'verbose': {
+            'format': '{levelname} {asctime} {module} {process:d} {thread:d} {message}',
+            'style': '{',
+        },
+        'simple': {
+            'format': '{levelname} {asctime} {name} {message}',
+            'style': '{',
+        },
+    },
+    'filters': {
+        'require_debug_true': {
+            '()': 'django.utils.log.RequireDebugTrue',
+        },
+    },
+    'handlers': {
+        'console': {
+            'level': 'DEBUG',
+            'filters': ['require_debug_true'],
+            'class': 'logging.StreamHandler',
+            'formatter': 'simple',
+        },
+        'file': {
+            'level': 'INFO',
+            'class': 'logging.FileHandler',
+            'filename': BASE_DIR / 'logs' / 'debug.log',
+            'formatter': 'verbose',
+        },
+    },
+    'root': {
+        'handlers': ['console', 'file'],
+        'level': 'INFO',
+    },
+    'loggers': {
+        'django': {
+            'handlers': ['console', 'file'],
+            'level': os.getenv('DJANGO_LOG_LEVEL', 'INFO'),
+            'propagate': False,
+        },
+        'core': {  # Your app's logger
+            'handlers': ['console', 'file'],
+            'level': 'DEBUG',
+            'propagate': False,
+        },
+        'dj_rest_auth': {
+            'handlers': ['console', 'file'],
+            'level': 'DEBUG',
+            'propagate': False,
+        },
+        'allauth': {
+            'handlers': ['console', 'file'],
+            'level': 'DEBUG',
+            'propagate': False,
+        },
+    },
+}
 
 # Redis Cache Configuration
 # For local development without Redis, use DummyCache

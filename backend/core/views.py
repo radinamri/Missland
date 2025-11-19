@@ -73,29 +73,55 @@ class UserRegistrationView(generics.CreateAPIView):
 
 
 class GoogleLogin(SocialLoginView):
+    """
+    Google OAuth login endpoint.
+    Handles token exchange, user creation/linking, and multi-device session management.
+    """
     adapter_class = GoogleOAuth2Adapter
     callback_url = 'http://localhost:3000'
     client_class = OAuth2Client
 
-    def process_login(self):
-        """Override to skip session creation - use JWT only"""
-        # Don't call the parent's process_login() which creates a session
-        # The parent LoginView will handle JWT token generation via get_response()
-        pass
-
     def post(self, request, *args, **kwargs):
-        """Override post to capture user and create session after parent processing"""
-        # Call parent to authenticate and get response
-        response = super().post(request, *args, **kwargs)
+        """
+        Handle Google OAuth token exchange and user authentication.
+        """
+        import logging
+        logger = logging.getLogger(__name__)
         
-        # If authentication was successful and user is available, create a session
-        if response.status_code == 200 and hasattr(self, 'user') and self.user:
-            session = SessionManager.create_device_session(self.user, self.request)
-            response.data['session_id'] = str(session.session_id)
-            response.data['device_name'] = session.device_name
-            response.data['device_type'] = session.device_type
-        
-        return response
+        try:
+            # Call parent to authenticate user with Google and generate JWT tokens
+            response = super().post(request, *args, **kwargs)
+            
+            # If authentication successful (200 OK)
+            if response.status_code == 200:
+                # Get user from the view instance
+                user = self.user if hasattr(self, 'user') else None
+                
+                if user:
+                    # Create a multi-device session for this login
+                    session = SessionManager.create_device_session(user, self.request)
+                    
+                    # Add session info to response
+                    response.data['session_id'] = str(session.session_id)
+                    response.data['device_name'] = session.device_name
+                    response.data['device_type'] = session.device_type
+                    
+                    # Add user email to response for frontend
+                    response.data['email'] = user.email
+                    
+                    logger.info(f"Google OAuth login successful: user_id={user.id}, email={user.email}, session_id={session.session_id}")
+                else:
+                    logger.warning("Google OAuth authentication returned 200 but user not found")
+            else:
+                logger.warning(f"Google OAuth authentication failed with status {response.status_code}")
+            
+            return response
+            
+        except Exception as e:
+            import logging
+            logger = logging.getLogger(__name__)
+            logger.error(f"Google OAuth error: {str(e)}", exc_info=True)
+            raise
 
 
 class UserProfileView(generics.RetrieveUpdateAPIView):
@@ -662,20 +688,46 @@ class RevokeAllSessionsView(APIView):
 class LogoutView(APIView):
     """
     Logout endpoint that revokes the current session.
-    Replaces the need for frontend to just clear localStorage.
+    Works even if some auth header issues occur, using session ID for revocation.
     """
     permission_classes = [IsAuthenticated]
 
     def post(self, request):
-        # Get current session ID from request
-        current_session_id = request.META.get('HTTP_X_SESSION_ID')
+        """
+        Logout the current user from the device.
+        Revokes the session associated with the X-Session-ID header.
+        """
+        import logging
+        logger = logging.getLogger(__name__)
         
-        if current_session_id:
-            try:
+        # Get current session ID from request header
+        current_session_id = request.META.get('HTTP_X_SESSION_ID')
+        user = request.user
+        
+        try:
+            if current_session_id:
+                # Find and deactivate the session
                 session = UserSession.objects.get(session_id=current_session_id)
                 session.is_active = False
                 session.save()
-            except UserSession.DoesNotExist:
-                pass  # Session already doesn't exist
-        
-        return Response({'detail': 'Successfully logged out.'}, status=status.HTTP_200_OK)
+                logger.info(f"User {user.id} logged out from session {current_session_id}")
+            else:
+                logger.warning(f"Logout request missing X-Session-ID header for user {user.id}")
+            
+            return Response(
+                {'detail': 'Successfully logged out.'},
+                status=status.HTTP_200_OK
+            )
+        except UserSession.DoesNotExist:
+            # Session already deactivated or doesn't exist, but logout is still successful
+            logger.info(f"Logout attempted for non-existent session: {current_session_id}")
+            return Response(
+                {'detail': 'Successfully logged out.'},
+                status=status.HTTP_200_OK
+            )
+        except Exception as e:
+            logger.error(f"Error during logout: {str(e)}", exc_info=True)
+            return Response(
+                {'detail': 'Logout completed but with errors.'},
+                status=status.HTTP_200_OK
+            )
