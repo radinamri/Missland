@@ -4,10 +4,13 @@ import { useEffect, useState, useCallback, useRef } from "react";
 import { Post, PaginatedPostResponse } from "@/types";
 import api from "@/utils/api";
 import { useSearchStore } from "@/stores/searchStore";
+import { useAuth } from "@/context/AuthContext";
 import PostGrid from "@/components/PostGrid";
 import LoadingSpinner from "@/components/LoadingSpinner";
 import PostGridSkeleton from "@/components/PostGridSkeleton";
+import SignUpPopup from "@/components/SignUpPopup";
 import InfiniteScroll from "react-infinite-scroll-component";
+import { useSignUpPopupTrigger } from "@/hooks/useSignUpPopupTrigger";
 
 // Dynamic posts per page based on screen size/columns
 // 5 cols (≥1280px) = 25, others (2/3/4 cols) = 24
@@ -26,6 +29,19 @@ const RETRY_DELAY_MS = 1000;
 export default function ExplorePage() {
   const { searchTerm, filters } = useSearchStore();
   const setIsRefreshing = useSearchStore((s) => s.setIsRefreshing);
+  const { user } = useAuth();
+
+  // Signup popup trigger
+  const { shouldShowPopup, closePopup } = useSignUpPopupTrigger(!user);
+  const [showSignUpPopup, setShowSignUpPopup] = useState(false);
+  const [showLoginModal, setShowLoginModal] = useState(false);
+
+  // Sync external popup trigger with local state
+  useEffect(() => {
+    if (shouldShowPopup) {
+      setShowSignUpPopup(true);
+    }
+  }, [shouldShowPopup]);
 
   const [posts, setPosts] = useState<Post[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -380,6 +396,22 @@ export default function ExplorePage() {
           </>
         )}
       </div>
+
+      {/* Signup/Login Popups - Only show to unauthenticated users */}
+      <SignUpPopup
+        show={showSignUpPopup && !user}
+        onClose={() => {
+          setShowSignUpPopup(false);
+          closePopup();
+        }}
+        onSwitchToLogin={() => {
+          setShowSignUpPopup(false);
+          setShowLoginModal(true);
+        }}
+      />
+
+      {/* Login Modal (if needed, you can add LoginModal component here) */}
+      {/* Example: <LoginModal show={showLoginModal} onClose={() => setShowLoginModal(false)} /> */}
     </main>
   );
 }
