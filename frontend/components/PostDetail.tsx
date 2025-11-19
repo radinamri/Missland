@@ -10,6 +10,7 @@ import SaveToCollectionModal from "./SaveToCollectionModal";
 import LoginModal from "./LoginModal";
 import InfiniteScroll from "react-infinite-scroll-component";
 import PostGridSkeleton from "./PostGridSkeleton";
+import axios from "axios";
 
 const MORE_POSTS_INITIAL_LOAD = 12;
 const MORE_POSTS_CHUNK_SIZE = 12;
@@ -29,7 +30,6 @@ export default function PostDetail({
   onMorePostClick,
   onSave,
   onBack,
-  onOpenLoginModal,
 }: PostDetailProps) {
   const { user, collections, showToastWithMessage } = useAuth();
   const [showCollectionsModal, setShowCollectionsModal] = useState(false);
@@ -41,12 +41,62 @@ export default function PostDetail({
     morePosts.length > MORE_POSTS_INITIAL_LOAD
   );
 
+  // Random posts state for infinite scroll
+  const [randomPosts, setRandomPosts] = useState<Post[]>([]);
+  const [randomPostsPage, setRandomPostsPage] = useState(1);
+  const [hasMoreRandomPosts, setHasMoreRandomPosts] = useState(true);
+  const [loadedPostIds, setLoadedPostIds] = useState<Set<number>>(
+    new Set([post.id])
+  );
+
+  // Track if we've shown all recommended posts
+  const allRecommendedShown = useMemo(() => {
+    return visibleMorePosts.length >= morePosts.length;
+  }, [visibleMorePosts.length, morePosts.length]);
+
   useEffect(() => {
     window.scrollTo(0, 0);
     // When the main post changes, reset the visible "more" posts
     setVisibleMorePosts(morePosts.slice(0, MORE_POSTS_INITIAL_LOAD));
     setHasMoreToLoad(morePosts.length > MORE_POSTS_INITIAL_LOAD);
+    setRandomPosts([]);
+    setRandomPostsPage(1);
+    setLoadedPostIds(new Set([post.id]));
   }, [post.id, morePosts]);
+
+  // Fetch random posts for infinite scroll
+  const fetchRandomPosts = async () => {
+    try {
+      const api = axios.create({
+        baseURL: process.env.NEXT_PUBLIC_API_URL,
+      });
+
+      // Use the filtered posts endpoint with cache_bust for random posts
+      const response = await api.get("/api/auth/posts/filter/", {
+        params: {
+          page: randomPostsPage,
+          cache_bust: Date.now(),
+        },
+      });
+
+      const newPosts: Post[] = (response.data.results || response.data).filter(
+        (p: Post) => !loadedPostIds.has(p.id)
+      );
+
+      if (newPosts.length === 0) {
+        setHasMoreRandomPosts(false);
+      } else {
+        const newLoadedIds = new Set(loadedPostIds);
+        newPosts.forEach((p) => newLoadedIds.add(p.id));
+        setLoadedPostIds(newLoadedIds);
+        setRandomPosts((prev) => [...prev, ...newPosts]);
+        setRandomPostsPage((prev) => prev + 1);
+      }
+    } catch {
+      showToastWithMessage("Failed to load more posts");
+      setHasMoreRandomPosts(false);
+    }
+  };
 
   const isSaved = useMemo(() => {
     if (!user || !collections) return false;
@@ -56,18 +106,19 @@ export default function PostDetail({
   }, [collections, post, user]);
 
   const loadMorePosts = () => {
-    if (visibleMorePosts.length >= morePosts.length) {
-      setHasMoreToLoad(false);
-      return;
+    // If we're still in the recommended posts phase
+    if (!allRecommendedShown && visibleMorePosts.length < morePosts.length) {
+      setTimeout(() => {
+        const nextPosts = morePosts.slice(
+          visibleMorePosts.length,
+          visibleMorePosts.length + MORE_POSTS_CHUNK_SIZE
+        );
+        setVisibleMorePosts((prev) => [...prev, ...nextPosts]);
+      }, 300);
+    } else if (allRecommendedShown && hasMoreRandomPosts) {
+      // Load random posts after recommended posts are exhausted
+      fetchRandomPosts();
     }
-    // Set a small timeout to create a smoother loading feel
-    setTimeout(() => {
-      const nextPosts = morePosts.slice(
-        visibleMorePosts.length,
-        visibleMorePosts.length + MORE_POSTS_CHUNK_SIZE
-      );
-      setVisibleMorePosts((prev) => [...prev, ...nextPosts]);
-    }, 300);
   };
 
   // Handle download
@@ -84,7 +135,7 @@ export default function PostDetail({
       document.body.removeChild(link);
       window.URL.revokeObjectURL(url);
       showToastWithMessage("Image downloaded successfully!");
-    } catch (error) {
+    } catch {
       showToastWithMessage("Failed to download image. Please try again.");
     }
   };
@@ -103,7 +154,7 @@ export default function PostDetail({
         await navigator.clipboard.writeText(shareUrl);
         showToastWithMessage("Link copied to clipboard!");
       }
-    } catch (error) {
+    } catch {
       showToastWithMessage("Failed to share. Please try again.");
     }
   };
@@ -155,7 +206,7 @@ export default function PostDetail({
 
         <div className="w-full max-w-4xl mx-auto bg-white rounded-3xl shadow-xl overflow-hidden">
           <div className="md:hidden">
-            <div className="relative w-full aspect-[4/5]">
+            <div className="relative w-full aspect-4/5">
               <Image
                 src={post.image_url}
                 alt={post.title}
@@ -442,7 +493,7 @@ export default function PostDetail({
               </div>
             </div> */}
             <div className="grid grid-cols-2 gap-0">
-              <div className="relative w-full aspect-[4/5]">
+              <div className="relative w-full aspect-4/5">
                 <Image
                   src={post.image_url}
                   alt={post.title}
@@ -549,7 +600,7 @@ export default function PostDetail({
                     Try On
                   </Link>
                 </div>
-                <div className="space-y-4 flex-grow">
+                <div className="space-y-4 grow">
                   <h1 className="text-3xl md:text-4xl font-bold text-[#3D5A6C] leading-tight">
                     {post.title}
                   </h1>
@@ -605,10 +656,10 @@ export default function PostDetail({
           </h2>
           {morePosts.length > 0 ? (
             <InfiniteScroll
-              dataLength={visibleMorePosts.length}
+              dataLength={visibleMorePosts.length + randomPosts.length}
               next={loadMorePosts}
-              hasMore={hasMoreToLoad}
-              loader={<PostGridSkeleton count={4} />} // Show a smaller skeleton for this section
+              hasMore={hasMoreToLoad || (allRecommendedShown && hasMoreRandomPosts)}
+              loader={<PostGridSkeleton count={4} />}
               endMessage={
                 <p
                   style={{
@@ -617,21 +668,51 @@ export default function PostDetail({
                     color: "#888",
                   }}
                 >
-                  <b>You&apos;ve seen all related posts!</b>
+                  <b>You&apos;ve reached the end of posts!</b>
                 </p>
               }
             >
-              <PostGrid
-                posts={visibleMorePosts} // Pass the visible posts, not the full list
-                variant="explore"
-                onPostClick={onMorePostClick}
-                onSave={onSave}
-                isSaved={(p) =>
-                  collections?.some((c) =>
-                    (c.posts || []).some((cp) => cp.id === p.id)
-                  ) ?? false
-                }
-              />
+              {/* Recommended Posts Section */}
+              {visibleMorePosts.length > 0 && (
+                <div>
+                  {!allRecommendedShown && (
+                    <h3 className="text-lg font-semibold text-[#3D5A6C] mb-4 text-center">
+                      Recommended for you
+                    </h3>
+                  )}
+                  <PostGrid
+                    posts={visibleMorePosts}
+                    variant="explore"
+                    onPostClick={onMorePostClick}
+                    onSave={onSave}
+                    isSaved={(p) =>
+                      collections?.some((c) =>
+                        (c.posts || []).some((cp) => cp.id === p.id)
+                      ) ?? false
+                    }
+                  />
+                </div>
+              )}
+
+              {/* Random Posts Section */}
+              {allRecommendedShown && randomPosts.length > 0 && (
+                <div>
+                  <h3 className="text-lg font-semibold text-[#3D5A6C] mb-4 text-center mt-8">
+                    Discover more
+                  </h3>
+                  <PostGrid
+                    posts={randomPosts}
+                    variant="explore"
+                    onPostClick={onMorePostClick}
+                    onSave={onSave}
+                    isSaved={(p) =>
+                      collections?.some((c) =>
+                        (c.posts || []).some((cp) => cp.id === p.id)
+                      ) ?? false
+                    }
+                  />
+                </div>
+              )}
             </InfiniteScroll>
           ) : (
             <p className="text-center text-gray-500">No more posts available</p>
