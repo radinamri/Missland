@@ -3,6 +3,8 @@
 import { useAuth } from "@/context/AuthContext";
 import DeleteAccountModal from "@/components/DeleteAccountModal";
 import ProfilePictureModal from "@/components/ProfilePictureModal";
+import EditUsernameModal from "@/components/EditUsernameModal";
+import EditEmailModal from "@/components/EditEmailModal";
 import { useState, ReactNode } from "react";
 import LoadingSpinner from "@/components/LoadingSpinner";
 import Link from "next/link";
@@ -65,17 +67,15 @@ const EyeSlashIcon = () => (
 export default function AccountSettingsPage() {
   const {
     user,
-    updateUsername,
-    initiateEmailChange,
     changePassword,
     isLoading,
   } = useAuth();
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [showProfilePictureModal, setShowProfilePictureModal] = useState(false);
+  const [showEditUsernameModal, setShowEditUsernameModal] = useState(false);
+  const [showEditEmailModal, setShowEditEmailModal] = useState(false);
 
   // State for forms
-  const [newUsername, setNewUsername] = useState(user?.username || "");
-  const [newEmail, setNewEmail] = useState("");
   const [oldPassword, setOldPassword] = useState("");
   const [newPassword1, setNewPassword1] = useState("");
   const [newPassword2, setNewPassword2] = useState("");
@@ -85,21 +85,6 @@ export default function AccountSettingsPage() {
   if (isLoading || !user) {
     return <LoadingSpinner />;
   }
-
-  const handleUsernameSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (newUsername.trim() && newUsername !== user.username) {
-      await updateUsername(newUsername.trim());
-    }
-  };
-
-  const handleEmailSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (newEmail.trim()) {
-      await initiateEmailChange(newEmail.trim());
-      setNewEmail(""); // Clear input after submission
-    }
-  };
 
   const handlePasswordSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -199,62 +184,60 @@ export default function AccountSettingsPage() {
 
       {/* --- Edit Username Card --- */}
       <SettingsCard title="Username">
-        <form onSubmit={handleUsernameSubmit} className="space-y-4">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between sm:space-x-6">
           <div>
-            <label
-              htmlFor="username"
-              className="block text-sm font-medium text-gray-700"
-            >
-              Your public display name
-            </label>
-            <input
-              id="username"
-              type="text"
-              value={newUsername}
-              onChange={(e) => setNewUsername(e.target.value)}
-              className="mt-1 block w-full px-4 py-3 bg-white border border-gray-300 rounded-lg focus:ring-[#D98B99] focus:border-[#D98B99] placeholder:text-gray-400 text-gray-500"
-            />
+            <p className="text-sm text-gray-600 mb-2">Your public display name</p>
+            <p className="text-lg font-semibold text-[#3D5A6C]">{user.username}</p>
           </div>
-          <div className="flex justify-end">
-            <button
-              type="submit"
-              className="bg-[#3D5A6C] text-white font-bold py-2 px-5 rounded-lg hover:bg-[#314A5A] transition"
+          <button
+            onClick={() => setShowEditUsernameModal(true)}
+            className="mt-4 sm:mt-0 inline-flex items-center px-6 py-2 bg-[#3D5A6C] text-white font-semibold rounded-lg hover:bg-[#314A5A] transition-colors shrink-0"
+          >
+            <svg
+              className="w-5 h-5 mr-2"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
             >
-              Save Username
-            </button>
-          </div>
-        </form>
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth="2"
+                d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
+              ></path>
+            </svg>
+            Edit
+          </button>
+        </div>
       </SettingsCard>
 
       {/* --- Edit Email Card --- */}
       <SettingsCard title="Email Address">
-        <form onSubmit={handleEmailSubmit} className="space-y-4">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between sm:space-x-6">
           <div>
-            <label
-              htmlFor="email"
-              className="block text-sm font-medium text-gray-700"
-            >
-              Your current email is{" "}
-              <span className="font-semibold">{user.email}</span>
-            </label>
-            <input
-              id="email"
-              type="email"
-              value={newEmail}
-              onChange={(e) => setNewEmail(e.target.value)}
-              placeholder="Enter new email address"
-              className="mt-1 block w-full px-4 py-3 bg-white border border-gray-300 rounded-lg focus:ring-[#D98B99] focus:border-[#D98B99] placeholder:text-gray-400 text-gray-500"
-            />
+            <p className="text-sm text-gray-600 mb-2">Your current email address</p>
+            <p className="text-lg font-semibold text-[#3D5A6C]">{user.email}</p>
           </div>
-          <div className="flex justify-end">
-            <button
-              type="submit"
-              className="bg-[#3D5A6C] text-white font-bold py-2 px-5 rounded-lg hover:bg-[#314A5A] transition"
+          <button
+            onClick={() => setShowEditEmailModal(true)}
+            className="mt-4 sm:mt-0 inline-flex items-center px-6 py-2 bg-[#3D5A6C] text-white font-semibold rounded-lg hover:bg-[#314A5A] transition-colors shrink-0"
+          >
+            <svg
+              className="w-5 h-5 mr-2"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
             >
-              Change Email
-            </button>
-          </div>
-        </form>
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth="2"
+                d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
+              ></path>
+            </svg>
+            Edit
+          </button>
+        </div>
       </SettingsCard>
 
       {/* --- Change Password Card (Conditional) --- */}
@@ -363,6 +346,18 @@ export default function AccountSettingsPage() {
         show={showProfilePictureModal}
         onClose={() => setShowProfilePictureModal(false)}
         currentProfilePicture={user.profile_picture || undefined}
+      />
+
+      <EditUsernameModal
+        show={showEditUsernameModal}
+        onClose={() => setShowEditUsernameModal(false)}
+        currentUsername={user.username}
+      />
+
+      <EditEmailModal
+        show={showEditEmailModal}
+        onClose={() => setShowEditEmailModal(false)}
+        currentEmail={user.email}
       />
     </div>
   );

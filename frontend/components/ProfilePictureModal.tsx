@@ -3,6 +3,7 @@
 import { useState, useRef } from "react";
 import Image from "next/image";
 import { useAuth } from "@/context/AuthContext";
+import Toast from "@/components/Toast";
 
 interface ProfilePictureModalProps {
   show: boolean;
@@ -20,6 +21,8 @@ export default function ProfilePictureModal({
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [showToast, setShowToast] = useState(false);
+  const [toastMessage, setToastMessage] = useState("");
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   if (!show) {
@@ -57,9 +60,13 @@ export default function ProfilePictureModal({
     setIsLoading(true);
     try {
       await updateProfilePicture(pictureFile);
+      setToastMessage("Profile picture updated successfully! ✓");
+      setShowToast(true);
       setPictureFile(null);
       setPreviewUrl(null);
-      onClose();
+      setTimeout(() => {
+        onClose();
+      }, 1000);
     } catch (err) {
       setError("Failed to upload profile picture. Please try again.");
       console.error(err);
@@ -289,6 +296,14 @@ export default function ProfilePictureModal({
           )}
         </div>
       </div>
+
+      <Toast
+        message={toastMessage}
+        show={showToast}
+        type="success"
+        duration={2000}
+        onClose={() => setShowToast(false)}
+      />
     </div>
   );
 }
