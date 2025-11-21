@@ -145,6 +145,9 @@ export default function SearchInput({
     setIsFocused(false);
   };
 
+  // Determine if user has typed something
+  const hasUserInput = value.trim().length > 0;
+
   return (
     <>
       {isFocused && showFilterPanelOnFocus && (
@@ -198,8 +201,83 @@ export default function SearchInput({
             </button>
           )}
         </div>
+
+        {/* MOBILE: Wrapper for both containers with dynamic responsive spacing */}
         {isFocused && showFilterPanelOnFocus && (
-          <div className="absolute top-full mt-2 w-full bg-white rounded-2xl shadow-lg p-4 animate-fade-in-down border border-gray-200 z-50 max-h-[70vh] md:max-h-[70vh] overflow-y-auto mb-16 md:mb-0">
+          <div
+            className="md:hidden absolute top-full mt-2 w-full flex flex-col animate-fade-in-down"
+            style={{ maxHeight: "calc(100vh - 100px)" }}
+          >
+            {/* CONTAINER 1: Search Suggestions (only when user has typed) */}
+            {hasUserInput && (
+              <div
+                className="bg-white rounded-2xl shadow-lg p-4 border border-gray-200 z-50 overflow-y-auto shrink-0"
+                style={{ maxHeight: "calc(100vh - 440px)" }}
+              >
+                {correctionSuggestion && (
+                  <div className="pb-2">
+                    <button
+                      onClick={() =>
+                        handleCorrectionClick(correctionSuggestion)
+                      }
+                      className="w-full flex items-center text-left px-3 py-2 rounded-lg hover:bg-gray-100 transition-colors"
+                    >
+                      <svg
+                        className="w-5 h-5 text-gray-500 mr-3 shrink-0"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeWidth="2"
+                          d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+                        ></path>
+                      </svg>
+                      <span className="text-gray-800 italic">
+                        Did you mean:{" "}
+                        <span className="font-semibold not-italic">
+                          {correctionSuggestion}
+                        </span>
+                      </span>
+                    </button>
+                  </div>
+                )}
+                {searchSuggestions.length > 0 && (
+                  <div className="pb-2">
+                    <ul className="space-y-1">
+                      {searchSuggestions.map((suggestion) => (
+                        <li key={suggestion}>
+                          <SuggestionItem
+                            suggestion={suggestion}
+                            searchTerm={value}
+                            onClick={() => handleSuggestionClick(suggestion)}
+                          />
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* CONTAINER 2: FilterPanel (always shown) with gap */}
+            <div
+              className={`bg-white rounded-2xl shadow-lg p-4 border border-gray-200 z-50 shrink-0 ${
+                hasUserInput ? "mt-2" : ""
+              }`}
+            >
+              <h3 className="text-sm font-semibold text-gray-500 mb-4 px-2">
+                Filter by Category
+              </h3>
+              <FilterPanel isTemporarilyReset={isPanelTemporarilyReset} />
+            </div>
+          </div>
+        )}
+
+        {/* DESKTOP: Keep original layout */}
+        {isFocused && showFilterPanelOnFocus && (
+          <div className="hidden md:block absolute top-full mt-2 w-full bg-white rounded-2xl shadow-lg p-4 animate-fade-in-down border border-gray-200 z-50 max-h-[70vh] overflow-y-auto">
             {correctionSuggestion && (
               <div className="pb-2">
                 <button
@@ -249,7 +327,6 @@ export default function SearchInput({
               <h3 className="text-sm font-semibold text-gray-500 mb-4 px-2">
                 Filter by Category
               </h3>
-              {/* Pass the prop down to the FilterPanel */}
               <FilterPanel isTemporarilyReset={isPanelTemporarilyReset} />
             </div>
           </div>
