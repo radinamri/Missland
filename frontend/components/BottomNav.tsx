@@ -125,7 +125,7 @@ export default function BottomNav() {
         // Note: fetchPosts(true) is called via the refresh mechanism from page.tsx
         // This just triggers the global state which will be read by page.tsx
         setIsRefreshing(false);
-      } catch (error) {
+      } catch {
         // Refresh failed silently
         setIsRefreshing(false);
       }

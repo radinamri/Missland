@@ -36,7 +36,7 @@ export default function PWARegister() {
             }
           });
         })
-        .catch((error) => {
+        .catch(() => {
           // Service Worker registration failed
         });
 

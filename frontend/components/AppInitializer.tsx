@@ -29,11 +29,11 @@ export default function AppInitializer({
     const initialize = async () => {
       try {
         // Restore filters from localStorage
-        const filtersRestored = restoreFiltersFromStorage();
+        restoreFiltersFromStorage();
 
         // Fetch filter suggestions for search UI
         await fetchFilterSuggestions();
-      } catch (error) {
+      } catch {
         // Continue anyway - don't break app on initialization errors
       }
     };

@@ -9,7 +9,6 @@ import {
   Sparkles,
   Search,
   Users,
-  ChevronDown,
 } from "lucide-react";
 
 export default function LandingPage() {
@@ -31,17 +30,17 @@ export default function LandingPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-pink-50 via-blue-50 to-pink-50">
+    <div className="min-h-screen bg-linear-to-br from-pink-50 via-blue-50 to-pink-50">
       {/* Hero Section */}
       <section className="min-h-screen flex items-center justify-center px-4 md:px-12 py-20 md:py-24">
         {/* Subtle animated gradient orbs */}
         <div className="absolute inset-0 overflow-hidden pointer-events-none">
           <div
-            className="absolute -top-40 -right-40 w-[500px] h-[500px] bg-gradient-to-bl from-[#D98B99]/20 to-transparent rounded-full blur-3xl"
+            className="absolute -top-40 -right-40 w-[500px] h-[500px] bg-linear-to-bl from-[#D98B99]/20 to-transparent rounded-full blur-3xl"
             style={{ transform: `translateY(${scrollY * 0.15}px)` }}
           />
           <div
-            className="absolute -bottom-40 -left-40 w-[500px] h-[500px] bg-gradient-to-tr from-[#3D5A6C]/10 to-transparent rounded-full blur-3xl"
+            className="absolute -bottom-40 -left-40 w-[500px] h-[500px] bg-linear-to-tr from-[#3D5A6C]/10 to-transparent rounded-full blur-3xl"
             style={{ transform: `translateY(${-scrollY * 0.15}px)` }}
           />
         </div>
@@ -86,7 +85,7 @@ export default function LandingPage() {
           <div className="grid md:grid-cols-2 gap-12 md:gap-20 lg:gap-24 items-center">
             {/* Left: Visual */}
             <div className="flex items-center justify-center order-2 md:order-1">
-              <div className="w-full max-w-sm md:max-w-md lg:max-w-lg aspect-square rounded-3xl md:rounded-[40px] bg-gradient-to-br from-[#D98B99]/10 to-[#D98B99]/5 flex items-center justify-center border border-[#D98B99]/20 backdrop-blur-sm">
+              <div className="w-full max-w-sm md:max-w-md lg:max-w-lg aspect-square rounded-3xl md:rounded-[40px] bg-linear-to-br from-[#D98B99]/10 to-[#D98B99]/5 flex items-center justify-center border border-[#D98B99]/20 backdrop-blur-sm">
                 <div className="text-center space-y-4 md:space-y-6">
                   <div className="w-20 h-20 md:w-24 lg:w-28 md:h-24 lg:h-28 mx-auto bg-white rounded-2xl md:rounded-3xl flex items-center justify-center shadow-lg">
                     <Camera className="w-10 h-10 md:w-12 lg:w-14 md:h-12 lg:h-14 text-[#D98B99]" />
@@ -153,7 +152,7 @@ export default function LandingPage() {
 
             {/* Right: Visual */}
             <div className="flex items-center justify-center">
-              <div className="w-full max-w-sm md:max-w-md lg:max-w-lg aspect-square rounded-3xl md:rounded-[40px] bg-gradient-to-br from-[#3D5A6C]/10 to-[#3D5A6C]/5 flex items-center justify-center border border-[#3D5A6C]/20 backdrop-blur-sm">
+              <div className="w-full max-w-sm md:max-w-md lg:max-w-lg aspect-square rounded-3xl md:rounded-[40px] bg-linear-to-br from-[#3D5A6C]/10 to-[#3D5A6C]/5 flex items-center justify-center border border-[#3D5A6C]/20 backdrop-blur-sm">
                 <div className="text-center space-y-4 md:space-y-6">
                   <div className="w-20 h-20 md:w-24 lg:w-28 md:h-24 lg:h-28 mx-auto bg-white rounded-2xl md:rounded-3xl flex items-center justify-center shadow-lg">
                     <Sparkles className="w-10 h-10 md:w-12 lg:w-14 md:h-12 lg:h-14 text-[#3D5A6C]" />
@@ -174,7 +173,7 @@ export default function LandingPage() {
           <div className="grid md:grid-cols-2 gap-12 md:gap-20 lg:gap-24 items-center">
             {/* Left: Visual */}
             <div className="flex items-center justify-center order-2 md:order-1">
-              <div className="w-full max-w-sm md:max-w-md lg:max-w-lg aspect-square rounded-3xl md:rounded-[40px] bg-gradient-to-br from-[#D98B99]/10 to-[#3D5A6C]/5 flex items-center justify-center border border-[#D98B99]/20 backdrop-blur-sm">
+              <div className="w-full max-w-sm md:max-w-md lg:max-w-lg aspect-square rounded-3xl md:rounded-[40px] bg-linear-to-br from-[#D98B99]/10 to-[#3D5A6C]/5 flex items-center justify-center border border-[#D98B99]/20 backdrop-blur-sm">
                 <div className="text-center space-y-4 md:space-y-6">
                   <div className="w-20 h-20 md:w-24 lg:w-28 md:h-24 lg:h-28 mx-auto bg-white rounded-2xl md:rounded-3xl flex items-center justify-center shadow-lg">
                     <Search className="w-10 h-10 md:w-12 lg:w-14 md:h-12 lg:h-14 text-[#D98B99]" />
@@ -240,7 +239,7 @@ export default function LandingPage() {
 
             {/* Right: Visual */}
             <div className="flex items-center justify-center">
-              <div className="w-full max-w-sm md:max-w-md lg:max-w-lg aspect-square rounded-3xl md:rounded-[40px] bg-gradient-to-br from-[#3D5A6C]/10 to-[#D98B99]/5 flex items-center justify-center border border-[#3D5A6C]/20 backdrop-blur-sm">
+              <div className="w-full max-w-sm md:max-w-md lg:max-w-lg aspect-square rounded-3xl md:rounded-[40px] bg-linear-to-br from-[#3D5A6C]/10 to-[#D98B99]/5 flex items-center justify-center border border-[#3D5A6C]/20 backdrop-blur-sm">
                 <div className="text-center space-y-4 md:space-y-6">
                   <div className="w-20 h-20 md:w-24 lg:w-28 md:h-24 lg:h-28 mx-auto bg-white rounded-2xl md:rounded-3xl flex items-center justify-center shadow-lg">
                     <Users className="w-10 h-10 md:w-12 lg:w-14 md:h-12 lg:h-14 text-[#3D5A6C]" />

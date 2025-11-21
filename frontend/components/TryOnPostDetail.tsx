@@ -50,7 +50,7 @@ export default function TryOnPostDetail({
       document.body.removeChild(link);
       window.URL.revokeObjectURL(url);
       showToastWithMessage("Image downloaded successfully!");
-    } catch (error) {
+    } catch {
       showToastWithMessage("Failed to download image. Please try again.");
     }
   };
@@ -69,7 +69,7 @@ export default function TryOnPostDetail({
         await navigator.clipboard.writeText(shareUrl);
         showToastWithMessage("Link copied to clipboard!");
       }
-    } catch (error) {
+    } catch {
       showToastWithMessage("Failed to share. Please try again.");
     }
   };
@@ -108,7 +108,7 @@ export default function TryOnPostDetail({
         <div className="w-full max-w-4xl mx-auto bg-white rounded-3xl shadow-xl overflow-hidden mt-4">
           <div className="grid grid-cols-1 md:grid-cols-2">
             {/* --- LEFT COLUMN: IMAGE --- */}
-            <div className="relative w-full aspect-[4/5]">
+            <div className="relative w-full aspect-4/5">
               <Image
                 src={post.image_url}
                 alt={post.title}
@@ -170,7 +170,7 @@ export default function TryOnPostDetail({
                 </div>
               </div>
 
-              <div className="space-y-4 flex-grow">
+              <div className="space-y-4 grow">
                 <h1 className="text-3xl md:text-4xl font-bold text-[#3D5A6C] leading-tight">
                   {post.title}
                 </h1>

@@ -75,7 +75,7 @@ export default function InstallPrompt() {
       } else {
         // PWA install declined
       }
-    } catch (error) {
+    } catch {
       // Install prompt error
     } finally {
       // Mark interaction regardless of outcome
@@ -125,7 +125,7 @@ export default function InstallPrompt() {
         </button>
 
         <div className="flex items-start gap-4">
-          <div className="flex-shrink-0 w-14 h-14 bg-gradient-to-br from-[#D98B99] to-[#E8A5B4] rounded-2xl flex items-center justify-center shadow-lg">
+          <div className="shrink-0 w-14 h-14 bg-linear-to-br from-[#D98B99] to-[#E8A5B4] rounded-2xl flex items-center justify-center shadow-lg">
             <svg
               className="w-7 h-7 text-white"
               fill="none"
