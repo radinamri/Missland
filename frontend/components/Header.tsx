@@ -243,7 +243,7 @@ export default function Header() {
             </div>
           </div>
 
-          <div className="md:hidden z-50">
+          <div className="md:hidden z-20">
             <button
               onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
               className="text-gray-800 focus:outline-none"

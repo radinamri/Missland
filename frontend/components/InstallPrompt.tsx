@@ -30,6 +30,7 @@ export default function InstallPrompt() {
     }
     
     // Check if iOS standalone mode
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     if ((navigator as any).standalone === true) {
       return true;
     }

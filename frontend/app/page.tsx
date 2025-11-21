@@ -7,7 +7,6 @@ import { useSearchStore } from "@/stores/searchStore";
 import { useAuth } from "@/context/AuthContext";
 import PostGrid from "@/components/PostGrid";
 import LoadingSpinner from "@/components/LoadingSpinner";
-import PostGridSkeleton from "@/components/PostGridSkeleton";
 import SignUpPopup from "@/components/SignUpPopup";
 import InfiniteScroll from "react-infinite-scroll-component";
 import { useSignUpPopupTrigger } from "@/hooks/useSignUpPopupTrigger";
@@ -34,7 +33,6 @@ export default function ExplorePage() {
   // Signup popup trigger
   const { shouldShowPopup, closePopup } = useSignUpPopupTrigger(!user);
   const [showSignUpPopup, setShowSignUpPopup] = useState(false);
-  const [showLoginModal, setShowLoginModal] = useState(false);
 
   // Sync external popup trigger with local state
   useEffect(() => {
@@ -84,16 +82,8 @@ export default function ExplorePage() {
           postIdsSet.current = new Set(savedState.postIds);
           setIsLoading(false);
 
-          // Schedule scroll restoration after DOM updates
-          setTimeout(() => {
-            const savedPosition = sessionStorage.getItem(SCROLL_POSITION_KEY);
-            if (savedPosition) {
-              const position = parseInt(savedPosition, 10);
-              window.scrollTo(0, position);
-              sessionStorage.removeItem(SCROLL_POSITION_KEY);
-            }
-            isRestoringRef.current = false;
-          }, 100);
+          // Mark restoration as complete
+          isRestoringRef.current = false;
 
           // Clean up the saved state so it's not used again
           sessionStorage.removeItem(EXPLORE_POSTS_STATE_KEY);
@@ -287,11 +277,6 @@ export default function ExplorePage() {
       }
     };
 
-    // Listen for route changes (Next.js navigation)
-    const handleRouteChange = () => {
-      handleBeforeUnload();
-    };
-
     // Use the window's popstate for browser back button
     window.addEventListener("popstate", handleBeforeUnload);
 
@@ -335,7 +320,7 @@ export default function ExplorePage() {
                   dataLength={posts.length}
                   next={() => fetchPosts(false)}
                   hasMore={hasMore && !error}
-                  loader={<PostGridSkeleton count={postsPerPage} />}
+                  loader={<LoadingSpinner />}
                   pullDownToRefresh={typeof window !== "undefined" && ("ontouchstart" in window || navigator.maxTouchPoints > 0)}
                   pullDownToRefreshThreshold={80}
                   pullDownToRefreshContent={null}
@@ -360,7 +345,7 @@ export default function ExplorePage() {
                       </div>
                     </div>
                   }
-                  scrollThreshold={0.8}
+                  scrollThreshold={0.5}
                 >
                   <PostGrid posts={posts} variant="explore" />
                 </InfiniteScroll>
@@ -406,12 +391,9 @@ export default function ExplorePage() {
         }}
         onSwitchToLogin={() => {
           setShowSignUpPopup(false);
-          setShowLoginModal(true);
+          // Close signup popup - login is handled elsewhere
         }}
       />
-
-      {/* Login Modal (if needed, you can add LoginModal component here) */}
-      {/* Example: <LoginModal show={showLoginModal} onClose={() => setShowLoginModal(false)} /> */}
     </main>
   );
 }
