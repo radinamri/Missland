@@ -148,7 +148,7 @@ export default function Header() {
           </div>
 
           {showSearch && (
-            <div className="hidden md:block flex-grow mx-8 lg:mx-4">
+            <div className="hidden md:block grow mx-8 lg:mx-4">
               <SearchInput
                 placeholder="Search or filter nails..."
                 value={isPostDetailPage ? localSearchTerm : searchTerm}
