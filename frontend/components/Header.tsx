@@ -92,6 +92,7 @@ export default function Header() {
   const navLinks = [
     { href: "/", label: "Explore" },
     { href: "/try-on", label: "Try-On" },
+    { href: "/chat", label: "AI Stylist" },
   ];
 
   const handleSearchSubmit = async (query: string) => {
