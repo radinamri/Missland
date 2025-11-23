@@ -392,7 +392,7 @@ export default function AIStylistPage() {
         {!isSidebarOpen && (
           <button
             onClick={() => setIsSidebarOpen(true)}
-            className="fixed top-20 left-4 z-[60] p-2.5 bg-white shadow-sm border border-gray-100 rounded-xl text-[#3D5A6C] hover:bg-white transition-all hover:scale-105 active:scale-95 animate-in fade-in duration-300"
+            className="fixed top-20 left-4 z-60 p-2.5 bg-white shadow-sm border border-gray-100 rounded-xl text-[#3D5A6C] hover:bg-white transition-all hover:scale-105 active:scale-95 animate-in fade-in duration-300"
             title="Open Chats"
           >
             <PanelLeft className="w-5 h-5" />
@@ -467,7 +467,7 @@ export default function AIStylistPage() {
           ${isSidebarOpen ? "md:left-[300px]" : "left-0"}
           ${
             messages.length > 0
-              ? "bottom-[60px] md:bottom-0 bg-gradient-to-t from-[#FDF8F9] via-[#FDF8F9]/95 to-transparent pt-10 pb-3 md:pb-8"
+              ? "bottom-[60px] md:bottom-0 bg-linear-to-t from-[#FDF8F9] via-[#FDF8F9]/95 to-transparent pt-10 pb-3 md:pb-8"
               : "bottom-[60px] md:bottom-0 pb-3 md:pb-8 bg-transparent pointer-events-none"
           } 
         `}
