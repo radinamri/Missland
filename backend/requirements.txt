@@ -1,5 +1,5 @@
 # Core Django & Framework
-Django==5.2.9
+Django==5.2.8
 djangorestframework==3.16.1
 djangorestframework-simplejwt==5.6.0
 asgiref==3.10.0
