@@ -20,15 +20,14 @@ WORKDIR /app
 # Copy and install Python dependencies
 COPY backend/requirements.txt .
 RUN pip install --upgrade pip && \
-    pip install --user -r requirements.txt
+    pip install -r requirements.txt
 
 # Final stage
 FROM python:3.11-slim
 
 # Set environment variables
 ENV PYTHONDONTWRITEBYTECODE=1 \
-    PYTHONUNBUFFERED=1 \
-    PATH=/root/.local/bin:$PATH
+    PYTHONUNBUFFERED=1
 
 # Install runtime dependencies
 RUN apt-get update && apt-get install -y --no-install-recommends \
@@ -43,7 +42,7 @@ RUN useradd -m -u 1000 appuser
 WORKDIR /app
 
 # Copy Python packages from builder
-COPY --from=builder /root/.local /root/.local
+COPY --from=builder /usr/local /usr/local
 
 # Copy application code
 COPY backend/ .
@@ -56,7 +55,7 @@ RUN mkdir -p /app/staticfiles /app/media /var/log/missland && \
 COPY scripts/entrypoint-django.sh /entrypoint.sh
 RUN chmod +x /entrypoint.sh && chown appuser:appuser /entrypoint.sh
 
-# Switch to non-root user
+# Switch to non-root user (but keep PATH set for root location)
 USER appuser
 
 # Expose port
