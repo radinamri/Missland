@@ -73,7 +73,7 @@ type ChatSession = {
 };
 
 export default function AIStylistPage() {
-  const { user, showToastWithMessage } = useAuth();
+  const { user } = useAuth();
   
   // --- State ---
   const [input, setInput] = useState("");
@@ -108,9 +108,9 @@ export default function AIStylistPage() {
       if (savedHistory) {
         try {
           const parsed = JSON.parse(savedHistory);
-          setHistory(parsed.map((session: any) => ({
+          setHistory(parsed.map((session: ChatSession) => ({
             ...session,
-            messages: session.messages.map((msg: any) => ({
+            messages: session.messages.map((msg: Message) => ({
               ...msg,
               timestamp: new Date(msg.timestamp),
             })),

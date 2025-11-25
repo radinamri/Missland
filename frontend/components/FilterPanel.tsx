@@ -52,7 +52,6 @@ const MultiSelectColorDropdown = ({
   onToggleColor: (color: string) => void;
 }) => {
   const [isOpen, setIsOpen] = useState(false);
-  const [positionAbove, setPositionAbove] = useState(false);
   const [dropdownStyle, setDropdownStyle] = useState<{
     top?: number;
     bottom?: number;
@@ -89,7 +88,6 @@ const MultiSelectColorDropdown = ({
       
       const isAbove = spaceBelow < spaceNeeded;
       
-      setPositionAbove(isAbove);
       setDropdownStyle({
         left: rect.left,
         width: rect.width,
@@ -199,7 +197,6 @@ const FilterDropdown = ({
   onSelect: (value: string | null) => void;
 }) => {
   const [isOpen, setIsOpen] = useState(false);
-  const [positionAbove, setPositionAbove] = useState(false);
   const [dropdownStyle, setDropdownStyle] = useState<{
     top?: number;
     bottom?: number;
@@ -232,7 +229,6 @@ const FilterDropdown = ({
       const spaceNeeded = options.length * 40 + 16;
       const isAbove = spaceBelow < spaceNeeded;
       
-      setPositionAbove(isAbove);
       setDropdownStyle({
         left: rect.left,
         width: rect.width,
