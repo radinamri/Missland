@@ -78,8 +78,15 @@ const MultiSelectColorDropdown = ({
   useEffect(() => {
     if (isOpen && buttonRef.current) {
       const rect = buttonRef.current.getBoundingClientRect();
-      const spaceBelow = window.innerHeight - rect.bottom;
-      const spaceNeeded = 300;
+      // Calculate space needed: ~40px per item + 16px padding
+      // But cap at maxHeight (290px) to account for scrolling
+      const spaceNeeded = Math.min(options.length * 40 + 16, 290);
+      
+      // More conservative: reserve less space when there's more room
+      // Only reserve full 80px when absolutely necessary
+      const minReserve = 60; // Minimum BottomNav reserve
+      const spaceBelow = window.innerHeight - rect.bottom - minReserve;
+      
       const isAbove = spaceBelow < spaceNeeded;
       
       setPositionAbove(isAbove);
@@ -87,10 +94,10 @@ const MultiSelectColorDropdown = ({
         left: rect.left,
         width: rect.width,
         top: isAbove ? undefined : rect.bottom,
-        bottom: isAbove ? window.innerHeight - rect.top : undefined,
+        bottom: isAbove ? window.innerHeight - rect.top + 8 : undefined,
       });
     }
-  }, [isOpen]);
+  }, [isOpen, options.length]);
 
   const displayName = (() => {
     if (selectedColors.length === 0) return "Any Color";
@@ -218,8 +225,11 @@ const FilterDropdown = ({
   useEffect(() => {
     if (isOpen && buttonRef.current) {
       const rect = buttonRef.current.getBoundingClientRect();
-      const spaceBelow = window.innerHeight - rect.bottom;
-      const spaceNeeded = 180;
+      // Reserve space for BottomNav (64px) and some padding
+      const bottomNavHeight = 80;
+      const spaceBelow = window.innerHeight - rect.bottom - bottomNavHeight;
+      // Calculate space needed: ~40px per item + 16px padding
+      const spaceNeeded = options.length * 40 + 16;
       const isAbove = spaceBelow < spaceNeeded;
       
       setPositionAbove(isAbove);
@@ -230,7 +240,7 @@ const FilterDropdown = ({
         bottom: isAbove ? window.innerHeight - rect.top : undefined,
       });
     }
-  }, [isOpen]);
+  }, [isOpen, options.length]);
 
   const handleSelect = (option: string | null) => {
     onSelect(option);
