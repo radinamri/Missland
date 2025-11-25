@@ -6,11 +6,12 @@ WORKDIR /app
 # Add build argument for cache busting
 ARG BUILD_ID=default
 
-# Copy package files
-COPY frontend/package*.json ./
+# Copy only package.json (not lock file) to get fresh installs
+COPY frontend/package.json ./
 
 # Install ALL dependencies (including devDependencies needed for build)
-RUN npm ci --legacy-peer-deps 2>/dev/null || npm install --legacy-peer-deps
+# Fresh install without lock file ensures correct versions
+RUN npm install --legacy-peer-deps --no-audit --no-fund
 
 # Builder stage
 FROM node:20-alpine AS builder
