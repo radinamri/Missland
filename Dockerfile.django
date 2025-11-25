@@ -48,7 +48,7 @@ COPY --from=builder /usr/local /usr/local
 COPY backend/ .
 
 # Create necessary directories
-RUN mkdir -p /app/staticfiles /app/media /var/log/missland && \
+RUN mkdir -p /app/staticfiles /app/media /app/logs /var/log/missland && \
     chown -R appuser:appuser /app /var/log/missland
 
 # Copy entrypoint script
