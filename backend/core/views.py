@@ -53,7 +53,7 @@ def get_tags_from_post(post):
 class StandardResultsSetPagination(PageNumberPagination):
     page_size = 24
     page_size_query_param = 'page_size'
-    max_page_size = 100
+    max_page_size = 10000
 
 
 # --- AUTH & PROFILE VIEWS ---
