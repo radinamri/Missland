@@ -3,11 +3,14 @@ FROM node:20-alpine AS deps
 
 WORKDIR /app
 
+# Add build argument for cache busting
+ARG BUILD_ID=default
+
 # Copy package files
 COPY frontend/package*.json ./
 
 # Install ALL dependencies (including devDependencies needed for build)
-RUN npm install --legacy-peer-deps
+RUN npm ci --legacy-peer-deps 2>/dev/null || npm install --legacy-peer-deps
 
 # Builder stage
 FROM node:20-alpine AS builder
