@@ -11,7 +11,12 @@ COPY frontend/package.json ./
 
 # Install ALL dependencies (including devDependencies needed for build)
 # Fresh install without lock file ensures correct versions
-RUN npm install --legacy-peer-deps --no-audit --no-fund
+# Use npm ci alternative with explicit verbose error reporting
+RUN npm cache clean --force && \
+    npm install --verbose --legacy-peer-deps --no-audit --no-fund 2>&1 | tee /tmp/npm-install.log && \
+    echo "=== NPM Install completed ===" && \
+    ls -la node_modules/@tailwindcss 2>/dev/null || echo "tailwindcss not found" && \
+    ls -la node_modules/tailwindcss 2>/dev/null || echo "tailwindcss found"
 
 # Builder stage
 FROM node:20-alpine AS builder
