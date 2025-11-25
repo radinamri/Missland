@@ -5,17 +5,29 @@ echo "Starting Django application..."
 
 # Wait for postgres
 echo "Waiting for PostgreSQL..."
-while ! nc -z $DB_HOST $DB_PORT; do
-  sleep 0.1
+max_attempts=30
+attempt=0
+while [ $attempt -lt $max_attempts ]; do
+  if timeout 1 bash -c "echo >/dev/tcp/$DB_HOST/$DB_PORT" 2>/dev/null; then
+    echo "PostgreSQL started"
+    break
+  fi
+  attempt=$((attempt + 1))
+  sleep 1
 done
-echo "PostgreSQL started"
 
 # Wait for Redis
 echo "Waiting for Redis..."
-while ! nc -z redis 6379; do
-  sleep 0.1
+max_attempts=30
+attempt=0
+while [ $attempt -lt $max_attempts ]; do
+  if timeout 1 bash -c "echo >/dev/tcp/redis/6379" 2>/dev/null; then
+    echo "Redis started"
+    break
+  fi
+  attempt=$((attempt + 1))
+  sleep 1
 done
-echo "Redis started"
 
 # Run migrations
 echo "Running database migrations..."
