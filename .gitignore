@@ -54,8 +54,10 @@ docs/.env.*
 !.env.example
 !.env.production.example
 !.env.template
+!.env.local.example
 !**/.env.example
 !**/.env.template
+!**/.env.local.example
 
 # Database backups and sensitive data exports
 *.sql

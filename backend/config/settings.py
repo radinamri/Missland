@@ -12,6 +12,10 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 
 from pathlib import Path
 import os
+from dotenv import load_dotenv
+
+# Load environment variables from .env file
+load_dotenv()
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -20,12 +24,15 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-#bxo)y=)7m(mo=zcf9&(o70om0-(#7c=1k75k6w)r8)m$kj(tl'
+SECRET_KEY = os.getenv('DJANGO_SECRET_KEY', 'django-insecure-#bxo)y=)7m(mo=zcf9&(o70om0-(#7c=1k75k6w)r8)m$kj(tl')
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
 ALLOWED_HOSTS = ['localhost', '127.0.0.1', '[::1]']
+
+# OpenAI API Configuration (for AI Stylist Chat)
+OPENAI_API_KEY = os.getenv('OPENAI_API_KEY', '')
 
 # Application definition
 
