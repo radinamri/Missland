@@ -52,7 +52,15 @@ const MultiSelectColorDropdown = ({
   onToggleColor: (color: string) => void;
 }) => {
   const [isOpen, setIsOpen] = useState(false);
+  const [positionAbove, setPositionAbove] = useState(false);
+  const [dropdownStyle, setDropdownStyle] = useState<{
+    top?: number;
+    bottom?: number;
+    left: number;
+    width: number;
+  }>({ left: 0, width: 200 });
   const dropdownRef = useRef<HTMLDivElement>(null);
+  const buttonRef = useRef<HTMLButtonElement>(null);
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -66,6 +74,23 @@ const MultiSelectColorDropdown = ({
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
+
+  useEffect(() => {
+    if (isOpen && buttonRef.current) {
+      const rect = buttonRef.current.getBoundingClientRect();
+      const spaceBelow = window.innerHeight - rect.bottom;
+      const spaceNeeded = 300;
+      const isAbove = spaceBelow < spaceNeeded;
+      
+      setPositionAbove(isAbove);
+      setDropdownStyle({
+        left: rect.left,
+        width: rect.width,
+        top: isAbove ? undefined : rect.bottom,
+        bottom: isAbove ? window.innerHeight - rect.top : undefined,
+      });
+    }
+  }, [isOpen]);
 
   const displayName = (() => {
     if (selectedColors.length === 0) return "Any Color";
@@ -81,6 +106,7 @@ const MultiSelectColorDropdown = ({
   return (
     <div className="relative" ref={dropdownRef}>
       <button
+        ref={buttonRef}
         onClick={() => setIsOpen(!isOpen)}
         className={`w-full flex items-center justify-between text-left px-4 py-2 text-sm font-semibold rounded-lg transition-colors duration-200 ${
           isActive
@@ -96,7 +122,17 @@ const MultiSelectColorDropdown = ({
         />
       </button>
       {isOpen && (
-        <div className="absolute top-full mt-1 w-full bg-white rounded-lg shadow-xl z-10 py-2 px-2 border border-gray-200">
+        <div
+          className="fixed bg-white rounded-lg shadow-xl z-50 border border-gray-200 overflow-y-auto"
+          style={{
+            left: dropdownStyle.left,
+            width: dropdownStyle.width,
+            top: dropdownStyle.top !== undefined ? dropdownStyle.top + 8 : undefined,
+            bottom: dropdownStyle.bottom !== undefined ? dropdownStyle.bottom + 8 : undefined,
+            maxHeight: "300px",
+            padding: "8px",
+          }}
+        >
           {options.map((option) => {
             const isSelected = selectedColors.includes(option);
             return (
@@ -156,7 +192,15 @@ const FilterDropdown = ({
   onSelect: (value: string | null) => void;
 }) => {
   const [isOpen, setIsOpen] = useState(false);
+  const [positionAbove, setPositionAbove] = useState(false);
+  const [dropdownStyle, setDropdownStyle] = useState<{
+    top?: number;
+    bottom?: number;
+    left: number;
+    width: number;
+  }>({ left: 0, width: 200 });
   const dropdownRef = useRef<HTMLDivElement>(null);
+  const buttonRef = useRef<HTMLButtonElement>(null);
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -171,6 +215,23 @@ const FilterDropdown = ({
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
+  useEffect(() => {
+    if (isOpen && buttonRef.current) {
+      const rect = buttonRef.current.getBoundingClientRect();
+      const spaceBelow = window.innerHeight - rect.bottom;
+      const spaceNeeded = 180;
+      const isAbove = spaceBelow < spaceNeeded;
+      
+      setPositionAbove(isAbove);
+      setDropdownStyle({
+        left: rect.left,
+        width: rect.width,
+        top: isAbove ? undefined : rect.bottom,
+        bottom: isAbove ? window.innerHeight - rect.top : undefined,
+      });
+    }
+  }, [isOpen]);
+
   const handleSelect = (option: string | null) => {
     onSelect(option);
     setIsOpen(false);
@@ -184,6 +245,7 @@ const FilterDropdown = ({
   return (
     <div className="relative" ref={dropdownRef}>
       <button
+        ref={buttonRef}
         onClick={() => setIsOpen(!isOpen)}
         className={`w-full flex items-center justify-between text-left px-4 py-2 text-sm font-semibold rounded-lg transition-colors duration-200 ${
           isActive
@@ -199,7 +261,17 @@ const FilterDropdown = ({
         />
       </button>
       {isOpen && (
-        <div className="absolute top-full mt-1 w-full bg-white rounded-lg shadow-xl z-10 py-2 px-2 border border-gray-200">
+        <div
+          className="fixed bg-white rounded-lg shadow-xl z-50 border border-gray-200 overflow-y-auto"
+          style={{
+            left: dropdownStyle.left,
+            width: dropdownStyle.width,
+            top: dropdownStyle.top !== undefined ? dropdownStyle.top + 8 : undefined,
+            bottom: dropdownStyle.bottom !== undefined ? dropdownStyle.bottom + 8 : undefined,
+            maxHeight: "200px",
+            padding: "8px",
+          }}
+        >
           {options.map((option) => (
             <a
               key={option}
