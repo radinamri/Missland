@@ -49,7 +49,8 @@ COPY backend/ .
 
 # Create necessary directories
 RUN mkdir -p /app/staticfiles /app/media /app/logs /var/log/missland && \
-    chown -R appuser:appuser /app /var/log/missland
+    chown -R appuser:appuser /app /var/log/missland && \
+    chmod 755 /app/logs
 
 # Copy entrypoint script
 COPY scripts/entrypoint-django.sh /entrypoint.sh
