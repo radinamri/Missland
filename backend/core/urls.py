@@ -1,5 +1,4 @@
 from django.urls import path
-from django.http import JsonResponse
 from .views import (
     UserRegistrationView, GoogleLogin, UserProfileView, EmailChangeInitiateView,
     EmailChangeConfirmView, PostListView, ArticleListView, ArticleDetailView,
@@ -11,16 +10,7 @@ from .views import (
 )
 from dj_rest_auth.views import PasswordChangeView
 
-
-def health_check(request):
-    """Simple health check endpoint for Docker healthcheck."""
-    return JsonResponse({'status': 'ok'})
-
-
 urlpatterns = [
-    # Health check
-    path('health/', health_check, name='health-check'),
-
     # Auth
     path('register/', UserRegistrationView.as_view(), name='user-registration'),
     path('google/', GoogleLogin.as_view(), name='google_login'),

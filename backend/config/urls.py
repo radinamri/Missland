@@ -2,11 +2,21 @@ from django.contrib import admin
 from django.conf import settings
 from django.conf.urls.static import static
 from django.urls import path, include
+from django.http import JsonResponse
 from core.token_views import CustomTokenObtainPairView, CustomTokenRefreshView
 # Import the PublicPostDetailView directly from your core app
 from core.views import PublicPostDetailView
 
+
+def health_check(request):
+    """Simple health check endpoint for Docker healthcheck."""
+    return JsonResponse({'status': 'ok'})
+
+
 urlpatterns = [
+    # Health check
+    path('api/health/', health_check, name='health-check'),
+
     path('admin/', admin.site.urls),
 
     # Add the public API route separately. It will now be accessible at /api/public/...
