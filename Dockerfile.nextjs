@@ -50,12 +50,11 @@ ENV NODE_ENV=production
 RUN addgroup --system --gid 1001 nodejs && \
     adduser --system --uid 1001 nextjs
 
-# Copy necessary files
-COPY --from=builder /app/public ./public
-COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
-COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone/.next ./.next
-COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone/node_modules ./node_modules
-COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone/package.json ./package.json
+# Copy everything from standalone build (contains server.js, node_modules, .next, package.json)
+COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone/ ./
+
+# Copy public assets
+COPY --from=builder --chown=nextjs:nodejs /app/public ./public
 
 # Copy entrypoint
 COPY scripts/entrypoint-nextjs.sh /entrypoint.sh
