@@ -53,7 +53,9 @@ RUN addgroup --system --gid 1001 nodejs && \
 # Copy necessary files
 COPY --from=builder /app/public ./public
 COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
-COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
+COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone/.next ./.next
+COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone/node_modules ./node_modules
+COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone/package.json ./package.json
 
 # Copy entrypoint
 COPY scripts/entrypoint-nextjs.sh /entrypoint.sh
