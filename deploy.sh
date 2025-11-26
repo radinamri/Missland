@@ -29,11 +29,11 @@ git pull origin main
 
 echo ""
 echo -e "${YELLOW}Step 2: Building Docker images...${NC}"
-docker-compose build --no-cache
+docker-compose --env-file .env.docker build --no-cache
 
 echo ""
 echo -e "${YELLOW}Step 3: Stopping existing containers...${NC}"
-docker-compose down
+docker-compose --env-file .env.docker down
 
 echo ""
 echo -e "${YELLOW}Step 4: Starting containers...${NC}"
@@ -45,7 +45,7 @@ sleep 30
 
 echo ""
 echo -e "${YELLOW}Step 6: Checking container status...${NC}"
-docker-compose ps
+docker-compose --env-file .env.docker ps
 
 echo ""
 echo -e "${GREEN}================================${NC}"
@@ -53,15 +53,15 @@ echo -e "${GREEN}Deployment Complete!${NC}"
 echo -e "${GREEN}================================${NC}"
 echo ""
 echo "Service Status:"
-docker-compose ps --format "table {{.Name}}\t{{.Status}}\t{{.Ports}}"
+docker-compose --env-file .env.docker ps --format "table {{.Name}}\t{{.Status}}\t{{.Ports}}"
 
 echo ""
 echo "To view logs:"
-echo "  docker-compose logs -f"
+echo "  docker-compose --env-file .env.docker logs -f"
 echo ""
 echo "To view specific service logs:"
-echo "  docker-compose logs -f django"
-echo "  docker-compose logs -f nextjs"
-echo "  docker-compose logs -f nginx"
+echo "  docker-compose --env-file .env.docker logs -f django"
+echo "  docker-compose --env-file .env.docker logs -f nextjs"
+echo "  docker-compose --env-file .env.docker logs -f nginx"
 echo ""
 echo "Access your application at: http://46.249.102.155"
