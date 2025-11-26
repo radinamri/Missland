@@ -29,7 +29,12 @@ SECRET_KEY = os.getenv('DJANGO_SECRET_KEY', 'django-insecure-#bxo)y=)7m(mo=zcf9&
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['localhost', '127.0.0.1', '[::1]']
+ALLOWED_HOSTS = [
+    'localhost',
+    '127.0.0.1',
+    '[::1]',
+    '46.249.102.155',  # Production server IP
+]
 
 # OpenAI API Configuration (for AI Stylist Chat)
 OPENAI_API_KEY = os.getenv('OPENAI_API_KEY', '')
