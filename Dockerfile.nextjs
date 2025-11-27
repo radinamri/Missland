@@ -62,6 +62,9 @@ ENV NODE_ENV=production \
 # Copy everything from standalone build (contains server.js, node_modules, .next, package.json)
 COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone/ ./
 
+# Copy static files from .next directory
+COPY --from=builder --chown=nextjs:nodejs /app/.next/static/ ./.next/static/
+
 # Copy public assets
 COPY --from=builder --chown=nextjs:nodejs /app/public ./public
 
