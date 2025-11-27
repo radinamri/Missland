@@ -104,10 +104,29 @@ class EmailChangeConfirmSerializer(serializers.Serializer):
 
 
 class PostSerializer(serializers.ModelSerializer):
+    image_url = serializers.SerializerMethodField()
+    try_on_image_url = serializers.SerializerMethodField()
+
     class Meta:
         model = Post
         fields = ('id', 'title', 'image_url', 'width', 'height', 'shape', 'pattern', 'size', 'colors',
                   'try_on_image_url')
+
+    def get_image_url(self, obj):
+        from django.conf import settings
+        base_url = settings.BASE_URL
+        if obj.image_url.startswith('http'):
+            return obj.image_url
+        return f"{base_url}{obj.image_url}"
+
+    def get_try_on_image_url(self, obj):
+        from django.conf import settings
+        base_url = settings.BASE_URL
+        if not obj.try_on_image_url:
+            return obj.try_on_image_url
+        if obj.try_on_image_url.startswith('http'):
+            return obj.try_on_image_url
+        return f"{base_url}{obj.try_on_image_url}"
 
 
 class TryOnSerializer(serializers.ModelSerializer):
