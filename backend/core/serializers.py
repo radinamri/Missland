@@ -113,27 +113,17 @@ class PostSerializer(serializers.ModelSerializer):
                   'try_on_image_url')
 
     def get_image_url(self, obj):
-        import sys
         from django.conf import settings
         base_url = settings.BASE_URL
         url = obj.image_url
-        
-        # Log to stderr for debugging
-        print(f"DEBUG get_image_url called: url={url}, base_url={base_url}", file=sys.stderr)
-        
         # Replace localhost URLs with production BASE_URL
         if url.startswith('http://127.0.0.1') or url.startswith('http://localhost'):
             # Extract just the path part (e.g., /media/nails/...)
             path = url.split('/', 3)[-1] if '/' in url.split('://', 1)[-1] else url
-            result = f"{base_url}/{path}"
-            print(f"DEBUG returning replaced: {result}", file=sys.stderr)
-            return result
+            return f"{base_url}/{path}"
         if url.startswith('http'):
-            print(f"DEBUG returning as-is (already http): {url}", file=sys.stderr)
             return url
-        result = f"{base_url}{url}" if url else url
-        print(f"DEBUG returning with base_url: {result}", file=sys.stderr)
-        return result
+        return f"{base_url}{url}" if url else url
 
     def get_try_on_image_url(self, obj):
         from django.conf import settings
