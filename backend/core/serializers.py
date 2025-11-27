@@ -104,8 +104,8 @@ class EmailChangeConfirmSerializer(serializers.Serializer):
 
 
 class PostSerializer(serializers.ModelSerializer):
-    image_url = serializers.SerializerMethodField()
-    try_on_image_url = serializers.SerializerMethodField()
+    image_url = serializers.SerializerMethodField(read_only=True)
+    try_on_image_url = serializers.SerializerMethodField(read_only=True)
 
     class Meta:
         model = Post
@@ -120,10 +120,11 @@ class PostSerializer(serializers.ModelSerializer):
         if url.startswith('http://127.0.0.1') or url.startswith('http://localhost'):
             # Extract just the path part (e.g., /media/nails/...)
             path = url.split('/', 3)[-1] if '/' in url.split('://', 1)[-1] else url
-            return f"{base_url}/{path}"
+            result = f"{base_url}/{path}"
+            return result
         if url.startswith('http'):
             return url
-        return f"{base_url}{url}"
+        return f"{base_url}{url}" if url else url
 
     def get_try_on_image_url(self, obj):
         from django.conf import settings
