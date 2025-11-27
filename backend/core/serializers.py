@@ -115,18 +115,30 @@ class PostSerializer(serializers.ModelSerializer):
     def get_image_url(self, obj):
         from django.conf import settings
         base_url = settings.BASE_URL
-        if obj.image_url.startswith('http'):
-            return obj.image_url
-        return f"{base_url}{obj.image_url}"
+        url = obj.image_url
+        # Replace localhost URLs with production BASE_URL
+        if url.startswith('http://127.0.0.1') or url.startswith('http://localhost'):
+            # Extract just the path part (e.g., /media/nails/...)
+            path = url.split('/', 3)[-1] if '/' in url.split('://', 1)[-1] else url
+            return f"{base_url}/{path}"
+        if url.startswith('http'):
+            return url
+        return f"{base_url}{url}"
 
     def get_try_on_image_url(self, obj):
         from django.conf import settings
         base_url = settings.BASE_URL
         if not obj.try_on_image_url:
             return obj.try_on_image_url
-        if obj.try_on_image_url.startswith('http'):
-            return obj.try_on_image_url
-        return f"{base_url}{obj.try_on_image_url}"
+        url = obj.try_on_image_url
+        # Replace localhost URLs with production BASE_URL
+        if url.startswith('http://127.0.0.1') or url.startswith('http://localhost'):
+            # Extract just the path part (e.g., /media/nails/...)
+            path = url.split('/', 3)[-1] if '/' in url.split('://', 1)[-1] else url
+            return f"{base_url}/{path}"
+        if url.startswith('http'):
+            return url
+        return f"{base_url}{url}"
 
 
 class TryOnSerializer(serializers.ModelSerializer):
