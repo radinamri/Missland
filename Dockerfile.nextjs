@@ -23,6 +23,10 @@ FROM node:20-alpine AS builder
 
 WORKDIR /app
 
+# Build arguments for environment variables
+ARG NEXT_PUBLIC_API_URL=http://46.249.102.155/api
+ARG NEXT_PUBLIC_GOOGLE_CLIENT_ID
+
 # Copy only package.json (not lock file) to match deps stage
 COPY frontend/package.json ./
 
@@ -35,7 +39,10 @@ COPY frontend/ ./
 # Clean any cached next build files
 RUN rm -rf .next .env.local
 
-# Build application
+# Build application with environment variables
+ENV NEXT_PUBLIC_API_URL=$NEXT_PUBLIC_API_URL \
+    NEXT_PUBLIC_GOOGLE_CLIENT_ID=$NEXT_PUBLIC_GOOGLE_CLIENT_ID
+
 RUN npm run build
 
 # Production stage

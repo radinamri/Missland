@@ -76,6 +76,9 @@ services:
     build:
       context: .
       dockerfile: Dockerfile.nextjs
+      args:
+        - NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL:-http://46.249.102.155/api}
+        - NEXT_PUBLIC_GOOGLE_CLIENT_ID=${GOOGLE_OAUTH_CLIENT_ID}
     container_name: missland_nextjs
     environment:
       - NODE_ENV=production
