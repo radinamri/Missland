@@ -74,7 +74,7 @@ class Command(BaseCommand):
                     height = 600
 
                 # Use real image URLs with dynamic base URL from settings
-                base_url = getattr(settings, 'MEDIA_BASE_URL', 'http://127.0.0.1:8000')
+                base_url = getattr(settings, 'BASE_URL', 'http://127.0.0.1:8000')
                 image_url = f"{base_url}/media/nails/{image_name}"
                 try_on_image_url = f"{base_url}/media/nails/{image_name}"  # Same image for try-on
 

@@ -152,6 +152,7 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 # Production server base URL for absolute media URLs
 # Used in API responses to ensure images load from correct domain
 BASE_URL = os.getenv('BASE_URL', 'http://127.0.0.1:8000')
+MEDIA_BASE_URL = BASE_URL  # Use BASE_URL for constructing absolute media URLs
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
