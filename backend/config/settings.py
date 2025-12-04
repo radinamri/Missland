@@ -15,7 +15,26 @@ import os
 from dotenv import load_dotenv
 
 # Load environment variables from .env file
-load_dotenv()
+# Try to load from the backend folder first (local development)
+backend_env_local = Path(__file__).resolve().parent.parent / '.env.local.docker'
+backend_env_docker = Path(__file__).resolve().parent.parent / '.env.docker'
+backend_env = Path(__file__).resolve().parent.parent / '.env'
+
+# Load in order of priority (first one found wins)
+for env_file in [backend_env_local, backend_env_docker, backend_env]:
+    if env_file.exists():
+        load_dotenv(str(env_file))
+        break
+
+# If no backend .env found, try root folder
+if not any(env_file.exists() for env_file in [backend_env_local, backend_env_docker, backend_env]):
+    root_env_local = Path(__file__).resolve().parent.parent.parent / '.env.local.docker'
+    root_env_docker = Path(__file__).resolve().parent.parent.parent / '.env.docker'
+    root_env = Path(__file__).resolve().parent.parent.parent / '.env'
+    for env_file in [root_env_local, root_env_docker, root_env]:
+        if env_file.exists():
+            load_dotenv(str(env_file))
+            break
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -105,7 +124,7 @@ DATABASES = {
         'NAME': os.environ.get('DB_NAME', 'missland_db'),
         'USER': os.environ.get('DB_USER', 'radinamri'),
         'PASSWORD': os.environ.get('DB_PASSWORD', ''),
-        'HOST': os.environ.get('DB_HOST', 'localhost'),
+        'HOST': os.environ.get('DB_HOST', '127.0.0.1'),
         'PORT': os.environ.get('DB_PORT', '5432'),
     }
 }
