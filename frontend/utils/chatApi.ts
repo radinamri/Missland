@@ -1,7 +1,8 @@
 import axios, { AxiosError } from "axios";
 
-// Chat API Base URL - using FastAPI backend at port 8000
-const CHAT_API_BASE_URL = process.env.NEXT_PUBLIC_CHAT_API_URL || "http://localhost:8000";
+// Chat API Base URL - now uses Django gateway for unified auth
+// The Django backend proxies requests to the RAG service
+const CHAT_API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
 
 // Create axios instance for chat API
 const chatApi = axios.create({
@@ -30,6 +31,7 @@ export interface MessageResponse {
   image_analysis?: string;
   tokens_used: number;
   error: string | null;
+  explore_link?: string;  // Link to explore page with relevant filters
 }
 
 export interface ConversationHistory {
@@ -54,7 +56,7 @@ export interface ChatError {
  */
 export async function createConversation(userId?: string): Promise<ConversationResponse> {
   try {
-    const response = await chatApi.post<ConversationResponse>("/api/chat/conversation", {
+    const response = await chatApi.post<ConversationResponse>("/api/auth/chat/conversation/", {
       user_id: userId,
     });
     return response.data;
@@ -76,7 +78,7 @@ export async function sendMessage(
   userId?: string
 ): Promise<MessageResponse> {
   try {
-    const response = await chatApi.post<MessageResponse>("/api/chat/message", {
+    const response = await chatApi.post<MessageResponse>("/api/auth/chat/message/", {
       conversation_id: conversationId,
       message,
       user_id: userId,
@@ -111,7 +113,7 @@ export async function uploadImage(
       formData.append("user_id", userId);
     }
 
-    const response = await chatApi.post<MessageResponse>("/api/chat/image", formData, {
+    const response = await chatApi.post<MessageResponse>("/api/auth/chat/image/", formData, {
       headers: {
         "Content-Type": "multipart/form-data",
       },
@@ -132,7 +134,7 @@ export async function uploadImage(
 export async function getConversationHistory(conversationId: string): Promise<ConversationHistory> {
   try {
     const response = await chatApi.get<ConversationHistory>(
-      `/api/chat/conversation/${conversationId}/history`
+      `/api/auth/chat/conversation/${conversationId}/history/`
     );
     return response.data;
   } catch (error) {
@@ -149,7 +151,7 @@ export async function getConversationHistory(conversationId: string): Promise<Co
  */
 export async function clearConversation(conversationId: string): Promise<void> {
   try {
-    await chatApi.delete(`/api/chat/conversation/${conversationId}`);
+    await chatApi.delete(`/api/auth/chat/conversation/${conversationId}/`);
   } catch (error) {
     if (axios.isAxiosError(error)) {
       const axiosError = error as AxiosError<ChatError>;
@@ -164,7 +166,7 @@ export async function clearConversation(conversationId: string): Promise<void> {
  */
 export async function checkHealth(): Promise<{ status: string; system_ready: boolean }> {
   try {
-    const response = await chatApi.get("/health");
+    const response = await chatApi.get("/api/auth/chat/health/");
     return response.data;
   } catch (error) {
     throw new Error("Chat service is unavailable");

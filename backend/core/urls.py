@@ -8,6 +8,14 @@ from .views import (
     DeleteTryOnView, PasswordResetRequestView, PasswordResetConfirmView, FilteredPostListView, FilterSuggestionsView,
     ActiveSessionsView, RevokeSessionView, RevokeAllSessionsView, LogoutView
 )
+from .chat_gateway import (
+    ChatConversationView,
+    ChatMessageView,
+    ChatImageUploadView,
+    ChatConversationHistoryView,
+    ChatConversationClearView,
+    ChatHealthView,
+)
 from dj_rest_auth.views import PasswordChangeView
 
 urlpatterns = [
@@ -58,4 +66,12 @@ urlpatterns = [
     # Password reset
     path('password/reset/', PasswordResetRequestView.as_view(), name='password-reset-request'),
     path('password/reset/confirm/', PasswordResetConfirmView.as_view(), name='password-reset-confirm'),
+
+    # AI Chat (RAG Service Gateway)
+    path('chat/conversation/', ChatConversationView.as_view(), name='chat-conversation-create'),
+    path('chat/message/', ChatMessageView.as_view(), name='chat-message'),
+    path('chat/image/', ChatImageUploadView.as_view(), name='chat-image-upload'),
+    path('chat/conversation/<str:conversation_id>/history/', ChatConversationHistoryView.as_view(), name='chat-conversation-history'),
+    path('chat/conversation/<str:conversation_id>/', ChatConversationClearView.as_view(), name='chat-conversation-clear'),
+    path('chat/health/', ChatHealthView.as_view(), name='chat-health'),
 ]

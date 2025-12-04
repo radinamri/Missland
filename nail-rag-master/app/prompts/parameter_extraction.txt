@@ -1,0 +1,45 @@
+Analyze the following conversation about nail design preferences and extract specific parameters if the user has expressed clear preferences or the assistant has made specific recommendations.
+
+CRITICAL CONSTRAINTS:
+1. A nail can have ONLY ONE shape at a time
+2. A nail can have ONLY ONE pattern at a time  
+3. A nail can have ONLY ONE size at a time
+4. A nail CAN HAVE MULTIPLE colors at the same time
+
+Valid values:
+- Shapes: almond, square, round, coffin, stiletto
+- Patterns: french, glossy, matte, ombre, mixed
+- Sizes: short, medium, long
+- Colors: red, pink, orange, yellow, green, turquoise, blue, purple, cream, brown, white, gray, black, unknown
+
+Conversation:
+{{conversation_text}}
+
+Extract parameters ONLY if:
+- User explicitly mentioned preferences (e.g., "I want almond shape", "I like pink and white")
+- Assistant made specific recommendations (e.g., "I recommend almond shape with french pattern")
+- Image analysis provided specific details
+- There's enough information to generate a meaningful filter link
+
+Return JSON in this exact format:
+{
+  "shape": "almond" or null,
+  "pattern": "french" or null,
+  "size": "medium" or null,
+  "colors": ["pink", "white"] or [],
+  "confidence": 0.0-1.0,
+  "reason": "Brief explanation of what was extracted"
+}
+
+If there's insufficient information, return:
+{
+  "shape": null,
+  "pattern": null,
+  "size": null,
+  "colors": [],
+  "confidence": 0.0,
+  "reason": "Insufficient information to extract parameters"
+}
+
+Return ONLY valid JSON, no other text.
+

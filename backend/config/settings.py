@@ -58,6 +58,12 @@ ALLOWED_HOSTS = [
 # OpenAI API Configuration (for AI Stylist Chat)
 OPENAI_API_KEY = os.getenv('OPENAI_API_KEY', '')
 
+# RAG Service Configuration (nail-rag-master)
+RAG_SERVICE_URL = os.getenv('RAG_SERVICE_URL', 'http://127.0.0.1:8001')
+RAG_SERVICE_TIMEOUT = float(os.getenv('RAG_SERVICE_TIMEOUT', '30.0'))
+RAG_SERVICE_MAX_RETRIES = int(os.getenv('RAG_SERVICE_MAX_RETRIES', '3'))
+CONVERSATION_HISTORY_LIMIT = int(os.getenv('CONVERSATION_HISTORY_LIMIT', '10'))
+
 # Application definition
 
 INSTALLED_APPS = [
