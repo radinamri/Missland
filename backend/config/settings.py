@@ -261,8 +261,10 @@ SOCIALACCOUNT_PROVIDERS = {
 # You will need to set these in your environment variables for production,
 # but for development, you can add them here directly for now.
 # Replace with the keys you got from Google Cloud Console.
-os.environ['GOOGLE_CLIENT_ID'] = '665407123210-20j9tne8tqgfi5t7dn6jr6taj51o0elk.apps.googleusercontent.com'
-os.environ['GOOGLE_CLIENT_SECRET'] = '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'
+# NOTE: These are now loaded from environment variables for security
+# See .env.local.docker.example or .env.docker for configuration
+os.environ['GOOGLE_CLIENT_ID'] = os.getenv('GOOGLE_OAUTH_CLIENT_ID', os.getenv('GOOGLE_CLIENT_ID', ''))
+os.environ['GOOGLE_CLIENT_SECRET'] = os.getenv('GOOGLE_OAUTH_CLIENT_SECRET', os.getenv('GOOGLE_CLIENT_SECRET', ''))
 
 # For development, print emails to the console instead of sending them.
 EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'

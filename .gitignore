@@ -27,34 +27,52 @@ build/
 db.sqlite3
 staticfiles/
 
-# Environment variables - NEVER commit these files with secrets!
+# ==============================================
+# Environment Variables - FOUR-FILE STRATEGY
+# ==============================================
+# 
+# IGNORE (GIT-IGNORED - NEVER COMMIT):
+#   1. .env.docker          - Production secrets
+#   2. .env.local.docker    - Local dev secrets
+# 
+# TRACK (SAFE TO COMMIT):
+#   1. .env.docker.example         - Production template
+#   2. .env.local.docker.example   - Local dev template
+# 
+# NEVER commit real credentials, API keys, or passwords!
+# Always use example templates for reference
+
+# Ignore actual configuration files with secrets
+.env.docker
+.env.local.docker
+backend/.env.docker
+backend/.env.local.docker
+frontend/.env.docker
+frontend/.env.local.docker
+
+# Generic .env patterns (all ignored)
 .env
 .env.local
 .env.*.local
 .env.production
-.env.docker
-.env.local.docker
 *.env
 
-# All .env files in all directories
+# Old naming convention (for cleanup)
 backend/.env
 backend/.env.*
 frontend/.env
 frontend/.env.*
-deployment/.env
-deployment/.env.*
-nginx/.env
-nginx/.env.*
-scripts/.env
-scripts/.env.*
-docs/.env
-docs/.env.*
+frontend/.env.local
 
-# Exclude example/template files from ignore
+# EXCEPTION: Track example/template .env files (safe to commit)
+# These contain no secrets and are used for setup reference
+!.env.docker.example
+!.env.local.docker.example
 !.env.example
-!.env.production.example
 !.env.template
 !.env.local.example
+!**/.env.docker.example
+!**/.env.local.docker.example
 !**/.env.example
 !**/.env.template
 !**/.env.local.example
