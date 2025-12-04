@@ -46,6 +46,7 @@ import {
 } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 import LoginModal from "@/components/LoginModal";
+import { MarkdownRenderer } from "@/components/MarkdownRenderer";
 import {
   createConversation,
   sendMessage,
@@ -728,7 +729,11 @@ export default function AIStylistPage() {
                           : ""
                       }`}
                     >
-                      {msg.content}
+                      {msg.role === "assistant" ? (
+                        <MarkdownRenderer content={msg.content} />
+                      ) : (
+                        msg.content
+                      )}
                     </div>
                     {msg.image_analysis && (
                       <div className="bg-[#F9FAFB] border border-gray-200 rounded-xl p-3 mt-2">
