@@ -61,6 +61,7 @@ type Message = {
   content: string;
   timestamp: Date;
   image_analysis?: string;
+  image?: string; // base64 preview or image URL
 };
 
 type ChatSession = {
@@ -96,6 +97,10 @@ export default function AIStylistPage() {
   // Chat History State (persisted in localStorage for logged-in users)
   const [history, setHistory] = useState<ChatSession[]>([]);
   const [currentSessionId, setCurrentSessionId] = useState<string | null>(null);
+
+  // Image Upload State
+  const [selectedImage, setSelectedImage] = useState<File | null>(null);
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
 
   const scrollRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
@@ -251,7 +256,14 @@ export default function AIStylistPage() {
 
   // --- Chat Handlers ---
   const handleSend = async () => {
-    if (!input.trim() || !conversationId || isLoading) return;
+    // Check if we have either text or image
+    if (!input.trim() && !selectedImage) return;
+    if (!conversationId || isLoading) return;
+    
+    // Save image data BEFORE clearing state
+    const currentImagePreview = imagePreview;
+    const currentSelectedImage = selectedImage;
+    const hasImage = !!selectedImage;
     
     const userText = input.trim();
     setInput("");
@@ -262,13 +274,35 @@ export default function AIStylistPage() {
       role: "user",
       content: userText,
       timestamp: new Date(),
+      image: hasImage ? currentImagePreview || undefined : undefined,
     };
     setMessages((prev) => [...prev, newUserMsg]);
+    
+    // Clear image preview immediately after adding to messages
+    if (hasImage) {
+      setSelectedImage(null);
+      setImagePreview(null);
+      if (fileInputRef.current) fileInputRef.current.value = "";
+    }
+    
     setIsTyping(true);
     setIsLoading(true);
 
     try {
-      const response = await sendMessage(conversationId, userText, user?.id?.toString());
+      let response;
+      
+      // If we have an image, upload it with the text or default message
+      if (hasImage && currentSelectedImage) {
+        response = await uploadImage(
+          conversationId,
+          currentSelectedImage,
+          userText || "Analyze this nail design",
+          user?.id?.toString()
+        );
+      } else {
+        // Otherwise just send the text message
+        response = await sendMessage(conversationId, userText, user?.id?.toString());
+      }
       
       const newBotMsg: Message = {
         id: (Date.now() + 1).toString(),
@@ -293,55 +327,30 @@ export default function AIStylistPage() {
     }
   };
 
-  const handleImageUpload = async (file: File) => {
-    if (!conversationId || isLoading) return;
-
-    const validation = validateImageFile(file);
-    if (!validation.valid) {
-      setError(validation.error || "Invalid file");
+  const handleImageUpload = (file: File) => {
+    // Validate file
+    const maxSize = 5 * 1024 * 1024; // 5MB
+    const allowedTypes = ["image/jpeg", "image/png", "image/webp"];
+    
+    if (!allowedTypes.includes(file.type)) {
+      setError("Invalid file type. Please use JPEG, PNG, or WebP.");
+      if (fileInputRef.current) fileInputRef.current.value = "";
+      return;
+    }
+    if (file.size > maxSize) {
+      setError("File too large. Maximum size is 5MB.");
+      if (fileInputRef.current) fileInputRef.current.value = "";
       return;
     }
 
+    // Store the image for preview
+    setSelectedImage(file);
     setError(null);
-    setIsLoading(true);
 
-    const newUserMsg: Message = {
-      id: Date.now().toString(),
-      role: "user",
-      content: `📷 [Image uploaded: ${file.name}]`,
-      timestamp: new Date(),
-    };
-    setMessages((prev) => [...prev, newUserMsg]);
-    setIsTyping(true);
-
-    try {
-      const response = await uploadImage(
-        conversationId,
-        file,
-        "Analyze this nail image",
-        user?.id?.toString()
-      );
-
-      const newBotMsg: Message = {
-        id: (Date.now() + 1).toString(),
-        role: "assistant",
-        content: response.answer,
-        timestamp: new Date(),
-        image_analysis: response.image_analysis,
-      };
-      setMessages((prev) => [...prev, newBotMsg]);
-    } catch (error) {
-      console.error("Failed to upload image:", error);
-      setError(
-        error instanceof Error
-          ? error.message
-          : "Failed to upload image. Please try again."
-      );
-      setMessages((prev) => prev.filter((m) => m.id !== newUserMsg.id));
-    } finally {
-      setIsTyping(false);
-      setIsLoading(false);
-    }
+    // Create a preview
+    const reader = new FileReader();
+    reader.onloadend = () => setImagePreview(reader.result as string);
+    reader.readAsDataURL(file);
   };
 
   const handleNewChat = async () => {
@@ -722,19 +731,34 @@ export default function AIStylistPage() {
                     <p className="font-semibold text-sm text-[#3D5A6C]">
                       {msg.role === "assistant" ? "Missland AI" : "You"}
                     </p>
-                    <div
-                      className={`text-[15px] leading-relaxed text-gray-700 ${
-                        msg.role === "user"
-                          ? "bg-white/60 p-3 rounded-2xl rounded-tl-none inline-block shadow-sm"
-                          : ""
-                      }`}
-                    >
-                      {msg.role === "assistant" ? (
-                        <MarkdownRenderer content={msg.content} />
-                      ) : (
-                        msg.content
-                      )}
-                    </div>
+                    
+                    {/* Image Display - only for user messages */}
+                    {msg.role === "user" && msg.image && (
+                      <div className="block mb-2">
+                        <img
+                          src={msg.image}
+                          alt="Message attachment"
+                          className="max-w-[200px] max-h-[250px] w-auto h-auto rounded-lg shadow-sm border border-gray-200 object-contain"
+                        />
+                      </div>
+                    )}
+                    
+                    {/* Only show text content if present */}
+                    {msg.content && (
+                      <div
+                        className={`text-[15px] leading-relaxed ${
+                          msg.role === "user"
+                            ? "bg-white/60 p-3 rounded-2xl rounded-tl-none inline-block shadow-sm text-gray-700"
+                            : ""
+                        }`}
+                      >
+                        {msg.role === "assistant" ? (
+                          <MarkdownRenderer content={msg.content} />
+                        ) : (
+                          msg.content
+                        )}
+                      </div>
+                    )}
                     {msg.image_analysis && (
                       <div className="bg-[#F9FAFB] border border-gray-200 rounded-xl p-3 mt-2">
                         <p className="text-xs font-semibold text-[#D98B99] mb-1">
@@ -770,13 +794,35 @@ export default function AIStylistPage() {
           ${isSidebarOpen ? "md:left-[300px]" : "left-0"}
           ${
             messages.length > 0
-              ? "bottom-[60px] md:bottom-0 bg-linear-to-t from-[#FDF8F9] via-[#FDF8F9]/95 to-transparent pt-10 pb-3 md:pb-8"
-              : "bottom-[60px] md:bottom-0 pb-3 md:pb-8 bg-transparent pointer-events-none"
+              ? "bottom-[60px] md:bottom-0 bg-gradient-to-t from-[#FDF8F9] via-[#FDF8F9]/95 to-transparent pt-10 pb-8"
+              : "bottom-[60px] md:bottom-0 pb-8 bg-transparent pointer-events-none"
           } 
         `}
         >
           <div className="max-w-2xl mx-auto px-4 md:px-6 w-full relative pointer-events-auto">
-            <div className="relative flex items-end gap-2 bg-white p-2 rounded-[26px] shadow-[0_8px_30px_rgba(0,0,0,0.04)] border border-gray-100 focus-within:border-[#D98B99]/50 focus-within:shadow-[0_8px_30px_rgba(217,139,153,0.1)] transition-all duration-300 group">
+            <div className="relative flex flex-col bg-white p-2 rounded-[26px] shadow-[0_8px_30px_rgba(0,0,0,0.04)] border border-gray-100 focus-within:border-[#D98B99]/50 focus-within:shadow-[0_8px_30px_rgba(217,139,153,0.1)] transition-all duration-300 group">
+              
+              {/* Image Preview in Input Box */}
+              {imagePreview && (
+                <div className="flex items-center gap-2 px-2 pt-2 pb-2">
+                  <div className="relative w-12 h-12 rounded-lg overflow-visible bg-gray-100 shrink-0">
+                    <img src={imagePreview} alt="preview" className="w-12 h-12 rounded-lg object-cover" />
+                    <button
+                      onClick={() => { 
+                        setImagePreview(null); 
+                        setSelectedImage(null);
+                        if (fileInputRef.current) fileInputRef.current.value = "";
+                      }}
+                      className="absolute -top-2 -right-2 w-5 h-5 bg-gray-700 hover:bg-gray-800 rounded-full flex items-center justify-center transition-colors shadow-sm"
+                    >
+                      <X className="w-3 h-3 text-white" />
+                    </button>
+                  </div>
+                  <span className="text-xs text-gray-500 truncate max-w-[150px]">{selectedImage?.name}</span>
+                </div>
+              )}
+              
+              <div className="flex items-end gap-2">
               <input
                 ref={fileInputRef}
                 type="file"
@@ -786,7 +832,6 @@ export default function AIStylistPage() {
                   const file = e.target.files?.[0];
                   if (file) {
                     handleImageUpload(file);
-                    e.target.value = "";
                   }
                 }}
               />
@@ -818,11 +863,11 @@ export default function AIStylistPage() {
 
               <button
                 onClick={handleSend}
-                disabled={!input.trim() || !conversationId || isLoading}
+                disabled={(!input.trim() && !selectedImage) || !conversationId || isLoading}
                 className={`
                   w-10 h-10 aspect-square rounded-full flex items-center justify-center mb-2 mr-1 transition-all duration-200 shadow-sm shrink-0
                   ${
-                    input.trim() && conversationId && !isLoading
+                    (input.trim() || selectedImage) && conversationId && !isLoading
                       ? "bg-[#3D5A6C] text-white hover:bg-[#2F4A58] scale-100"
                       : "bg-gray-100 text-gray-300 scale-95 cursor-not-allowed"
                   }
@@ -830,6 +875,7 @@ export default function AIStylistPage() {
               >
                 <ArrowUp className="w-5 h-5 stroke-[3px]" />
               </button>
+              </div>
             </div>
 
             <div className="text-center mt-2">
