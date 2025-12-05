@@ -30,13 +30,24 @@ const ExploreIcon = ({ active }: { active: boolean }) => (
 const AIChatIcon = ({ active }: { active: boolean }) => (
   <svg
     xmlns="http://www.w3.org/2000/svg"
-    fill="currentColor"
+    fill="none"
     viewBox="0 0 24 24"
+    strokeWidth={1.5}
+    stroke="currentColor"
     className={`w-7 h-7 transition-colors ${
       active ? "text-[#D98B99]" : "text-[#3D5A6C]"
     }`}
   >
-    <path d="M12 0c-6.626 0-12 5.372-12 12 0 6.627 5.374 12 12 12 6.627 0 12-5.373 12-12 0-6.628-5.373-12-12-12m5.699 9.301l-4.993 4.993-1.414-1.414 4.993-4.993 1.414 1.414m-11.398 0l1.414-1.414 4.993 4.993-1.414 1.414-4.993-4.993m5.699 6.699l-4.993-4.993 1.414-1.414 4.993 4.993-1.414 1.414m0-6.698l1.414 1.414-4.993 4.993-1.414-1.414 4.993-4.993" />
+    <path
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      d="M12 3l1.5 4.5h4.5L14.25 11l1.5 4.5L12 12.75l-3.75 2.75 1.5-4.5-3.75-2.75h4.5L12 3z"
+    />
+    <path
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      d="M17 8l2 1"
+    />
   </svg>
 );
 
