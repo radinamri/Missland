@@ -25,7 +25,7 @@ export const MarkdownRenderer: React.FC<MarkdownRendererProps> = ({
       const boldMatch = remaining.match(/^(\*\*|__)(.+?)\1/);
       if (boldMatch) {
         elements.push(
-          <strong key={key++} className="font-semibold text-gray-900">
+          <strong key={key++} className="font-semibold text-[#2F4858]">
             {parseInlineMarkdown(boldMatch[2])}
           </strong>
         );
@@ -37,7 +37,7 @@ export const MarkdownRenderer: React.FC<MarkdownRendererProps> = ({
       const italicMatch = remaining.match(/^(\*|_)(.+?)\1/);
       if (italicMatch) {
         elements.push(
-          <em key={key++} className="italic">
+          <em key={key++} className="italic text-[#3D5A6C]">
             {parseInlineMarkdown(italicMatch[2])}
           </em>
         );
@@ -156,7 +156,7 @@ export const MarkdownRenderer: React.FC<MarkdownRendererProps> = ({
 
     // Regular paragraph
     return (
-      <p key={index} className="my-1.5 leading-relaxed">
+      <p key={index} className="my-1.5 leading-relaxed text-[#3D5A6C]">
         {parseInlineMarkdown(line)}
       </p>
     );
@@ -165,7 +165,7 @@ export const MarkdownRenderer: React.FC<MarkdownRendererProps> = ({
   const lines = content.split("\n");
 
   return (
-    <div className={`prose-custom ${className}`}>
+    <div className={`prose-custom text-[#3D5A6C] ${className}`}>
       {lines.map((line, index) => renderLine(line, index))}
     </div>
   );

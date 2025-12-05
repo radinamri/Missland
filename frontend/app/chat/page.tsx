@@ -47,6 +47,7 @@ import {
 import { useAuth } from "@/context/AuthContext";
 import LoginModal from "@/components/LoginModal";
 import { MarkdownRenderer } from "@/components/MarkdownRenderer";
+import { MessageActions } from "@/components/MessageActions";
 import {
   createConversation,
   sendMessage,
@@ -62,6 +63,8 @@ type Message = {
   timestamp: Date;
   image_analysis?: string;
   image?: string; // base64 preview or image URL
+  isLiked?: boolean;
+  isDisliked?: boolean;
 };
 
 type ChatSession = {
@@ -252,6 +255,35 @@ export default function AIStylistPage() {
     setCurrentSessionId(session.id);
     setError(null);
     if (window.innerWidth < 768) setIsSidebarOpen(false);
+  };
+
+  // --- Message Action Handlers ---
+  const handleLike = (messageId: string) => {
+    setMessages((prev) =>
+      prev.map((msg) =>
+        msg.id === messageId
+          ? {
+              ...msg,
+              isLiked: !msg.isLiked,
+              isDisliked: msg.isLiked ? msg.isDisliked : false, // Clear dislike if toggling like on
+            }
+          : msg
+      )
+    );
+  };
+
+  const handleDislike = (messageId: string) => {
+    setMessages((prev) =>
+      prev.map((msg) =>
+        msg.id === messageId
+          ? {
+              ...msg,
+              isDisliked: !msg.isDisliked,
+              isLiked: msg.isDisliked ? msg.isLiked : false, // Clear like if toggling dislike on
+            }
+          : msg
+      )
+    );
   };
 
   // --- Chat Handlers ---
@@ -710,7 +742,7 @@ export default function AIStylistPage() {
               {messages.map((msg) => (
                 <div
                   key={msg.id}
-                  className={`flex gap-4 animate-in slide-in-from-bottom-2 duration-500 fade-in`}
+                  className={`flex gap-4 animate-in slide-in-from-bottom-2 duration-500 fade-in group`}
                 >
                   <div
                     className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 mt-1 shadow-sm border border-gray-100
@@ -746,10 +778,10 @@ export default function AIStylistPage() {
                     {/* Only show text content if present */}
                     {msg.content && (
                       <div
-                        className={`text-[15px] leading-relaxed ${
+                        className={`text-[15px] leading-relaxed font-medium ${
                           msg.role === "user"
-                            ? "bg-white/60 p-3 rounded-2xl rounded-tl-none inline-block shadow-sm text-gray-700"
-                            : ""
+                            ? "bg-white/60 p-3 rounded-2xl rounded-tl-none inline-block shadow-sm text-[#3D5A6C]"
+                            : "text-[#3D5A6C] max-w-2xl"
                         }`}
                       >
                         {msg.role === "assistant" ? (
@@ -767,6 +799,17 @@ export default function AIStylistPage() {
                         <p className="text-sm text-gray-600">{msg.image_analysis}</p>
                       </div>
                     )}
+                    
+                    {/* Message Actions - Like/Dislike/Copy */}
+                    <MessageActions
+                      messageId={msg.id}
+                      content={msg.content}
+                      role={msg.role}
+                      onLike={handleLike}
+                      onDislike={handleDislike}
+                      isLiked={msg.isLiked}
+                      isDisliked={msg.isDisliked}
+                    />
                   </div>
                 </div>
               ))}
