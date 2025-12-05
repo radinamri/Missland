@@ -46,10 +46,16 @@ export function ChatLoginPrompt({ isOpen, onClose }: ChatLoginPromptProps) {
 
       {/* Modal */}
       <div className="fixed inset-0 z-[101] flex items-center justify-center p-4">
-        <div className="bg-white rounded-2xl shadow-2xl max-w-sm w-full animate-in fade-in slide-in-from-bottom-4 duration-300">
+        <div 
+          className="relative bg-white rounded-2xl shadow-2xl max-w-sm w-full animate-in fade-in slide-in-from-bottom-4 duration-300"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="login-prompt-title"
+        >
           {/* Close button */}
           <button
             onClick={onClose}
+            aria-label="Close dialog"
             className="absolute top-4 right-4 p-1.5 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-full transition-all"
           >
             <X className="w-5 h-5" />
@@ -60,7 +66,10 @@ export function ChatLoginPrompt({ isOpen, onClose }: ChatLoginPromptProps) {
             <div className="w-16 h-16 bg-gradient-to-br from-[#D98B99]/20 to-[#D98B99]/10 rounded-2xl flex items-center justify-center mx-auto mb-4">
               <Sparkles className="w-8 h-8 text-[#D98B99]" />
             </div>
-            <h2 className="text-xl font-bold text-[#3D5A6C] mb-2">
+            <h2 
+              id="login-prompt-title"
+              className="text-xl font-bold text-[#3D5A6C] mb-2"
+            >
               Unlock Full Experience
             </h2>
             <p className="text-gray-600 text-sm">

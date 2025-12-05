@@ -36,10 +36,16 @@ export function DeleteChatModal({
 
       {/* Modal */}
       <div className="fixed inset-0 z-[101] flex items-center justify-center p-4">
-        <div className="bg-white rounded-2xl shadow-2xl max-w-sm w-full animate-in fade-in zoom-in-95 duration-200">
+        <div 
+          className="relative bg-white rounded-2xl shadow-2xl max-w-sm w-full animate-in fade-in zoom-in-95 duration-200"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="delete-modal-title"
+        >
           {/* Close button */}
           <button
             onClick={onCancel}
+            aria-label="Close dialog"
             className="absolute top-4 right-4 p-1 text-gray-400 hover:text-gray-600 transition-colors"
           >
             <X className="w-5 h-5" />
@@ -54,7 +60,10 @@ export function DeleteChatModal({
 
           {/* Content */}
           <div className="px-6 pb-6">
-            <h2 className="text-xl font-bold text-[#3D5A6C] text-center mb-2">
+            <h2 
+              id="delete-modal-title"
+              className="text-xl font-bold text-[#3D5A6C] text-center mb-2"
+            >
               Delete Chat?
             </h2>
             <p className="text-gray-600 text-center text-sm mb-4">

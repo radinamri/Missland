@@ -26,6 +26,7 @@
 "use client";
 
 import { useState, useRef, useEffect, useCallback } from "react";
+import Image from "next/image";
 import {
   ArrowUp,
   Paperclip,
@@ -494,7 +495,11 @@ export default function AIStylistPage() {
     if (!error) return null;
     
     return (
-      <div className="fixed top-20 left-1/2 -translate-x-1/2 z-50 animate-in slide-in-from-top-2 duration-300">
+      <div 
+        className="fixed top-20 left-1/2 -translate-x-1/2 z-50 animate-in slide-in-from-top-2 duration-300"
+        role="alert"
+        aria-live="polite"
+      >
         <div className="bg-white border-l-4 border-red-500 rounded-xl shadow-xl p-4 max-w-md flex items-start gap-3">
           <AlertCircle className="w-5 h-5 text-red-500 shrink-0 mt-0.5" />
           <div className="flex-1">
@@ -503,6 +508,7 @@ export default function AIStylistPage() {
           </div>
           <button
             onClick={() => setError(null)}
+            aria-label="Dismiss error"
             className="text-gray-400 hover:text-gray-600 transition-colors"
           >
             <X className="w-4 h-4" />
@@ -557,6 +563,7 @@ export default function AIStylistPage() {
             </span>
             <button
               onClick={() => setIsSidebarOpen(false)}
+              aria-label="Close sidebar"
               className="p-2.5 bg-white shadow-sm border border-gray-100 rounded-xl text-[#3D5A6C] hover:bg-gray-50 transition-all hover:scale-105 active:scale-95"
             >
               <PanelLeftClose className="w-5 h-5" />
@@ -824,6 +831,7 @@ export default function AIStylistPage() {
         {!isSidebarOpen && (
           <button
             onClick={() => setIsSidebarOpen(true)}
+            aria-label="Open chat history"
             className="fixed top-20 left-4 z-60 p-2.5 bg-white shadow-sm border border-gray-100 rounded-xl text-[#3D5A6C] hover:bg-white transition-all hover:scale-105 active:scale-95 animate-in fade-in duration-300"
             title="Open Chats"
           >
@@ -866,10 +874,13 @@ export default function AIStylistPage() {
                     {/* Image Display - only for user messages */}
                     {msg.role === "user" && msg.image && (
                       <div className="block mb-2">
-                        <img
+                        <Image
                           src={msg.image}
                           alt="Message attachment"
+                          width={200}
+                          height={250}
                           className="max-w-[200px] max-h-[250px] w-auto h-auto rounded-lg shadow-sm border border-gray-200 object-contain"
+                          unoptimized
                         />
                       </div>
                     )}
@@ -954,7 +965,13 @@ export default function AIStylistPage() {
               {imagePreview && (
                 <div className="flex items-center gap-2 px-2 pt-2 pb-2">
                   <div className="relative w-12 h-12 rounded-lg overflow-visible bg-gray-100 shrink-0">
-                    <img src={imagePreview} alt="preview" className="w-12 h-12 rounded-lg object-cover" />
+                    <Image 
+                      src={imagePreview} 
+                      alt="preview" 
+                      fill 
+                      className="rounded-lg object-cover" 
+                      unoptimized 
+                    />
                     <button
                       onClick={() => { 
                         setImagePreview(null); 
@@ -986,6 +1003,7 @@ export default function AIStylistPage() {
               <button
                 onClick={() => fileInputRef.current?.click()}
                 disabled={!conversationId || isLoading}
+                aria-label="Upload photo (JPEG, PNG, WebP only)"
                 className="p-2.5 mb-2 text-gray-400 hover:text-[#3D5A6C] hover:bg-gray-50 rounded-full transition-colors shrink-0 ml-1 disabled:opacity-50 disabled:cursor-not-allowed"
                 title="Upload Photo (JPEG, PNG, WebP only)"
               >
@@ -1012,6 +1030,7 @@ export default function AIStylistPage() {
               <button
                 onClick={handleSend}
                 disabled={(!input.trim() && !selectedImage) || !conversationId || isLoading}
+                aria-label="Send message"
                 className={
                   "w-10 h-10 aspect-square rounded-full flex items-center justify-center mb-2 mr-1 transition-all duration-200 shadow-sm shrink-0 " +
                   ((input.trim() || selectedImage) && conversationId && !isLoading
