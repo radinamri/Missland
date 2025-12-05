@@ -6,6 +6,7 @@ import { usePathname } from "next/navigation";
 import { useNavigationStore } from "@/stores/navigationStore";
 import { useSearchStore } from "@/stores/searchStore";
 import React, { useRef } from "react";
+import { Sparkle } from "lucide-react";
 
 // --- Icon Components ---
 const ExploreIcon = ({ active }: { active: boolean }) => (
@@ -28,27 +29,11 @@ const ExploreIcon = ({ active }: { active: boolean }) => (
 );
 
 const AIChatIcon = ({ active }: { active: boolean }) => (
-  <svg
-    xmlns="http://www.w3.org/2000/svg"
-    fill="none"
-    viewBox="0 0 24 24"
-    strokeWidth={1.5}
-    stroke="currentColor"
-    className={`w-7 h-7 transition-colors ${
+  <Sparkle
+    className={`w-7 h-7 stroke-[1.5] transition-colors ${
       active ? "text-[#D98B99]" : "text-[#3D5A6C]"
     }`}
-  >
-    <path
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      d="M12 3l1.5 4.5h4.5L14.25 11l1.5 4.5L12 12.75l-3.75 2.75 1.5-4.5-3.75-2.75h4.5L12 3z"
-    />
-    <path
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      d="M17 8l2 1"
-    />
-  </svg>
+  />
 );
 
 const TryOnIcon = ({ active }: { active: boolean }) => (
@@ -118,13 +103,15 @@ export default function BottomNav() {
   const pathname = usePathname();
   const { stack } = useNavigationStore();
   const setIsRefreshing = useSearchStore((s) => s.setIsRefreshing);
-  
+
   // Double-tap detection for home icon refresh
   const lastTapRef = useRef<number>(0);
   const tapCountRef = useRef<number>(0);
   const tapTimeoutRef = useRef<NodeJS.Timeout | undefined>(undefined);
 
-  const handleHomeIconDoubleTap = async (e: React.MouseEvent<HTMLAnchorElement>) => {
+  const handleHomeIconDoubleTap = async (
+    e: React.MouseEvent<HTMLAnchorElement>
+  ) => {
     const now = Date.now();
     const DOUBLE_TAP_DELAY = 300;
 
@@ -204,7 +191,9 @@ export default function BottomNav() {
             <Link
               key={item.label}
               href={item.href}
-              onClick={(e) => item.label === "Explore" && handleHomeIconDoubleTap(e)}
+              onClick={(e) =>
+                item.label === "Explore" && handleHomeIconDoubleTap(e)
+              }
               className="flex flex-col items-center justify-center space-y-1 w-full h-full"
               title={item.label}
             >
