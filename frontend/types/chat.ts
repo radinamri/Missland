@@ -258,7 +258,8 @@ export function hasActionableFilters(recommendation: RecommendationFilters): boo
 
 /**
  * Build explore page URL with filter query parameters
- * Format: /home?shape=almond&colors=red,pink&pattern=ombre&size=medium
+ * Format: /?shape=almond&colors=red,pink&pattern=ombre&size=medium
+ * Note: Explore page is at root path /
  */
 export function buildExploreUrl(filters: RecommendationFilters): string {
   const params = new URLSearchParams();
@@ -283,7 +284,7 @@ export function buildExploreUrl(filters: RecommendationFilters): string {
   params.set("from", "ai-chat");
 
   const queryString = params.toString();
-  return queryString ? `/home?${queryString}` : "/home";
+  return queryString ? `/?${queryString}` : "/";
 }
 
 // =============================================================================

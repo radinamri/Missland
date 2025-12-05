@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useState, useCallback, useRef } from "react";
+import { useEffect, useState, useCallback, useRef, Suspense } from "react";
+import { useSearchParams } from "next/navigation";
 import { Post, PaginatedPostResponse } from "@/types";
 import api from "@/utils/api";
 import { useSearchStore } from "@/stores/searchStore";
@@ -24,6 +25,50 @@ const SCROLL_POSITION_KEY = "explore-scroll-position";
 const EXPLORE_POSTS_STATE_KEY = "explore-posts-state";
 const MAX_RETRY_ATTEMPTS = 3;
 const RETRY_DELAY_MS = 1000;
+
+/**
+ * Component to read URL params and apply filters from AI chat
+ * Wrapped in Suspense boundary because useSearchParams requires it
+ */
+function URLParamsReader() {
+  const searchParams = useSearchParams();
+  const setSearchTerm = useSearchStore((s) => s.setSearchTerm);
+
+  // Apply filters from URL query params (from AI chat recommendations)
+  useEffect(() => {
+    const shape = searchParams.get("shape");
+    const pattern = searchParams.get("pattern");
+    const size = searchParams.get("size");
+    const colors = searchParams.get("colors");
+    const from = searchParams.get("from");
+
+    // Only apply if coming from AI chat with filters
+    if (from === "ai-chat" && (shape || pattern || size || colors)) {
+      const filterTerms: string[] = [];
+      
+      if (shape) filterTerms.push(shape);
+      if (pattern) filterTerms.push(pattern);
+      if (size) filterTerms.push(size);
+      if (colors) {
+        // Colors are comma-separated
+        const colorList = colors.split(",").map(c => c.trim()).filter(Boolean);
+        filterTerms.push(...colorList);
+      }
+
+      if (filterTerms.length > 0) {
+        // Set search term which will automatically update filters via setSearchTerm
+        setSearchTerm(filterTerms.join(" "));
+      }
+
+      // Clean URL after applying filters (remove query params)
+      if (typeof window !== "undefined") {
+        window.history.replaceState({}, "", "/");
+      }
+    }
+  }, [searchParams, setSearchTerm]);
+
+  return null; // This component only reads params and applies effects
+}
 
 export default function ExplorePage() {
   const { searchTerm, filters } = useSearchStore();
@@ -308,6 +353,11 @@ export default function ExplorePage() {
 
   return (
     <main className="p-4 md:p-8 pb-16">
+      {/* URL params reader for AI chat recommendations - wrapped in Suspense */}
+      <Suspense fallback={null}>
+        <URLParamsReader />
+      </Suspense>
+      
       <div className="mx-auto">
         {isLoading ? (
           <LoadingSpinner />
