@@ -14,11 +14,14 @@ interface MessageActionsProps {
 }
 
 /**
- * MessageActions - Action buttons for chat messages
- * - Assistant messages: Like, Dislike, Copy
- * - User messages: Copy only
+ * MessageActions - Professional action buttons for chat messages
  * 
- * Like/Dislike are mutually exclusive - activating one deactivates the other
+ * Implements best practices from major AI chat assistants (ChatGPT, Claude):
+ * - Always visible buttons for better discoverability
+ * - Assistant messages: Like, Dislike, Copy (all visible)
+ * - User messages: Copy only
+ * - Like/Dislike are mutually exclusive
+ * - Smooth transitions and professional styling
  */
 export const MessageActions: React.FC<MessageActionsProps> = ({
   messageId,
@@ -53,18 +56,24 @@ export const MessageActions: React.FC<MessageActionsProps> = ({
     }
   }, [messageId, onDislike]);
 
+  // Shared button styles for consistency
+  const baseButtonClass = "p-1.5 rounded-lg transition-all duration-150 flex items-center justify-center hover:scale-110 active:scale-95";
+  const inactiveButtonClass = "text-gray-400 hover:text-gray-600 hover:bg-gray-100/60";
+  const activeButtonClass = "text-[#D98B99]";
+
   return (
-    <div className="flex items-center gap-1 mt-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+    <div className="flex items-center gap-0.5 mt-3 opacity-100 transition-opacity duration-200">
       {/* Like button - only for assistant messages */}
       {role === "assistant" && (
         <button
           onClick={handleLike}
-          className={`p-1.5 rounded-lg transition-all duration-200 ${
+          className={`${baseButtonClass} ${
             isLiked
-              ? "text-[#D98B99] bg-[#D98B99]/10"
-              : "text-gray-400 hover:text-[#D98B99] hover:bg-gray-100"
+              ? `${activeButtonClass} bg-[#D98B99]/10`
+              : inactiveButtonClass
           }`}
-          title={isLiked ? "Liked" : "Like"}
+          title={isLiked ? "Remove like" : "Like this response"}
+          aria-label={isLiked ? "Remove like" : "Like this response"}
         >
           <ThumbsUp
             className={`w-4 h-4 ${isLiked ? "fill-current" : ""}`}
@@ -76,12 +85,13 @@ export const MessageActions: React.FC<MessageActionsProps> = ({
       {role === "assistant" && (
         <button
           onClick={handleDislike}
-          className={`p-1.5 rounded-lg transition-all duration-200 ${
+          className={`${baseButtonClass} ${
             isDisliked
-              ? "text-gray-600 bg-gray-100"
-              : "text-gray-400 hover:text-gray-600 hover:bg-gray-100"
+              ? "text-gray-600 bg-gray-100/60"
+              : inactiveButtonClass
           }`}
-          title={isDisliked ? "Disliked" : "Dislike"}
+          title={isDisliked ? "Remove dislike" : "Dislike this response"}
+          aria-label={isDisliked ? "Remove dislike" : "Dislike this response"}
         >
           <ThumbsDown
             className={`w-4 h-4 ${isDisliked ? "fill-current" : ""}`}
@@ -92,12 +102,13 @@ export const MessageActions: React.FC<MessageActionsProps> = ({
       {/* Copy button - for all messages */}
       <button
         onClick={handleCopy}
-        className={`p-1.5 rounded-lg transition-all duration-200 ${
+        className={`${baseButtonClass} ${
           copied
-            ? "text-green-500 bg-green-50"
-            : "text-gray-400 hover:text-[#3D5A6C] hover:bg-gray-100"
+            ? "text-green-500 bg-green-50/60"
+            : inactiveButtonClass
         }`}
-        title={copied ? "Copied!" : "Copy"}
+        title={copied ? "Copied!" : "Copy message"}
+        aria-label={copied ? "Copied!" : "Copy message"}
       >
         {copied ? (
           <Check className="w-4 h-4" />

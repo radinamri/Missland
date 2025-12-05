@@ -742,7 +742,7 @@ export default function AIStylistPage() {
               {messages.map((msg) => (
                 <div
                   key={msg.id}
-                  className={`flex gap-4 animate-in slide-in-from-bottom-2 duration-500 fade-in group`}
+                  className={`flex gap-4 animate-in slide-in-from-bottom-2 duration-500 fade-in`}
                 >
                   <div
                     className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 mt-1 shadow-sm border border-gray-100
