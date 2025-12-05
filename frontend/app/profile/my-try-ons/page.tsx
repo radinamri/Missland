@@ -5,9 +5,9 @@ import { useAuth } from "@/context/AuthContext";
 import { useRouter } from "next/navigation";
 import { TryOn } from "@/types";
 import api from "@/utils/api";
-import PostGrid from "@/components/PostGrid";
+import PostGrid from "@/components/posts/PostGrid";
 import Link from "next/link";
-import LoadingSpinner from "@/components/LoadingSpinner";
+import LoadingSpinner from "@/components/common/LoadingSpinner";
 
 export default function MyTryOnsPage() {
   const {

@@ -6,9 +6,9 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
 import { Collection } from "@/types";
-import CreateEditCollectionModal from "@/components/CreateEditCollectionModal";
-import DeleteCollectionModal from "@/components/DeleteCollectionModal";
-import LoadingSpinner from "@/components/LoadingSpinner";
+import CreateEditCollectionModal from "@/components/modals/CreateEditCollectionModal";
+import DeleteCollectionModal from "@/components/modals/DeleteCollectionModal";
+import LoadingSpinner from "@/components/common/LoadingSpinner";
 
 // --- Collection Card Sub-component ---
 function CollectionCard({

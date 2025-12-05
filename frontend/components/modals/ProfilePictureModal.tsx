@@ -3,7 +3,7 @@
 import { useState, useRef } from "react";
 import Image from "next/image";
 import { useAuth } from "@/context/AuthContext";
-import Toast from "@/components/Toast";
+import Toast from "@/components/common/Toast";
 
 interface ProfilePictureModalProps {
   show: boolean;

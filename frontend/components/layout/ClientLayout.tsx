@@ -1,7 +1,7 @@
 "use client";
 
 import { useAuth } from "@/context/AuthContext";
-import Toast from "@/components/Toast";
+import Toast from "@/components/common/Toast";
 
 export default function ClientLayout({
   children,

@@ -3,14 +3,14 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "@/app/globals.css";
 import { AuthProvider } from "@/context/AuthContext";
 import { GoogleOAuthProvider } from "@react-oauth/google";
-import Header from "@/components/Header";
-import BottomNav from "@/components/BottomNav";
-import ClientLayout from "@/components/ClientLayout";
-import AppInitializer from "@/components/AppInitializer";
-import PWARegister from "@/components/PWARegister";
-import InstallPrompt from "@/components/InstallPrompt";
-import OfflineIndicator from "@/components/OfflineIndicator";
-import LandingRedirect from "@/components/LandingRedirect";
+import Header from "@/components/layout/Header";
+import BottomNav from "@/components/layout/BottomNav";
+import ClientLayout from "@/components/layout/ClientLayout";
+import AppInitializer from "@/components/app-features/AppInitializer";
+import PWARegister from "@/components/app-features/PWARegister";
+import InstallPrompt from "@/components/app-features/InstallPrompt";
+import OfflineIndicator from "@/components/common/OfflineIndicator";
+import LandingRedirect from "@/components/app-features/LandingRedirect";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",

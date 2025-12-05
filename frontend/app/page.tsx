@@ -5,9 +5,9 @@ import { Post, PaginatedPostResponse } from "@/types";
 import api from "@/utils/api";
 import { useSearchStore } from "@/stores/searchStore";
 import { useAuth } from "@/context/AuthContext";
-import PostGrid from "@/components/PostGrid";
-import LoadingSpinner from "@/components/LoadingSpinner";
-import SignUpPopup from "@/components/SignUpPopup";
+import PostGrid from "@/components/posts/PostGrid";
+import LoadingSpinner from "@/components/common/LoadingSpinner";
+import SignUpPopup from "@/components/app-features/SignUpPopup";
 import InfiniteScroll from "react-infinite-scroll-component";
 import { useSignUpPopupTrigger } from "@/hooks/useSignUpPopupTrigger";
 

@@ -3,7 +3,7 @@
 import { useState } from "react";
 import api from "@/utils/api";
 import Link from "next/link";
-import LoadingSpinner from "@/components/LoadingSpinner";
+import LoadingSpinner from "@/components/common/LoadingSpinner";
 
 export default function ForgotPasswordPage() {
   const [email, setEmail] = useState("");

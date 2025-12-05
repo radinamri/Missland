@@ -1,13 +1,13 @@
 "use client";
 
-import SavedPostDetail from "@/components/SavedPostDetail";
+import SavedPostDetail from "@/components/posts/SavedPostDetail";
 import { Post, CollectionDetail } from "@/types";
 import api from "@/utils/api";
 import { notFound } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
 import { useParams, useRouter } from "next/navigation";
 import { useEffect, useState, useCallback } from "react";
-import LoadingSpinner from "@/components/LoadingSpinner";
+import LoadingSpinner from "@/components/common/LoadingSpinner";
 
 export default function SavedPostPage() {
   const {

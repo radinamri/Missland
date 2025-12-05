@@ -3,7 +3,7 @@
 import { ReactNode } from "react";
 import Link from "next/link";
 import { useAuth } from "@/context/AuthContext";
-import LoadingSpinner from "@/components/LoadingSpinner";
+import LoadingSpinner from "@/components/common/LoadingSpinner";
 import Image from "next/image";
 
 // --- Reusable Card component for the dashboard grid ---

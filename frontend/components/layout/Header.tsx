@@ -4,12 +4,12 @@ import Link from "next/link";
 import { useAuth } from "@/context/AuthContext";
 import { usePathname, useRouter } from "next/navigation";
 import { useState, useEffect, useRef } from "react";
-import SearchInput from "./SearchInput";
+import SearchInput from "@/components/common/SearchInput";
 import { useSearchStore } from "@/stores/searchStore";
-import { SmallLoadingSpinner } from "@/components/LoadingSpinner";
+import { SmallLoadingSpinner } from "@/components/common/LoadingSpinner";
 import Icon from "@/public/icon";
 import Image from "next/image";
-import FilterBar from "./FilterBar";
+import FilterBar from "@/components/posts/FilterBar";
 
 export default function Header() {
   const router = useRouter();

@@ -5,10 +5,10 @@ import { useParams, useRouter } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
 import { CollectionDetail, Post } from "@/types";
 import api from "@/utils/api";
-import PostGrid from "@/components/PostGrid";
+import PostGrid from "@/components/posts/PostGrid";
 import Link from "next/link";
-import SaveToCollectionModal from "@/components/SaveToCollectionModal";
-import LoadingSpinner from "@/components/LoadingSpinner";
+import SaveToCollectionModal from "@/components/modals/SaveToCollectionModal";
+import LoadingSpinner from "@/components/common/LoadingSpinner";
 
 export default function CollectionDetailPage() {
   const {

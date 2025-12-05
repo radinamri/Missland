@@ -7,9 +7,9 @@ import Image from "next/image";
 import Link from "next/link";
 import { useAuth } from "@/context/AuthContext";
 import api from "@/utils/api";
-import LoadingSpinner from "@/components/LoadingSpinner";
-import SaveToCollectionModal from "@/components/SaveToCollectionModal";
-import LoginModal from "@/components/LoginModal";
+import LoadingSpinner from "@/components/common/LoadingSpinner";
+import SaveToCollectionModal from "@/components/modals/SaveToCollectionModal";
+import LoginModal from "@/components/modals/LoginModal";
 
 export default function SharePage() {
   const params = useParams();

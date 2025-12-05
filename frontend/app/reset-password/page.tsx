@@ -5,7 +5,7 @@ import { useSearchParams } from "next/navigation";
 import api from "@/utils/api";
 import Link from "next/link";
 import { isAxiosError } from "axios";
-import LoadingSpinner from "@/components/LoadingSpinner";
+import LoadingSpinner from "@/components/common/LoadingSpinner";
 
 // --- SVG Icons for password visibility ---
 const EyeIcon = () => (

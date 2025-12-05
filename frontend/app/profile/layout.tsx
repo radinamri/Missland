@@ -4,7 +4,7 @@ import { useAuth } from "@/context/AuthContext";
 import { usePathname, useRouter } from "next/navigation";
 import Link from "next/link";
 import { ReactNode, useEffect } from "react";
-import LoadingSpinner from "@/components/LoadingSpinner";
+import LoadingSpinner from "@/components/common/LoadingSpinner";
 import Image from "next/image";
 
 // --- Reusable Nav Item Component (Slightly restyled for the new design) ---

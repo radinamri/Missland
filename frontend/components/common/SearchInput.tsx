@@ -2,7 +2,7 @@
 
 import { useState, useRef, useEffect, ChangeEvent } from "react";
 import { useSearchStore } from "@/stores/searchStore";
-import FilterPanel from "./FilterPanel";
+import FilterPanel from "@/components/posts/FilterPanel";
 
 const SuggestionItem = ({
   suggestion,

@@ -3,11 +3,11 @@
 
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
-import PostDetail from "@/components/PostDetail";
+import PostDetail from "@/components/posts/PostDetail";
 import { Post, PaginatedPostResponse, NavigationState } from "@/types";
 import api from "@/utils/api";
 import { notFound } from "next/navigation";
-import LoadingSpinner from "@/components/LoadingSpinner";
+import LoadingSpinner from "@/components/common/LoadingSpinner";
 import { useNavigationStore } from "@/stores/navigationStore";
 import { useAuth } from "@/context/AuthContext";
 

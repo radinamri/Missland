@@ -7,8 +7,8 @@ import api from "@/utils/api";
 import Image from "next/image";
 import { useAuth } from "@/context/AuthContext";
 import { useRouter } from "next/navigation";
-import LoginModal from "@/components/LoginModal";
-import LoadingSpinner from "@/components/LoadingSpinner";
+import LoginModal from "@/components/modals/LoginModal";
+import LoadingSpinner from "@/components/common/LoadingSpinner";
 
 export default function TryOnPage() {
   const params = useParams();

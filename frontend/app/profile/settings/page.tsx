@@ -1,12 +1,12 @@
 "use client";
 
 import { useAuth } from "@/context/AuthContext";
-import DeleteAccountModal from "@/components/DeleteAccountModal";
-import ProfilePictureModal from "@/components/ProfilePictureModal";
-import EditUsernameModal from "@/components/EditUsernameModal";
-import EditEmailModal from "@/components/EditEmailModal";
+import DeleteAccountModal from "@/components/modals/DeleteAccountModal";
+import ProfilePictureModal from "@/components/modals/ProfilePictureModal";
+import EditUsernameModal from "@/components/modals/EditUsernameModal";
+import EditEmailModal from "@/components/modals/EditEmailModal";
 import { useState, ReactNode } from "react";
-import LoadingSpinner from "@/components/LoadingSpinner";
+import LoadingSpinner from "@/components/common/LoadingSpinner";
 import Link from "next/link";
 import Image from "next/image";
 

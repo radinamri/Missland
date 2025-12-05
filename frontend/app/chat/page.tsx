@@ -45,14 +45,13 @@ import {
   Lock,
 } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
-import LoginModal from "@/components/LoginModal";
-import { MarkdownRenderer } from "@/components/MarkdownRenderer";
-import { MessageActions } from "@/components/MessageActions";
+import LoginModal from "@/components/modals/LoginModal";
+import { MarkdownRenderer } from "@/components/chat/MarkdownRenderer";
+import { MessageActions } from "@/components/chat/MessageActions";
 import {
   createConversation,
   sendMessage,
   uploadImage,
-  validateImageFile,
 } from "@/utils/chatApi";
 
 // --- Types ---

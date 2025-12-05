@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import SearchInput from "@/components/SearchInput";
+import SearchInput from "@/components/common/SearchInput";
 
 // --- FAQ Data (Updated with "Missland") ---
 const faqCategories = [

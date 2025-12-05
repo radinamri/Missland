@@ -5,7 +5,7 @@ import { Post } from "@/types";
 import Image from "next/image";
 import PostGrid from "./PostGrid";
 import Link from "next/link";
-import SaveToCollectionModal from "./SaveToCollectionModal";
+import SaveToCollectionModal from "@/components/modals/SaveToCollectionModal";
 import { useState, useEffect } from "react";
 import { useAuth } from "@/context/AuthContext";
 

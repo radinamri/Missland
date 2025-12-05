@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useAuth } from "@/context/AuthContext";
-import Toast from "@/components/Toast";
+import Toast from "@/components/common/Toast";
 
 interface EditUsernameModalProps {
   show: boolean;
