@@ -257,25 +257,34 @@ class ChatMessageView(APIView):
                 message=message,
                 user_id=user_id
             ))
+            
+            # Ensure response has required fields
+            if 'answer' not in result:
+                logger.warning(f"RAG service response missing 'answer' field: {result}")
+                result['answer'] = result.get('content', '')
+            
+            if 'conversation_id' not in result:
+                result['conversation_id'] = conversation_id
+                
             return Response(result, status=status.HTTP_200_OK)
             
-        except httpx.ConnectError:
-            logger.error("RAG service is unavailable")
+        except httpx.ConnectError as e:
+            logger.error(f"RAG service connection error: {e}")
             fallback = rag_proxy._get_fallback_response("RAG service unavailable")
             fallback['conversation_id'] = conversation_id
             return Response(fallback, status=status.HTTP_200_OK)
             
         except httpx.HTTPStatusError as e:
-            return Response(
-                {"error": f"RAG service error: {e.response.status_code}"},
-                status=status.HTTP_502_BAD_GATEWAY
-            )
+            logger.error(f"RAG service HTTP error {e.response.status_code}: {e.response.text}")
+            fallback = rag_proxy._get_fallback_response(f"RAG service error: {e.response.status_code}")
+            fallback['conversation_id'] = conversation_id
+            return Response(fallback, status=status.HTTP_200_OK)
+            
         except Exception as e:
-            logger.error(f"Error sending message: {e}")
-            return Response(
-                {"error": str(e)},
-                status=status.HTTP_500_INTERNAL_SERVER_ERROR
-            )
+            logger.error(f"Error sending message: {type(e).__name__}: {e}", exc_info=True)
+            fallback = rag_proxy._get_fallback_response(f"Error: {str(e)}")
+            fallback['conversation_id'] = conversation_id
+            return Response(fallback, status=status.HTTP_200_OK)
 
 
 class ChatImageUploadView(APIView):
@@ -336,26 +345,37 @@ class ChatImageUploadView(APIView):
                 message=message,
                 user_id=user_id
             ))
+            
+            # Ensure response has required fields
+            if 'answer' not in result:
+                logger.warning(f"RAG service response missing 'answer' field: {result}")
+                result['answer'] = result.get('content', '')
+                
+            if 'conversation_id' not in result:
+                result['conversation_id'] = conversation_id
+            
             return Response(result, status=status.HTTP_200_OK)
             
-        except httpx.ConnectError:
-            logger.error("RAG service is unavailable")
+        except httpx.ConnectError as e:
+            logger.error(f"RAG service connection error: {e}")
             fallback = rag_proxy._get_fallback_response("RAG service unavailable")
             fallback['conversation_id'] = conversation_id
             fallback['image_analyzed'] = False
             return Response(fallback, status=status.HTTP_200_OK)
             
         except httpx.HTTPStatusError as e:
-            return Response(
-                {"error": f"RAG service error: {e.response.status_code}"},
-                status=status.HTTP_502_BAD_GATEWAY
-            )
+            logger.error(f"RAG service HTTP error {e.response.status_code}: {e.response.text}")
+            fallback = rag_proxy._get_fallback_response(f"RAG service error: {e.response.status_code}")
+            fallback['conversation_id'] = conversation_id
+            fallback['image_analyzed'] = False
+            return Response(fallback, status=status.HTTP_200_OK)
+            
         except Exception as e:
-            logger.error(f"Error uploading image: {e}")
-            return Response(
-                {"error": str(e)},
-                status=status.HTTP_500_INTERNAL_SERVER_ERROR
-            )
+            logger.error(f"Error uploading image: {type(e).__name__}: {e}", exc_info=True)
+            fallback = rag_proxy._get_fallback_response(f"Error: {str(e)}")
+            fallback['conversation_id'] = conversation_id
+            fallback['image_analyzed'] = False
+            return Response(fallback, status=status.HTTP_200_OK)
 
 
 class ChatConversationHistoryView(APIView):
