@@ -7,26 +7,25 @@
  * - Real-time messaging with AI assistant
  * - Image upload and analysis (JPEG/PNG/WebP, max 5MB)
  * - Authentication-gated chat history (works without login, saves for logged-in users)
- * - Conversation management (pin, delete, rename)
+ * - Conversation management (pin, delete, rename) - logged-in users only
+ * - Image analysis with explore recommendations
+ * - Login prompt for guests after first message
  * - Error handling with user-friendly UI
  * - LocalStorage persistence per user
  * 
  * Authentication Flow:
- * - Non-logged-in: Can chat, no history saved, sees login prompt for history
- * - Logged-in: Full history access, auto-save to localStorage per user ID
+ * - Non-logged-in: Can chat (single session), no history, sees login prompt after first message
+ * - Logged-in: Full history access, multiple chats, rename/delete, auto-save
  * 
- * API Endpoints (FastAPI @ localhost:8000):
- * - POST /api/chat/conversation - Create conversation
- * - POST /api/chat/message - Send message
- * - POST /api/chat/image - Upload image
- * 
- * Environment Variables:
- * - NEXT_PUBLIC_CHAT_API_URL - FastAPI backend URL (default: http://localhost:8000)
+ * API Endpoints (Django Gateway @ localhost:8000):
+ * - POST /api/auth/chat/conversation - Create conversation
+ * - POST /api/auth/chat/message - Send message
+ * - POST /api/auth/chat/image - Upload image with analysis
  */
 
 "use client";
 
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useCallback } from "react";
 import {
   ArrowUp,
   Paperclip,
@@ -48,40 +47,31 @@ import { useAuth } from "@/context/AuthContext";
 import LoginModal from "@/components/modals/LoginModal";
 import { MarkdownRenderer } from "@/components/chat/MarkdownRenderer";
 import { MessageActions } from "@/components/chat/MessageActions";
+import { DeleteChatModal } from "@/components/chat/DeleteChatModal";
+import { ChatLoginPrompt } from "@/components/chat/ChatLoginPrompt";
+import { ExploreRecommendationCard } from "@/components/chat/ExploreRecommendationCard";
 import {
   createConversation,
   sendMessage,
   uploadImage,
 } from "@/utils/chatApi";
-
-// --- Types ---
-type Message = {
-  id: string;
-  role: "user" | "assistant";
-  content: string;
-  timestamp: Date;
-  image_analysis?: string;
-  image?: string; // base64 preview or image URL
-  isLiked?: boolean;
-  isDisliked?: boolean;
-};
-
-type ChatSession = {
-  id: string;
-  conversationId: string;
-  title: string;
-  preview: string;
-  date: string;
-  isPinned?: boolean;
-  messages: Message[];
-};
+import {
+  ChatMessage,
+  ChatSession,
+  DeleteModalState,
+  RecommendationFilters,
+  validateImageFile,
+  parseImageAnalysis,
+  hasActionableFilters,
+  generateChatTitle,
+} from "@/types/chat";
 
 export default function AIStylistPage() {
   const { user } = useAuth();
   
   // --- State ---
   const [input, setInput] = useState("");
-  const [messages, setMessages] = useState<Message[]>([]);
+  const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [isTyping, setIsTyping] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
@@ -104,6 +94,18 @@ export default function AIStylistPage() {
   const [selectedImage, setSelectedImage] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
 
+  // Delete Modal State
+  const [deleteModal, setDeleteModal] = useState<DeleteModalState>({
+    isOpen: false,
+    chatId: null,
+    chatTitle: "",
+  });
+  const [isDeleting, setIsDeleting] = useState(false);
+
+  // Login Prompt State (shown after first message for guests)
+  const [showChatLoginPrompt, setShowChatLoginPrompt] = useState(false);
+  const [hasShownLoginPrompt, setHasShownLoginPrompt] = useState(false);
+
   const scrollRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const menuRef = useRef<HTMLDivElement>(null);
@@ -112,21 +114,25 @@ export default function AIStylistPage() {
   // --- Load chat history from localStorage ---
   useEffect(() => {
     if (user) {
-      const savedHistory = localStorage.getItem(`chat_history_${user.id}`);
+      const storageKey = "chat_history_" + user.id;
+      const savedHistory = localStorage.getItem(storageKey);
       if (savedHistory) {
         try {
           const parsed = JSON.parse(savedHistory);
           setHistory(parsed.map((session: ChatSession) => ({
             ...session,
-            messages: session.messages.map((msg: Message) => ({
+            messages: session.messages.map((msg: ChatMessage) => ({
               ...msg,
               timestamp: new Date(msg.timestamp),
             })),
           })));
-        } catch (error) {
-          console.error("Failed to parse chat history:", error);
+        } catch (err) {
+          console.error("Failed to parse chat history:", err);
         }
       }
+      // Reset login prompt flag when user logs in
+      setHasShownLoginPrompt(false);
+      setShowChatLoginPrompt(false);
     } else {
       // For non-logged-in users, clear history display
       setHistory([]);
@@ -136,7 +142,8 @@ export default function AIStylistPage() {
   // --- Save chat history to localStorage ---
   useEffect(() => {
     if (user && history.length > 0) {
-      localStorage.setItem(`chat_history_${user.id}`, JSON.stringify(history));
+      const storageKey = "chat_history_" + user.id;
+      localStorage.setItem(storageKey, JSON.stringify(history));
     }
   }, [history, user]);
 
@@ -146,8 +153,8 @@ export default function AIStylistPage() {
       try {
         const response = await createConversation(user?.id?.toString());
         setConversationId(response.conversation_id);
-      } catch (error) {
-        console.error("Failed to create conversation:", error);
+      } catch (err) {
+        console.error("Failed to create conversation:", err);
         setError("Failed to initialize chat. Please refresh the page.");
       }
     };
@@ -162,10 +169,8 @@ export default function AIStylistPage() {
   useEffect(() => {
     if (inputRef.current) {
       inputRef.current.style.height = "auto";
-      inputRef.current.style.height = `${Math.min(
-        inputRef.current.scrollHeight,
-        120
-      )}px`;
+      const newHeight = Math.min(inputRef.current.scrollHeight, 120);
+      inputRef.current.style.height = newHeight + "px";
     }
   }, [input]);
 
@@ -179,7 +184,7 @@ export default function AIStylistPage() {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  // --- Auto-save current conversation to history ---
+  // --- Auto-save current conversation to history (logged-in users only) ---
   useEffect(() => {
     if (messages.length > 0 && conversationId && user) {
       const sessionId = currentSessionId || Date.now().toString();
@@ -187,8 +192,11 @@ export default function AIStylistPage() {
         setCurrentSessionId(sessionId);
       }
 
-      const firstUserMessage = messages.find((m) => m.role === "user")?.content || "New Chat";
-      const title = firstUserMessage.slice(0, 30) + (firstUserMessage.length > 30 ? "..." : "");
+      // Generate title from first user message
+      const firstUserMessage = messages.find((m) => m.role === "user");
+      const title = firstUserMessage 
+        ? generateChatTitle(firstUserMessage)
+        : "New Chat";
       const preview = messages[messages.length - 1]?.content.slice(0, 50) || "";
 
       setHistory((prev) => {
@@ -213,80 +221,114 @@ export default function AIStylistPage() {
     }
   }, [messages, conversationId, user, currentSessionId]);
 
-  // --- History Actions ---
-  const handlePin = (id: string) => {
+  // --- History Actions (logged-in users only) ---
+  const handlePin = useCallback((id: string) => {
+    if (!user) return;
     setHistory((prev) =>
       prev.map((item) =>
         item.id === id ? { ...item, isPinned: !item.isPinned } : item
       )
     );
     setActiveMenuId(null);
-  };
+  }, [user]);
 
-  const handleDelete = async (id: string) => {
-    setHistory((prev) => prev.filter((item) => item.id !== id));
+  const handleDeleteClick = useCallback((id: string) => {
+    if (!user) return;
+    const session = history.find((s) => s.id === id);
+    setDeleteModal({
+      isOpen: true,
+      chatId: id,
+      chatTitle: session?.title || "Untitled Chat",
+    });
     setActiveMenuId(null);
-    if (currentSessionId === id) {
-      handleNewChat();
-    }
-  };
+  }, [user, history]);
 
-  const startRename = (id: string, currentTitle: string) => {
+  const confirmDelete = useCallback(async () => {
+    if (!deleteModal.chatId || !user) return;
+
+    setIsDeleting(true);
+    try {
+      setHistory((prev) => prev.filter((item) => item.id !== deleteModal.chatId));
+      
+      // If deleting current session, start new chat
+      if (currentSessionId === deleteModal.chatId) {
+        setMessages([]);
+        setCurrentSessionId(null);
+        const response = await createConversation(user.id?.toString());
+        setConversationId(response.conversation_id);
+      }
+    } catch (err) {
+      console.error("Failed to delete chat:", err);
+      setError("Failed to delete chat. Please try again.");
+    } finally {
+      setIsDeleting(false);
+      setDeleteModal({ isOpen: false, chatId: null, chatTitle: "" });
+    }
+  }, [deleteModal.chatId, user, currentSessionId]);
+
+  const cancelDelete = useCallback(() => {
+    setDeleteModal({ isOpen: false, chatId: null, chatTitle: "" });
+  }, []);
+
+  const startRename = useCallback((id: string, currentTitle: string) => {
+    if (!user) return;
     setRenamingId(id);
     setRenameValue(currentTitle);
     setActiveMenuId(null);
-  };
+  }, [user]);
 
-  const saveRename = () => {
-    if (renamingId && renameValue.trim()) {
+  const saveRename = useCallback(() => {
+    if (renamingId && renameValue.trim() && user) {
       setHistory((prev) =>
         prev.map((item) =>
-          item.id === renamingId ? { ...item, title: renameValue } : item
+          item.id === renamingId ? { ...item, title: renameValue.trim() } : item
         )
       );
     }
     setRenamingId(null);
-  };
+    setRenameValue("");
+  }, [renamingId, renameValue, user]);
 
-  const loadSession = (session: ChatSession) => {
+  const loadSession = useCallback((session: ChatSession) => {
+    if (!user) return;
     setMessages(session.messages);
     setConversationId(session.conversationId);
     setCurrentSessionId(session.id);
     setError(null);
     if (window.innerWidth < 768) setIsSidebarOpen(false);
-  };
+  }, [user]);
 
   // --- Message Action Handlers ---
-  const handleLike = (messageId: string) => {
+  const handleLike = useCallback((messageId: string) => {
     setMessages((prev) =>
       prev.map((msg) =>
         msg.id === messageId
           ? {
               ...msg,
               isLiked: !msg.isLiked,
-              isDisliked: msg.isLiked ? msg.isDisliked : false, // Clear dislike if toggling like on
+              isDisliked: msg.isLiked ? msg.isDisliked : false,
             }
           : msg
       )
     );
-  };
+  }, []);
 
-  const handleDislike = (messageId: string) => {
+  const handleDislike = useCallback((messageId: string) => {
     setMessages((prev) =>
       prev.map((msg) =>
         msg.id === messageId
           ? {
               ...msg,
               isDisliked: !msg.isDisliked,
-              isLiked: msg.isDisliked ? msg.isLiked : false, // Clear like if toggling dislike on
+              isLiked: msg.isDisliked ? msg.isLiked : false,
             }
           : msg
       )
     );
-  };
+  }, []);
 
   // --- Chat Handlers ---
-  const handleSend = async () => {
+  const handleSend = useCallback(async () => {
     // Check if we have either text or image
     if (!input.trim() && !selectedImage) return;
     if (!conversationId || isLoading) return;
@@ -300,7 +342,7 @@ export default function AIStylistPage() {
     setInput("");
     setError(null);
 
-    const newUserMsg: Message = {
+    const newUserMsg: ChatMessage = {
       id: Date.now().toString(),
       role: "user",
       content: userText,
@@ -319,6 +361,15 @@ export default function AIStylistPage() {
     setIsTyping(true);
     setIsLoading(true);
 
+    // Show login prompt for guests after first message (only once per session)
+    if (!user && !hasShownLoginPrompt) {
+      // Delay showing popup to let message appear first
+      setTimeout(() => {
+        setShowChatLoginPrompt(true);
+        setHasShownLoginPrompt(true);
+      }, 1500);
+    }
+
     try {
       let response;
       
@@ -334,20 +385,30 @@ export default function AIStylistPage() {
         // Otherwise just send the text message
         response = await sendMessage(conversationId, userText, user?.id?.toString());
       }
+
+      // Parse recommendation filters from image analysis
+      let recommendation: RecommendationFilters | undefined;
+      if (response.image_analysis) {
+        recommendation = parseImageAnalysis(response.image_analysis);
+        if (!hasActionableFilters(recommendation)) {
+          recommendation = undefined;
+        }
+      }
       
-      const newBotMsg: Message = {
+      const newBotMsg: ChatMessage = {
         id: (Date.now() + 1).toString(),
         role: "assistant",
         content: response.answer,
         timestamp: new Date(),
         image_analysis: response.image_analysis,
+        recommendation,
       };
       setMessages((prev) => [...prev, newBotMsg]);
-    } catch (error) {
-      console.error("Failed to send message:", error);
+    } catch (err) {
+      console.error("Failed to send message:", err);
       setError(
-        error instanceof Error
-          ? error.message
+        err instanceof Error
+          ? err.message
           : "Failed to send message. Please try again."
       );
       // Remove the user message on error
@@ -356,20 +417,13 @@ export default function AIStylistPage() {
       setIsTyping(false);
       setIsLoading(false);
     }
-  };
+  }, [input, conversationId, isLoading, selectedImage, imagePreview, user, hasShownLoginPrompt]);
 
-  const handleImageUpload = (file: File) => {
-    // Validate file
-    const maxSize = 5 * 1024 * 1024; // 5MB
-    const allowedTypes = ["image/jpeg", "image/png", "image/webp"];
-    
-    if (!allowedTypes.includes(file.type)) {
-      setError("Invalid file type. Please use JPEG, PNG, or WebP.");
-      if (fileInputRef.current) fileInputRef.current.value = "";
-      return;
-    }
-    if (file.size > maxSize) {
-      setError("File too large. Maximum size is 5MB.");
+  const handleImageUpload = useCallback((file: File) => {
+    // Validate file using centralized validation
+    const validation = validateImageFile(file);
+    if (!validation.valid) {
+      setError(validation.error || "Invalid file");
       if (fileInputRef.current) fileInputRef.current.value = "";
       return;
     }
@@ -382,9 +436,15 @@ export default function AIStylistPage() {
     const reader = new FileReader();
     reader.onloadend = () => setImagePreview(reader.result as string);
     reader.readAsDataURL(file);
-  };
+  }, []);
 
-  const handleNewChat = async () => {
+  const handleNewChat = useCallback(async () => {
+    // For guests, only allow new chat if current chat is empty
+    if (!user && messages.length > 0) {
+      setShowChatLoginPrompt(true);
+      return;
+    }
+
     setMessages([]);
     setCurrentSessionId(null);
     setError(null);
@@ -393,18 +453,18 @@ export default function AIStylistPage() {
     try {
       const response = await createConversation(user?.id?.toString());
       setConversationId(response.conversation_id);
-    } catch (error) {
-      console.error("Failed to create new conversation:", error);
+    } catch (err) {
+      console.error("Failed to create new conversation:", err);
       setError("Failed to create new chat. Please try again.");
     }
-  };
+  }, [user, messages.length]);
 
-  const handleKeyDown = (e: React.KeyboardEvent) => {
+  const handleKeyDown = useCallback((e: React.KeyboardEvent) => {
     if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault();
       handleSend();
     }
-  };
+  }, [handleSend]);
 
   const filteredHistory = history
     .filter((item) =>
@@ -420,10 +480,13 @@ export default function AIStylistPage() {
 
     if (diffDays === 0) return "Today";
     if (diffDays === 1) return "Yesterday";
-    if (diffDays < 7) return `${diffDays} days ago`;
+    if (diffDays < 7) return diffDays + " days ago";
     
     return date.toLocaleDateString("en-US", { month: "short", day: "numeric" });
   }
+
+  // Check if New Chat button should be disabled for guests
+  const isNewChatDisabled = !user && messages.length > 0;
 
   // --- Render Components ---
 
@@ -478,13 +541,13 @@ export default function AIStylistPage() {
 
   const Sidebar = () => (
     <aside
-      className={`
-        fixed inset-y-0 left-0 z-50 w-[300px]
-        bg-[#F9FAFB]/95 backdrop-blur-xl border-r border-gray-200/60
-        transition-transform duration-300 ease-[cubic-bezier(0.25,0.1,0.25,1)]
-        flex flex-col shadow-2xl md:shadow-lg
-        ${isSidebarOpen ? "translate-x-0" : "-translate-x-full"}
-      `}
+      className={
+        "fixed inset-y-0 left-0 z-50 w-[300px] " +
+        "bg-[#F9FAFB]/95 backdrop-blur-xl border-r border-gray-200/60 " +
+        "transition-transform duration-300 ease-[cubic-bezier(0.25,0.1,0.25,1)] " +
+        "flex flex-col shadow-2xl md:shadow-lg " +
+        (isSidebarOpen ? "translate-x-0" : "-translate-x-full")
+      }
     >
       <div className="flex flex-col h-full w-full">
         <div className="p-4 flex flex-col gap-4 shrink-0 pt-6">
@@ -525,11 +588,26 @@ export default function AIStylistPage() {
         <div className="px-4 mb-2 shrink-0">
           <button
             onClick={handleNewChat}
-            disabled={isLoading}
-            className="w-full flex items-center gap-3 bg-[#F3F4F6] hover:bg-[#E5E7EB] text-[#3D5A6C] font-semibold py-3 px-4 rounded-xl transition-all duration-200 group border border-transparent hover:border-gray-300 shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
+            disabled={isLoading || isNewChatDisabled}
+            className={
+              "w-full flex items-center gap-3 font-semibold py-3 px-4 rounded-xl transition-all duration-200 group border shadow-sm " +
+              (isNewChatDisabled
+                ? "bg-gray-100 text-gray-400 border-gray-200 cursor-not-allowed"
+                : "bg-[#F3F4F6] hover:bg-[#E5E7EB] text-[#3D5A6C] border-transparent hover:border-gray-300 disabled:opacity-50 disabled:cursor-not-allowed")
+            }
+            title={isNewChatDisabled ? "Log in to create multiple chats" : "Start a new chat"}
           >
-            <div className="w-8 h-8 bg-white rounded-lg flex items-center justify-center shadow-sm group-hover:scale-110 transition-transform text-[#D98B99]">
-              <Plus className="w-5 h-5" strokeWidth={3} />
+            <div className={
+              "w-8 h-8 rounded-lg flex items-center justify-center shadow-sm transition-transform " +
+              (isNewChatDisabled 
+                ? "bg-gray-200 text-gray-400" 
+                : "bg-white text-[#D98B99] group-hover:scale-110")
+            }>
+              {isNewChatDisabled ? (
+                <Lock className="w-4 h-4" />
+              ) : (
+                <Plus className="w-5 h-5" strokeWidth={3} />
+              )}
             </div>
             <span>New Chat</span>
           </button>
@@ -549,7 +627,13 @@ export default function AIStylistPage() {
                       value={renameValue}
                       onChange={(e) => setRenameValue(e.target.value)}
                       className="flex-1 text-sm text-[#3D5A6C] outline-none bg-transparent"
-                      onKeyDown={(e) => e.key === "Enter" && saveRename()}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter") saveRename();
+                        if (e.key === "Escape") {
+                          setRenamingId(null);
+                          setRenameValue("");
+                        }
+                      }}
                     />
                     <button
                       onClick={saveRename}
@@ -558,7 +642,10 @@ export default function AIStylistPage() {
                       <Check className="w-4 h-4" />
                     </button>
                     <button
-                      onClick={() => setRenamingId(null)}
+                      onClick={() => {
+                        setRenamingId(null);
+                        setRenameValue("");
+                      }}
                       className="text-gray-400 hover:text-red-500"
                     >
                       <X className="w-4 h-4" />
@@ -568,11 +655,12 @@ export default function AIStylistPage() {
                   <>
                     <button
                       onClick={() => loadSession(item)}
-                      className={`w-full text-left p-3 rounded-lg hover:bg-white hover:shadow-sm transition-all flex items-center justify-between border ${
-                        currentSessionId === item.id
+                      className={
+                        "w-full text-left p-3 rounded-lg hover:bg-white hover:shadow-sm transition-all flex items-center justify-between border " +
+                        (currentSessionId === item.id
                           ? "bg-white border-[#D98B99]/30 shadow-sm"
-                          : "border-transparent"
-                      }`}
+                          : "border-transparent")
+                      }
                     >
                       <div className="flex-1 min-w-0 pr-6">
                         <div className="flex items-center gap-2">
@@ -596,16 +684,14 @@ export default function AIStylistPage() {
                           activeMenuId === item.id ? null : item.id
                         );
                       }}
-                      className={`
-                        absolute right-2 top-1/2 -translate-y-1/2 p-1.5 rounded-md text-gray-400 
-                        hover:text-[#3D5A6C] hover:bg-gray-200 transition-all 
-                        opacity-100 md:opacity-0 md:group-hover:opacity-100 
-                        ${
-                          activeMenuId === item.id
-                            ? "opacity-100 bg-gray-200 text-[#3D5A6C]"
-                            : ""
-                        }
-                      `}
+                      className={
+                        "absolute right-2 top-1/2 -translate-y-1/2 p-1.5 rounded-md text-gray-400 " +
+                        "hover:text-[#3D5A6C] hover:bg-gray-200 transition-all " +
+                        "opacity-100 md:opacity-0 md:group-hover:opacity-100 " +
+                        (activeMenuId === item.id
+                          ? "opacity-100 bg-gray-200 text-[#3D5A6C]"
+                          : "")
+                      }
                     >
                       <MoreVertical className="w-4 h-4" />
                     </button>
@@ -630,7 +716,7 @@ export default function AIStylistPage() {
                             {item.isPinned ? "Unpin" : "Pin"}
                           </button>
                           <button
-                            onClick={() => handleDelete(item.id)}
+                            onClick={() => handleDeleteClick(item.id)}
                             className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 rounded-lg flex items-center gap-2 transition-colors"
                           >
                             <Trash2 className="w-3.5 h-3.5" /> Delete
@@ -697,29 +783,43 @@ export default function AIStylistPage() {
 
   return (
     <div
-      className={`flex h-[calc(100vh-64px)] relative font-sans bg-transparent ${
-        messages.length === 0 ? "overflow-hidden" : ""
-      }`}
+      className={
+        "flex h-[calc(100vh-64px)] relative font-sans bg-transparent " +
+        (messages.length === 0 ? "overflow-hidden" : "")
+      }
     >
       <ErrorBanner />
       <LoginModal isOpen={showLoginModal} onClose={() => setShowLoginModal(false)} />
+      <DeleteChatModal
+        isOpen={deleteModal.isOpen}
+        chatTitle={deleteModal.chatTitle}
+        onConfirm={confirmDelete}
+        onCancel={cancelDelete}
+        isLoading={isDeleting}
+      />
+      <ChatLoginPrompt
+        isOpen={showChatLoginPrompt}
+        onClose={() => setShowChatLoginPrompt(false)}
+      />
       
       {/* Mobile Overlay */}
       <div
-        className={`fixed inset-0 bg-[#3D5A6C]/20 backdrop-blur-[2px] z-40 md:hidden transition-opacity duration-300 ${
-          isSidebarOpen
+        className={
+          "fixed inset-0 bg-[#3D5A6C]/20 backdrop-blur-[2px] z-40 md:hidden transition-opacity duration-300 " +
+          (isSidebarOpen
             ? "opacity-100 pointer-events-auto"
-            : "opacity-0 pointer-events-none"
-        }`}
+            : "opacity-0 pointer-events-none")
+        }
         onClick={() => setIsSidebarOpen(false)}
       />
 
       <Sidebar />
 
       <main
-        className={`flex-1 flex flex-col relative w-full transition-all duration-300 ease-[cubic-bezier(0.25,0.1,0.25,1)] ${
-          isSidebarOpen ? "md:ml-[300px]" : ""
-        }`}
+        className={
+          "flex-1 flex flex-col relative w-full transition-all duration-300 ease-[cubic-bezier(0.25,0.1,0.25,1)] " +
+          (isSidebarOpen ? "md:ml-[300px]" : "")
+        }
       >
         {!isSidebarOpen && (
           <button
@@ -741,15 +841,15 @@ export default function AIStylistPage() {
               {messages.map((msg) => (
                 <div
                   key={msg.id}
-                  className={`flex gap-4 animate-in slide-in-from-bottom-2 duration-500 fade-in`}
+                  className="flex gap-4 animate-in slide-in-from-bottom-2 duration-500 fade-in"
                 >
                   <div
-                    className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 mt-1 shadow-sm border border-gray-100
-                    ${
-                      msg.role === "assistant"
+                    className={
+                      "w-9 h-9 rounded-xl flex items-center justify-center shrink-0 mt-1 shadow-sm border border-gray-100 " +
+                      (msg.role === "assistant"
                         ? "bg-white text-[#D98B99]"
-                        : "bg-white text-gray-600"
-                    }`}
+                        : "bg-white text-gray-600")
+                    }
                   >
                     {msg.role === "assistant" ? (
                       <Sparkles className="w-5 h-5" />
@@ -777,11 +877,12 @@ export default function AIStylistPage() {
                     {/* Only show text content if present */}
                     {msg.content && (
                       <div
-                        className={`text-[15px] leading-relaxed font-medium ${
-                          msg.role === "user"
+                        className={
+                          "text-[15px] leading-relaxed font-medium " +
+                          (msg.role === "user"
                             ? "bg-white/60 p-3 rounded-2xl rounded-tl-none inline-block shadow-sm text-[#3D5A6C]"
-                            : "text-[#3D5A6C] max-w-2xl"
-                        }`}
+                            : "text-[#3D5A6C] max-w-2xl")
+                        }
                       >
                         {msg.role === "assistant" ? (
                           <MarkdownRenderer content={msg.content} />
@@ -790,6 +891,8 @@ export default function AIStylistPage() {
                         )}
                       </div>
                     )}
+
+                    {/* Image Analysis Box */}
                     {msg.image_analysis && (
                       <div className="bg-[#F9FAFB] border border-gray-200 rounded-xl p-3 mt-2">
                         <p className="text-xs font-semibold text-[#D98B99] mb-1">
@@ -797,6 +900,11 @@ export default function AIStylistPage() {
                         </p>
                         <p className="text-sm text-gray-600">{msg.image_analysis}</p>
                       </div>
+                    )}
+
+                    {/* Explore Recommendation Card - shown after image analysis */}
+                    {msg.role === "assistant" && msg.recommendation && (
+                      <ExploreRecommendationCard recommendation={msg.recommendation} />
                     )}
                     
                     {/* Message Actions - Like/Dislike/Copy */}
@@ -831,15 +939,13 @@ export default function AIStylistPage() {
 
         {/* Input Area */}
         <div
-          className={`
-          fixed right-0 transition-all duration-300 ease-in-out z-20
-          ${isSidebarOpen ? "md:left-[300px]" : "left-0"}
-          ${
-            messages.length > 0
+          className={
+            "fixed right-0 transition-all duration-300 ease-in-out z-20 " +
+            (isSidebarOpen ? "md:left-[300px] " : "left-0 ") +
+            (messages.length > 0
               ? "bottom-[60px] md:bottom-0 bg-gradient-to-t from-[#FDF8F9] via-[#FDF8F9]/95 to-transparent pt-10 pb-8"
-              : "bottom-[60px] md:bottom-0 pb-8 bg-transparent pointer-events-none"
-          } 
-        `}
+              : "bottom-[60px] md:bottom-0 pb-8 bg-transparent pointer-events-none")
+          }
         >
           <div className="max-w-2xl mx-auto px-4 md:px-6 w-full relative pointer-events-auto">
             <div className="relative flex flex-col bg-white p-2 rounded-[26px] shadow-[0_8px_30px_rgba(0,0,0,0.04)] border border-gray-100 focus-within:border-[#D98B99]/50 focus-within:shadow-[0_8px_30px_rgba(217,139,153,0.1)] transition-all duration-300 group">
@@ -881,7 +987,7 @@ export default function AIStylistPage() {
                 onClick={() => fileInputRef.current?.click()}
                 disabled={!conversationId || isLoading}
                 className="p-2.5 mb-2 text-gray-400 hover:text-[#3D5A6C] hover:bg-gray-50 rounded-full transition-colors shrink-0 ml-1 disabled:opacity-50 disabled:cursor-not-allowed"
-                title="Upload Photo"
+                title="Upload Photo (JPEG, PNG, WebP only)"
               >
                 <Paperclip className="w-5 h-5" />
               </button>
@@ -906,14 +1012,12 @@ export default function AIStylistPage() {
               <button
                 onClick={handleSend}
                 disabled={(!input.trim() && !selectedImage) || !conversationId || isLoading}
-                className={`
-                  w-10 h-10 aspect-square rounded-full flex items-center justify-center mb-2 mr-1 transition-all duration-200 shadow-sm shrink-0
-                  ${
-                    (input.trim() || selectedImage) && conversationId && !isLoading
-                      ? "bg-[#3D5A6C] text-white hover:bg-[#2F4A58] scale-100"
-                      : "bg-gray-100 text-gray-300 scale-95 cursor-not-allowed"
-                  }
-                `}
+                className={
+                  "w-10 h-10 aspect-square rounded-full flex items-center justify-center mb-2 mr-1 transition-all duration-200 shadow-sm shrink-0 " +
+                  ((input.trim() || selectedImage) && conversationId && !isLoading
+                    ? "bg-[#3D5A6C] text-white hover:bg-[#2F4A58] scale-100"
+                    : "bg-gray-100 text-gray-300 scale-95 cursor-not-allowed")
+                }
               >
                 <ArrowUp className="w-5 h-5 stroke-[3px]" />
               </button>
