@@ -15,7 +15,7 @@ const ExploreIcon = ({ active }: { active: boolean }) => (
     viewBox="0 0 24 24"
     strokeWidth={1.5}
     stroke="currentColor"
-    className={`w-7 h-7 transition-colors ${
+    className={`w-6 h-6 transition-colors ${
       active ? "text-[#D98B99]" : "text-[#3D5A6C]"
     }`}
   >
@@ -27,6 +27,19 @@ const ExploreIcon = ({ active }: { active: boolean }) => (
   </svg>
 );
 
+const AIChatIcon = ({ active }: { active: boolean }) => (
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    fill="currentColor"
+    viewBox="0 0 24 24"
+    className={`w-6 h-6 transition-colors ${
+      active ? "text-[#D98B99]" : "text-[#3D5A6C]"
+    }`}
+  >
+    <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm3.5-9c.83 0 1.5-.67 1.5-1.5S16.33 8 15.5 8 14 8.67 14 9.5s.67 1.5 1.5 1.5zm-7 0c.83 0 1.5-.67 1.5-1.5S9.33 8 8.5 8 7 8.67 7 9.5 7.67 11 8.5 11zm3.5 6.5c2.33 0 4.31-1.46 5.11-3.5H6.89c.8 2.04 2.78 3.5 5.11 3.5z" />
+  </svg>
+);
+
 const TryOnIcon = ({ active }: { active: boolean }) => (
   <svg
     xmlns="http://www.w3.org/2000/svg"
@@ -34,7 +47,7 @@ const TryOnIcon = ({ active }: { active: boolean }) => (
     viewBox="0 0 24 24"
     strokeWidth={1.5}
     stroke="currentColor"
-    className={`w-7 h-7 transition-colors ${
+    className={`w-6 h-6 transition-colors ${
       active ? "text-[#D98B99]" : "text-[#3D5A6C]"
     }`}
   >
@@ -58,7 +71,7 @@ const ArticlesIcon = ({ active }: { active: boolean }) => (
     viewBox="0 0 24 24"
     strokeWidth={1.5}
     stroke="currentColor"
-    className={`w-7 h-7 transition-colors ${
+    className={`w-6 h-6 transition-colors ${
       active ? "text-[#D98B99]" : "text-[#3D5A6C]"
     }`}
   >
@@ -77,7 +90,7 @@ const ProfileIcon = ({ active }: { active: boolean }) => (
     viewBox="0 0 24 24"
     strokeWidth={1.5}
     stroke="currentColor"
-    className={`w-7 h-7 transition-colors ${
+    className={`w-6 h-6 transition-colors ${
       active ? "text-[#D98B99]" : "text-[#3D5A6C]"
     }`}
   >
@@ -139,6 +152,7 @@ export default function BottomNav() {
 
   const navItems = [
     { href: "/", label: "Explore", icon: ExploreIcon },
+    { href: "/chat", label: "AI Chat", icon: AIChatIcon },
     { href: "/try-on", label: "Try On", icon: TryOnIcon },
     { href: "/articles", label: "Articles", icon: ArticlesIcon },
     { href: user ? "/profile" : "/login", label: "Profile", icon: ProfileIcon },
@@ -150,14 +164,27 @@ export default function BottomNav() {
         {navItems.map((item) => {
           let isActive = false;
           if (item.href === "/") {
+            // Explore is active when on home page OR when on post detail
             isActive =
               pathname === item.href ||
-              (stack.length > 0 && stack[stack.length - 1].type === "detail");
-          } else {
-            isActive = pathname.startsWith(item.href);
-          }
-          if (item.label === "Try On" && pathname.startsWith("/share/post")) {
-            isActive = true;
+              (stack.length > 0 && stack[stack.length - 1].type === "detail") ||
+              pathname.startsWith("/post/") ||
+              pathname.startsWith("/share/post");
+          } else if (item.href === "/chat") {
+            isActive = pathname === "/chat";
+          } else if (item.href === "/try-on") {
+            isActive = pathname.startsWith("/try-on");
+            // Try On is also active when viewing shared post try-on
+            if (pathname.startsWith("/share/post")) {
+              isActive = true;
+            }
+          } else if (item.href === "/articles") {
+            isActive = pathname.startsWith("/articles");
+          } else if (item.href === "/profile" || item.href === "/login") {
+            isActive =
+              pathname.startsWith("/profile") ||
+              (pathname === "/login" && !user) ||
+              (pathname === "/register" && !user);
           }
 
           const IconComponent = item.icon;
@@ -168,15 +195,9 @@ export default function BottomNav() {
               href={item.href}
               onClick={(e) => item.label === "Explore" && handleHomeIconDoubleTap(e)}
               className="flex flex-col items-center justify-center space-y-1 w-full h-full"
+              title={item.label}
             >
               <IconComponent active={isActive} />
-              <span
-                className={`text-xs font-semibold transition-colors ${
-                  isActive ? "text-[#D98B99]" : "text-[#3D5A6C]"
-                }`}
-              >
-                {item.label}
-              </span>
             </Link>
           );
         })}
