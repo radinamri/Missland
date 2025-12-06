@@ -45,8 +45,8 @@ export const MarkdownRenderer: React.FC<MarkdownRendererProps> = ({
         continue;
       }
 
-      // Inline code: \`code\`
-      const codeMatch = remaining.match(/^\`([^\`]+)\`/);
+      // Inline code: `code`
+      const codeMatch = remaining.match(/^`([^`]+)`/);
       if (codeMatch) {
         elements.push(
           <code
@@ -79,7 +79,7 @@ export const MarkdownRenderer: React.FC<MarkdownRendererProps> = ({
       }
 
       // Regular text - consume until next special character
-      const nextSpecial = remaining.search(/[\*_\`\[]/);
+      const nextSpecial = remaining.search(/[\*_`\[]/);
       if (nextSpecial === -1) {
         elements.push(remaining);
         break;
@@ -169,7 +169,7 @@ export const MarkdownRenderer: React.FC<MarkdownRendererProps> = ({
   const lines = content.split("\n");
 
   return (
-    <div className={\`space-y-2 \${className}\`}>
+    <div className={`space-y-2 ${className}`}>
       {lines.map((line, index) => renderLine(line, index))}
     </div>
   );
