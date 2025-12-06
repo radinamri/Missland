@@ -382,10 +382,15 @@ class ChatImageUploadView(APIView):
             if 'conversation_id' not in result:
                 result['conversation_id'] = conversation_id
             
-            # Set image_analysis to the answer text so frontend can parse filters from it
-            # The frontend's parseImageAnalysis function will extract shapes, colors, patterns, sizes
-            if result.get('answer'):
-                result['image_analysis'] = result['answer']
+            # The RAG service now returns:
+            # - image_analysis: The raw image analysis text
+            # - recommendation_filters: Structured filters {shapes, colors, patterns, sizes, confidence}
+            # - explore_link: Pre-generated URL with filters
+            # Frontend can use recommendation_filters directly or fall back to parsing image_analysis
+            
+            # Log successful image analysis with filters
+            if result.get('recommendation_filters'):
+                logger.info(f"Image analysis returned filters: {result['recommendation_filters']}")
             
             return Response(result, status=status.HTTP_200_OK)
             
@@ -395,6 +400,7 @@ class ChatImageUploadView(APIView):
             fallback['conversation_id'] = conversation_id
             fallback['image_analyzed'] = False
             fallback['image_analysis'] = ''
+            fallback['recommendation_filters'] = None
             return Response(fallback, status=status.HTTP_200_OK)
             
         except httpx.HTTPStatusError as e:
@@ -403,6 +409,7 @@ class ChatImageUploadView(APIView):
             fallback['conversation_id'] = conversation_id
             fallback['image_analyzed'] = False
             fallback['image_analysis'] = ''
+            fallback['recommendation_filters'] = None
             return Response(fallback, status=status.HTTP_200_OK)
             
         except Exception as e:
@@ -411,6 +418,7 @@ class ChatImageUploadView(APIView):
             fallback['conversation_id'] = conversation_id
             fallback['image_analyzed'] = False
             fallback['image_analysis'] = ''
+            fallback['recommendation_filters'] = None
             return Response(fallback, status=status.HTTP_200_OK)
 
 

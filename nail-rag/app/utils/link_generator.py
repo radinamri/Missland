@@ -108,9 +108,20 @@ async def extract_nail_parameters(
         colors = result.get("colors", [])
         confidence = result.get("confidence", 0.0)
         
-        # Only return if we have at least some parameters and confidence > 0.3
+        # Early return if no image context and low confidence
+        if not image_context and confidence < 0.3:
+            logger.debug(f"No image context and low confidence ({confidence:.2f}), skipping parameter extraction")
+            return None
+        
+        # Boost confidence if image context exists (reliable source) and we have parameters
+        if image_context and (shape or colors):
+            original_confidence = confidence
+            confidence = max(confidence, 0.5)  # Boost to at least 0.5 when image analysis provides data
+            logger.debug(f"Confidence boosted from {original_confidence:.2f} to {confidence:.2f} due to image context")
+        
+        # Final check after boost
         if confidence < 0.3:
-            logger.debug("Low confidence in parameter extraction, skipping link generation")
+            logger.debug(f"Low confidence ({confidence:.2f}) in parameter extraction, skipping link generation")
             return None
         
         # Validate all parameters
@@ -140,7 +151,7 @@ async def extract_nail_parameters(
             "confidence": confidence,
             "reason": result.get("reason", "")
         }
-        logger.info(f"✅ Extracted parameters: {validated_params} (confidence: {confidence:.2f})")
+        logger.info(f"✅ Extracted parameters: shape={result.get('shape')}, pattern={result.get('pattern')}, size={result.get('size')}, colors={result.get('colors')}, confidence={confidence:.2f}, reason={result.get('reason')}")
         return result
         
     except json.JSONDecodeError as e:

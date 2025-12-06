@@ -1,4 +1,8 @@
 import axios, { AxiosError } from "axios";
+import { RecommendationFilters } from "@/types/chat";
+
+// Re-export for backward compatibility
+export type { RecommendationFilters };
 
 // Chat API Base URL - now uses Django gateway for unified auth
 // The Django backend proxies requests to the RAG service
@@ -29,6 +33,7 @@ export interface MessageResponse {
   }>;
   image_analyzed: boolean;
   image_analysis?: string;
+  recommendation_filters?: RecommendationFilters;  // Structured filters for explore card
   tokens_used: number;
   error: string | null;
   explore_link?: string;  // Link to explore page with relevant filters

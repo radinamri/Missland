@@ -31,6 +31,7 @@ services:
     container_name: missland_postgres
     volumes:
       - postgres_data:/var/lib/postgresql/data
+      - ./init-postgres.sql:/docker-entrypoint-initdb.d/init.sql
     environment:
       - POSTGRES_DB=${DB_NAME:-missland_db}
       - POSTGRES_USER=${DB_USER:-postgres}

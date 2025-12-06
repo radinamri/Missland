@@ -95,6 +95,7 @@ class ChatService:
             
             # Step 5: Extract parameters and generate explore link if applicable
             explore_link = None
+            recommendation_filters = None
             try:
                 # Get full conversation history including the messages we just added
                 full_history = conversation_manager.get_recent_context(conversation_id)
@@ -108,11 +109,25 @@ class ChatService:
                     )
                     
                     if parameters:
+                        # Generate explore link
                         explore_link = generate_explore_link(parameters)
                         if explore_link:
                             logger.info(f"🔗 Generated explore link for conversation {conversation_id[:8]}...")
+                        
+                        # Build recommendation_filters for frontend
+                        recommendation_filters = {
+                            "shapes": [parameters.get("shape")] if parameters.get("shape") else [],
+                            "colors": parameters.get("colors", []),
+                            "patterns": [parameters.get("pattern")] if parameters.get("pattern") else [],
+                            "sizes": [parameters.get("size")] if parameters.get("size") else [],
+                            "confidence": parameters.get("confidence", 0.0),
+                            "reason": parameters.get("reason")
+                        }
+                        logger.info(f"📊 Extracted recommendation filters: {recommendation_filters}")
             except Exception as e:
                 logger.warning(f"⚠️ Error generating explore link: {e}")
+                import traceback
+                logger.warning(traceback.format_exc())
                 # Don't fail the request if link generation fails
             
             # Build response
@@ -120,6 +135,8 @@ class ChatService:
                 "conversation_id": conversation_id,
                 "message_id": assistant_message_id,
                 "answer": answer,
+                "image_analysis": image_context,  # Include image analysis text
+                "recommendation_filters": recommendation_filters,  # Include structured filters
                 "context_sources": rag_response.get("context_sources", []),
                 "image_analyzed": image_data is not None,
                 "tokens_used": rag_response.get("tokens_used", 0),

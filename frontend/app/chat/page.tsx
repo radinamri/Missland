@@ -90,6 +90,7 @@ export default function AIStylistPage() {
   // Image Upload State
   const [selectedImage, setSelectedImage] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const [isAnalyzingImage, setIsAnalyzingImage] = useState(false);
 
   // Delete Modal State
   const [deleteModal, setDeleteModal] = useState<DeleteModalState>({
@@ -373,6 +374,11 @@ export default function AIStylistPage() {
 
     setIsTyping(true);
     setIsLoading(true);
+    
+    // Set analyzing state when processing an image
+    if (hasImage) {
+      setIsAnalyzingImage(true);
+    }
 
     // Show login prompt for guests after first message (only once per session)
     if (!user && !hasShownLoginPrompt) {
@@ -403,12 +409,41 @@ export default function AIStylistPage() {
         );
       }
 
-      // Parse recommendation filters from image analysis
+      // Get recommendation filters - prefer backend-provided filters, fall back to text parsing
       let recommendation: RecommendationFilters | undefined;
-      if (response.image_analysis) {
+      
+      // Debug: Log response structure
+      console.log("API Response:", {
+        hasRecommendationFilters: !!response.recommendation_filters,
+        hasImageAnalysis: !!response.image_analysis,
+        imageAnalyzed: response.image_analyzed,
+        hasAnswer: !!response.answer,
+        wasImageUpload: hasImage,
+      });
+      
+      // First try to use backend-extracted recommendation_filters (structured data)
+      if (response.recommendation_filters && hasActionableFilters(response.recommendation_filters)) {
+        recommendation = response.recommendation_filters;
+        console.log("Using backend recommendation_filters:", recommendation);
+      } 
+      // Fall back to parsing image_analysis text if backend didn't provide structured filters
+      else if (response.image_analysis) {
         recommendation = parseImageAnalysis(response.image_analysis);
         if (!hasActionableFilters(recommendation)) {
           recommendation = undefined;
+        } else {
+          console.log("Using parsed image_analysis filters:", recommendation);
+        }
+      }
+      // If image was uploaded OR image_analyzed flag is true, try parsing the answer text
+      else if ((hasImage || response.image_analyzed) && response.answer) {
+        recommendation = parseImageAnalysis(response.answer);
+        console.log("Parsed answer text result:", recommendation);
+        if (!hasActionableFilters(recommendation)) {
+          recommendation = undefined;
+          console.log("No actionable filters found in answer text");
+        } else {
+          console.log("Using parsed answer text filters:", recommendation);
         }
       }
 
@@ -433,6 +468,7 @@ export default function AIStylistPage() {
     } finally {
       setIsTyping(false);
       setIsLoading(false);
+      setIsAnalyzingImage(false);
     }
   }, [
     input,
@@ -979,11 +1015,24 @@ export default function AIStylistPage() {
                   <div className="w-9 h-9 rounded-xl bg-white border border-gray-100 flex items-center justify-center shrink-0 shadow-sm">
                     <Sparkles className="w-5 h-5 text-[#D98B99]" />
                   </div>
-                  <div className="flex items-center gap-1.5 h-9 pl-1">
-                    <div className="w-1.5 h-1.5 bg-gray-400 rounded-full animate-bounce [animation-delay:-0.3s]" />
-                    <div className="w-1.5 h-1.5 bg-gray-400 rounded-full animate-bounce [animation-delay:-0.15s]" />
-                    <div className="w-1.5 h-1.5 bg-gray-400 rounded-full animate-bounce" />
-                  </div>
+                  {isAnalyzingImage ? (
+                    <div className="flex items-center gap-1 h-9 pl-1">
+                      <span className="text-sm font-medium text-[#3D5A6C]">
+                        Image Analysis
+                      </span>
+                      <div className="flex items-center gap-0.5 ml-1">
+                        <div className="w-1 h-1 bg-gray-400 rounded-full animate-bounce [animation-delay:-0.3s]" />
+                        <div className="w-1 h-1 bg-gray-400 rounded-full animate-bounce [animation-delay:-0.15s]" />
+                        <div className="w-1 h-1 bg-gray-400 rounded-full animate-bounce" />
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="flex items-center gap-1.5 h-9 pl-1">
+                      <div className="w-1.5 h-1.5 bg-gray-400 rounded-full animate-bounce [animation-delay:-0.3s]" />
+                      <div className="w-1.5 h-1.5 bg-gray-400 rounded-full animate-bounce [animation-delay:-0.15s]" />
+                      <div className="w-1.5 h-1.5 bg-gray-400 rounded-full animate-bounce" />
+                    </div>
+                  )}
                 </div>
               )}
               <div ref={scrollRef} />

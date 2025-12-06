@@ -65,12 +65,23 @@ class ImageUploadRequest(BaseModel):
         }
 
 
+class RecommendationFilters(BaseModel):
+    """Extracted nail design filters for recommendation card."""
+    shapes: List[str] = Field(default_factory=list, description="Detected shapes: almond, square, round, coffin, stiletto")
+    colors: List[str] = Field(default_factory=list, description="Detected colors")
+    patterns: List[str] = Field(default_factory=list, description="Detected patterns: french, glossy, matte, ombre, mixed")
+    sizes: List[str] = Field(default_factory=list, description="Detected sizes: short, medium, long")
+    confidence: float = Field(default=0.0, description="Confidence score 0-1")
+    reason: Optional[str] = Field(None, description="Explanation of extraction")
+
+
 class ImageUploadResponse(BaseModel):
     """Response schema for image upload."""
     conversation_id: str
     message_id: str
     answer: str
     image_analysis: Optional[str] = Field(None, description="Image analysis from GPT-5.1 vision")
+    recommendation_filters: Optional[RecommendationFilters] = Field(None, description="Extracted nail design filters for recommendation card")
     language: str = Field(default="en", description="Detected language code")
     context_sources: List[Dict[str, Any]] = Field(default_factory=list)
     tokens_used: int = Field(default=0)
