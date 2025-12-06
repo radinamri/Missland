@@ -49,17 +49,25 @@ sudo systemctl stop postgresql     # Linux/systemd
 
 ### 4. Start Services
 
-#### Terminal 1: Start Docker services (PostgreSQL + Redis)
+#### Terminal 1: Start Docker services (Infrastructure & AI Chat)
 
 ```bash
 cd Missland
-docker-compose --env-file .env.local.docker up -d postgres redis
+
+# Start PostgreSQL, Redis, Weaviate, and RAG API for AI Chat
+docker-compose --env-file .env.local.docker up -d postgres redis weaviate nail-rag-api
 
 # Verify containers are running
 docker-compose --env-file .env.local.docker ps
 
-# Should show: missland_postgres (healthy) and missland_redis (healthy)
+# Should show: missland_postgres, missland_redis, missland_weaviate, missland_nail_rag (all healthy)
 ```
+
+**Note**: The unified docker-compose configuration includes:
+- **postgres** (database on port 5432)
+- **redis** (cache on port 6379)
+- **weaviate** (vector database for AI on port 8080)
+- **nail-rag-api** (AI Chat engine on port 8001)
 
 #### Terminal 2: Start Backend
 
@@ -97,6 +105,8 @@ Frontend will be available at: **http://localhost:3000**
 | **Backend API** | http://127.0.0.1:8000/api | REST API |
 | **Django Admin** | http://127.0.0.1:8000/admin | Administration panel |
 | **API Docs** | http://127.0.0.1:8000/api/docs | API documentation |
+| **AI Chat API** | http://127.0.0.1:8001 | RAG engine for AI features |
+| **Weaviate** | http://127.0.0.1:8080 | Vector database console |
 | **PostgreSQL** | 127.0.0.1:5432 | Database (via Docker) |
 | **Redis** | 127.0.0.1:6379 | Cache (via Docker) |
 
@@ -135,18 +145,26 @@ python -c "from django.core.management.utils import get_random_secret_key; print
 # https://djecrety.ir/
 ```
 
-### Step 3: Update backend/.env
+### Step 4: Configure AI Chat (Optional)
 
-The `backend/.env` file is git-ignored and pre-configured for local development. Update any values that differ from `.env.local.docker`:
+For AI Chat and AI Stylist features, you'll need to enable the RAG service:
 
 ```bash
-# Verify these match .env.local.docker
-DB_PASSWORD=local_dev_password_123
-DJANGO_SUPERUSER_PASSWORD=admin_password_123
-SECRET_KEY=<same-as-.env.local.docker>
+# In .env.local.docker, add OpenAI API key
+OPENAI_API_KEY=sk-your-openai-api-key-here
+OPENAI_MODEL=gpt-5.1
+
+# These are set automatically:
+RAG_SERVICE_URL=http://127.0.0.1:8001
+ALLOWED_ORIGINS=http://localhost:3000,http://127.0.0.1:3000
 ```
 
-### Step 4: Verify frontend/.env.local
+The AI Chat requires:
+1. **Weaviate** (vector database) - running in Docker
+2. **RAG API** (FastAPI service) - running in Docker
+3. **OpenAI API Key** - from https://platform.openai.com/api-keys
+
+### Step 5: Verify frontend/.env.local
 
 The `frontend/.env.local` is pre-configured for local development. Verify or update:
 
@@ -338,9 +356,55 @@ cat frontend/.env.local
 # Kill npm dev and run: npm run dev
 ```
 
+### Issue: AI Chat is not working
+
+**Cause**: RAG API not running or OPENAI_API_KEY not set.
+
+**Solution**:
+
+```bash
+# Verify RAG service is running
+docker-compose --env-file .env.local.docker ps nail-rag-api
+
+# Check OPENAI_API_KEY is set
+grep OPENAI_API_KEY .env.local.docker
+
+# If not set, add it:
+echo "OPENAI_API_KEY=sk-your-key-here" >> .env.local.docker
+
+# Restart RAG services
+docker-compose --env-file .env.local.docker restart nail-rag-api weaviate
+
+# Check logs
+docker-compose --env-file .env.local.docker logs -f nail-rag-api
+```
+
+### Issue: "Connection refused" on port 8001 (RAG API)
+
+**Cause**: RAG API container not running or failed to start.
+
+**Solution**:
+
+```bash
+# Check if Weaviate is healthy first (RAG API depends on it)
+docker-compose --env-file .env.local.docker ps weaviate
+
+# Restart both services
+docker-compose --env-file .env.local.docker restart weaviate nail-rag-api
+
+# Wait 30 seconds for startup
+sleep 30
+
+# Test connection
+curl http://127.0.0.1:8001/health
+
+# If still failing, check logs
+docker-compose --env-file .env.local.docker logs nail-rag-api
+```
+
 ### Issue: Port already in use
 
-**Cause**: Another process is using port 3000 (frontend), 8000 (backend), or 5432 (database).
+**Cause**: Another process is using port 3000 (frontend), 8000 (backend), 8001 (RAG), or 5432 (database).
 
 **Solution**:
 
@@ -348,6 +412,7 @@ cat frontend/.env.local
 # Find process using port
 lsof -i :3000      # Frontend
 lsof -i :8000      # Backend
+lsof -i :8001      # RAG API
 lsof -i :5432      # Database
 
 # Kill process
@@ -379,6 +444,8 @@ npm run dev -- -p 3001            # Frontend on 3001
 | `IMPORT_REAL_POSTS` | `true` | ❌ | Import 3,883 nail designs |
 | `SEED_ARTICLES` | `true` | ❌ | Seed 12 blog articles |
 | `OPENAI_API_KEY` | None | ❌ | For AI Stylist Chat (optional) |
+| `OPENAI_MODEL` | `gpt-5.1` | ❌ | OpenAI model for AI chat |
+| `RAG_SERVICE_URL` | `http://127.0.0.1:8001` | ❌ | AI Chat engine URL (local dev) |
 
 ### Frontend (.env.local)
 
@@ -541,6 +608,8 @@ See [DOCKER_DEPLOYMENT.md](DOCKER_DEPLOYMENT.md) for complete production guide.
 **Docker is still used for:**
 - PostgreSQL (consistent with production)
 - Redis (caching layer)
+- Weaviate (vector database for AI)
+- RAG API (AI Chat engine)
 - Production deployment (all services containerized)
 
 ### Local Dev vs Production Comparison
@@ -551,6 +620,7 @@ See [DOCKER_DEPLOYMENT.md](DOCKER_DEPLOYMENT.md) for complete production guide.
 | **Frontend** | Native Node.js (npm dev) | Docker standalone build |
 | **Database** | Docker PostgreSQL | Docker PostgreSQL |
 | **Cache** | Docker Redis | Docker Redis |
+| **AI Chat** | Docker (RAG API + Weaviate) | Docker (RAG API + Weaviate) |
 | **Reverse Proxy** | None (direct access) | Docker Nginx |
 | **Static Files** | Automatic (dev server) | Docker volume |
 | **Media Files** | Local directory | Docker volume |

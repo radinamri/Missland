@@ -1,4 +1,31 @@
+# ==============================================
+# Missland Unified Docker Compose
+# ==============================================
+#
+# This configuration supports TWO modes:
+#
+# 1. LOCAL DEVELOPMENT MODE (Recommended for development)
+#    Run only infrastructure services in Docker, run backend/frontend locally:
+#    
+#    docker-compose --env-file .env.local.docker up -d postgres redis weaviate nail-rag-api
+#    
+#    Then run:
+#    - Backend: cd backend && python manage.py runserver
+#    - Frontend: cd frontend && npm run dev
+#
+# 2. PRODUCTION MODE (Full Docker deployment)
+#    Run ALL services in Docker:
+#    
+#    docker-compose --env-file .env.docker --profile production up -d
+#
+# ==============================================
+
 services:
+  # ==============================================
+  # INFRASTRUCTURE SERVICES
+  # These run in both local and production modes
+  # ==============================================
+
   postgres:
     image: postgres:16-alpine
     container_name: missland_postgres
@@ -10,6 +37,8 @@ services:
       - POSTGRES_PASSWORD=${DB_PASSWORD}
     ports:
       - "5432:5432"
+    networks:
+      - missland_network
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-postgres}"]
       interval: 10s
@@ -24,12 +53,78 @@ services:
       - redis_data:/data
     ports:
       - "6379:6379"
+    networks:
+      - missland_network
     healthcheck:
       test: ["CMD", "redis-cli", "ping"]
       interval: 10s
       timeout: 5s
       retries: 5
     restart: unless-stopped
+
+  # ==============================================
+  # AI/RAG SERVICES (Nail RAG System)
+  # ==============================================
+
+  weaviate:
+    image: semitechnologies/weaviate:latest
+    container_name: missland_weaviate
+    ports:
+      - "8080:8080"
+      - "50051:50051"
+    environment:
+      QUERY_DEFAULTS_LIMIT: 25
+      AUTHENTICATION_ANONYMOUS_ACCESS_ENABLED: "true"
+      PERSISTENCE_DATA_PATH: /var/lib/weaviate
+      DEFAULT_VECTORIZER_MODULE: none
+      ENABLE_MODULES: text2vec-openai
+      CLUSTER_HOSTNAME: node1
+      OPENAI_API_KEY: ${OPENAI_API_KEY:-}
+    volumes:
+      - weaviate_data:/var/lib/weaviate
+    networks:
+      - missland_network
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:8080/v1/.well-known/ready"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 30s
+    restart: unless-stopped
+
+  nail-rag-api:
+    build:
+      context: ./nail-rag
+      dockerfile: Dockerfile
+    container_name: missland_nail_rag
+    ports:
+      - "8001:8000"
+    environment:
+      WEAVIATE_HOST: weaviate
+      WEAVIATE_PORT: 8080
+      WEAVIATE_SCHEME: http
+      WEAVIATE_API_KEY: ""
+      OPENAI_API_KEY: ${OPENAI_API_KEY:-}
+      OPENAI_MODEL: ${OPENAI_MODEL:-gpt-5.1}
+      EMBEDDING_MODEL: ${EMBEDDING_MODEL:-text-embedding-3-small}
+      ALLOWED_ORIGINS: ${ALLOWED_ORIGINS:-*}
+    networks:
+      - missland_network
+    depends_on:
+      weaviate:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/health')"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    restart: unless-stopped
+
+  # ==============================================
+  # APPLICATION SERVICES
+  # These run only in production mode (use --profile production)
+  # ==============================================
 
   django:
     build:
@@ -58,13 +153,19 @@ services:
       - SEED_ARTICLES=${SEED_ARTICLES:-true}
       - GOOGLE_OAUTH_CLIENT_ID=${GOOGLE_OAUTH_CLIENT_ID}
       - GOOGLE_OAUTH_CLIENT_SECRET=${GOOGLE_OAUTH_CLIENT_SECRET}
+      # RAG Service connection (internal Docker network)
+      - RAG_SERVICE_URL=http://nail-rag-api:8000
     depends_on:
       postgres:
         condition: service_healthy
       redis:
         condition: service_healthy
+      nail-rag-api:
+        condition: service_healthy
     ports:
       - "8000:8000"
+    networks:
+      - missland_network
     healthcheck:
       test: ["CMD-SHELL", "python -c \"import urllib.request; urllib.request.urlopen('http://localhost:8000/api/health/')\""]
       interval: 30s
@@ -72,6 +173,8 @@ services:
       retries: 3
       start_period: 60s
     restart: unless-stopped
+    profiles:
+      - production
 
   nextjs:
     build:
@@ -90,6 +193,8 @@ services:
         condition: service_healthy
     ports:
       - "3000:3000"
+    networks:
+      - missland_network
     healthcheck:
       test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://127.0.0.1:3000/"]
       interval: 30s
@@ -97,6 +202,8 @@ services:
       retries: 3
       start_period: 60s
     restart: unless-stopped
+    profiles:
+      - production
 
   nginx:
     image: nginx:alpine
@@ -110,19 +217,24 @@ services:
       - nextjs
     ports:
       - "80:80"
+    networks:
+      - missland_network
     healthcheck:
       test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://127.0.0.1/health"]
       interval: 30s
       timeout: 10s
       retries: 3
     restart: unless-stopped
+    profiles:
+      - production
 
 volumes:
   postgres_data:
   redis_data:
+  weaviate_data:
   static_volume:
   media_volume:
 
 networks:
-  default:
+  missland_network:
     name: missland_network
