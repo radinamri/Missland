@@ -144,7 +144,7 @@ export const MarkdownRenderer: React.FC<MarkdownRendererProps> = ({
     const bulletMatch = line.match(/^[-*•]\s+(.+)$/);
     if (bulletMatch) {
       return (
-        <div key={index} className="flex items-center gap-3 mb-2 ml-2">
+        <div key={index} className="flex items-baseline gap-3 mb-2 ml-2">
           <span className="text-[#D98B99] font-bold flex-shrink-0">•</span>
           <span className="flex-1 text-gray-700">
             {parseInlineMarkdown(bulletMatch[1])}
