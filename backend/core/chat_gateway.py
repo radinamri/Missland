@@ -22,6 +22,34 @@ from rest_framework.parsers import MultiPartParser, FormParser, JSONParser
 logger = logging.getLogger('core.chat_gateway')
 
 
+def extract_filters_from_response(response_text: str) -> dict:
+    """
+    Extract nail design filters from RAG service response text.
+    Uses keyword extraction to parse shape, color, pattern, size.
+    Returns structured filter data for the Explore recommendation card.
+    """
+    from core.keyword_extractor import extract_nail_keywords
+    
+    # Extract keywords from the response
+    keywords, _ = extract_nail_keywords(response_text)
+    
+    # Build filter structure matching app requirements
+    filters = {}
+    if keywords.get('shape'):
+        filters['shape'] = keywords['shape']
+    if keywords.get('color'):
+        filters['colors'] = [keywords['color']]  # Note: colors is an array
+    if keywords.get('pattern'):
+        filters['pattern'] = keywords['pattern']
+    if keywords.get('size'):
+        filters['size'] = keywords['size']
+    
+    return {
+        'filters': filters,
+        'found_nails_to_show': bool(filters)  # Only show card if we found filters
+    }
+
+
 class RAGServiceProxy:
     """
     Proxy class for communicating with the RAG service.
@@ -354,6 +382,11 @@ class ChatImageUploadView(APIView):
             if 'conversation_id' not in result:
                 result['conversation_id'] = conversation_id
             
+            # Set image_analysis to the answer text so frontend can parse filters from it
+            # The frontend's parseImageAnalysis function will extract shapes, colors, patterns, sizes
+            if result.get('answer'):
+                result['image_analysis'] = result['answer']
+            
             return Response(result, status=status.HTTP_200_OK)
             
         except httpx.ConnectError as e:
@@ -361,6 +394,7 @@ class ChatImageUploadView(APIView):
             fallback = rag_proxy._get_fallback_response("RAG service unavailable")
             fallback['conversation_id'] = conversation_id
             fallback['image_analyzed'] = False
+            fallback['image_analysis'] = ''
             return Response(fallback, status=status.HTTP_200_OK)
             
         except httpx.HTTPStatusError as e:
@@ -368,6 +402,7 @@ class ChatImageUploadView(APIView):
             fallback = rag_proxy._get_fallback_response(f"RAG service error: {e.response.status_code}")
             fallback['conversation_id'] = conversation_id
             fallback['image_analyzed'] = False
+            fallback['image_analysis'] = ''
             return Response(fallback, status=status.HTTP_200_OK)
             
         except Exception as e:
@@ -375,6 +410,7 @@ class ChatImageUploadView(APIView):
             fallback = rag_proxy._get_fallback_response(f"Error: {str(e)}")
             fallback['conversation_id'] = conversation_id
             fallback['image_analyzed'] = False
+            fallback['image_analysis'] = ''
             return Response(fallback, status=status.HTTP_200_OK)
 
 
