@@ -25,7 +25,7 @@ export const MarkdownRenderer: React.FC<MarkdownRendererProps> = ({
       const boldMatch = remaining.match(/^(\*\*|__)(.+?)\1/);
       if (boldMatch) {
         elements.push(
-          <strong key={key++} className="font-semibold text-[#2F4858]">
+          <strong key={key++} className="font-semibold text-gray-900">
             {parseInlineMarkdown(boldMatch[2])}
           </strong>
         );
@@ -37,7 +37,7 @@ export const MarkdownRenderer: React.FC<MarkdownRendererProps> = ({
       const italicMatch = remaining.match(/^(\*|_)(.+?)\1/);
       if (italicMatch) {
         elements.push(
-          <em key={key++} className="italic text-[#3D5A6C]">
+          <em key={key++} className="italic text-gray-700">
             {parseInlineMarkdown(italicMatch[2])}
           </em>
         );
@@ -45,13 +45,13 @@ export const MarkdownRenderer: React.FC<MarkdownRendererProps> = ({
         continue;
       }
 
-      // Inline code: `code`
-      const codeMatch = remaining.match(/^`([^`]+)`/);
+      // Inline code: \`code\`
+      const codeMatch = remaining.match(/^\`([^\`]+)\`/);
       if (codeMatch) {
         elements.push(
           <code
             key={key++}
-            className="px-1.5 py-0.5 bg-gray-100 text-[#D98B99] rounded text-sm font-mono"
+            className="px-1.5 py-0.5 bg-gray-100 text-[#3D5A6C] rounded text-sm font-mono"
           >
             {codeMatch[1]}
           </code>
@@ -69,7 +69,7 @@ export const MarkdownRenderer: React.FC<MarkdownRendererProps> = ({
             href={linkMatch[2]}
             target="_blank"
             rel="noopener noreferrer"
-            className="text-[#D98B99] hover:text-[#c77a88] underline underline-offset-2 transition-colors"
+            className="text-[#D98B99] hover:text-[#c77a88] underline underline-offset-2 transition-colors font-medium"
           >
             {linkMatch[1]}
           </a>
@@ -79,7 +79,7 @@ export const MarkdownRenderer: React.FC<MarkdownRendererProps> = ({
       }
 
       // Regular text - consume until next special character
-      const nextSpecial = remaining.search(/[\*_`\[]/);
+      const nextSpecial = remaining.search(/[\*_\`\[]/);
       if (nextSpecial === -1) {
         elements.push(remaining);
         break;
@@ -129,11 +129,13 @@ export const MarkdownRenderer: React.FC<MarkdownRendererProps> = ({
     const numberedMatch = line.match(/^(\d+)\.\s+(.+)$/);
     if (numberedMatch) {
       return (
-        <div key={index} className="flex gap-3 ml-1 my-1.5">
-          <span className="text-[#D98B99] font-medium min-w-[1.25rem] text-right">
+        <div key={index} className="flex gap-3 mb-3">
+          <span className="font-semibold text-[#D98B99] min-w-max">
             {numberedMatch[1]}.
           </span>
-          <span className="flex-1">{parseInlineMarkdown(numberedMatch[2])}</span>
+          <span className="flex-1 text-gray-700">
+            {parseInlineMarkdown(numberedMatch[2])}
+          </span>
         </div>
       );
     }
@@ -142,21 +144,23 @@ export const MarkdownRenderer: React.FC<MarkdownRendererProps> = ({
     const bulletMatch = line.match(/^[-*•]\s+(.+)$/);
     if (bulletMatch) {
       return (
-        <div key={index} className="flex gap-3 ml-1 my-1.5">
-          <span className="text-[#D98B99] font-bold mt-1">•</span>
-          <span className="flex-1">{parseInlineMarkdown(bulletMatch[1])}</span>
+        <div key={index} className="flex items-center gap-3 mb-2 ml-2">
+          <span className="text-[#D98B99] font-bold flex-shrink-0">•</span>
+          <span className="flex-1 text-gray-700">
+            {parseInlineMarkdown(bulletMatch[1])}
+          </span>
         </div>
       );
     }
 
     // Empty line
     if (line.trim() === "") {
-      return <div key={index} className="h-3" />;
+      return <div key={index} className="h-2" />;
     }
 
     // Regular paragraph
     return (
-      <p key={index} className="my-1.5 leading-relaxed text-[#3D5A6C]">
+      <p key={index} className="mb-2 leading-relaxed text-gray-700">
         {parseInlineMarkdown(line)}
       </p>
     );
@@ -165,7 +169,7 @@ export const MarkdownRenderer: React.FC<MarkdownRendererProps> = ({
   const lines = content.split("\n");
 
   return (
-    <div className={`prose-custom text-[#3D5A6C] ${className}`}>
+    <div className={\`space-y-2 \${className}\`}>
       {lines.map((line, index) => renderLine(line, index))}
     </div>
   );
