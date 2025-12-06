@@ -96,35 +96,35 @@ export function ExploreRecommendationCard({
   const filterSummary = getFilterSummary(recommendation);
 
   return (
-    <div className={`mt-5 ${className}`}>
+    <div className={`mt-6 sm:mt-7 w-full ${className}`}>
       <button
         onClick={handleExplore}
         className="
-          relative w-full p-4 md:p-5 rounded-2xl border transition-all duration-200
+          relative w-full p-4 sm:p-5 rounded-2xl border transition-all duration-200
           text-left group hover:shadow-lg active:scale-[0.98]
           bg-gradient-to-br from-[#F9FAFB] to-white border-[#D98B99]/30 hover:border-[#D98B99]/60
         "
       >
         {/* Header */}
-        <div className="flex items-start justify-between gap-2 mb-4">
-          <div className="flex items-start gap-2 min-w-0">
+        <div className="flex items-start justify-between gap-2 sm:gap-3 mb-4 sm:mb-5">
+          <div className="flex items-start gap-2 sm:gap-3 min-w-0 flex-1">
             <div className="w-8 h-8 rounded-lg bg-[#D98B99]/10 flex items-center justify-center shrink-0 mt-0.5">
               <Search className="w-4 h-4 text-[#D98B99]" />
             </div>
             <div className="min-w-0">
-              <h4 className="font-semibold text-[#3D5A6C] text-sm">
+              <h4 className="font-semibold text-[#3D5A6C] text-sm sm:text-base">
                 Explore Similar Designs
               </h4>
-              <p className="text-xs text-gray-500 truncate">
+              <p className="text-xs sm:text-sm text-gray-500 truncate">
                 {filterSummary || "Find matching nail art"}
               </p>
             </div>
           </div>
-          <Sparkles className="w-4 h-4 text-[#D98B99] opacity-60 shrink-0 mt-0.5" />
+          <Sparkles className="w-4 h-4 text-[#D98B99] opacity-60 shrink-0 mt-0.5 flex-shrink-0" />
         </div>
 
         {/* Filter Pills */}
-        <div className="flex flex-wrap gap-2 mb-4">
+        <div className="flex flex-wrap gap-1.5 sm:gap-2 mb-4 sm:mb-5">
           {/* Shapes */}
           {recommendation.shapes.slice(0, 1).map((shape) => (
             <FilterPill key={shape} label={shape} type="shape" />
@@ -156,9 +156,9 @@ export function ExploreRecommendationCard({
         </div>
 
         {/* CTA */}
-        <div className="flex items-center gap-1 text-sm md:text-base font-medium text-[#D98B99] group-hover:gap-2 transition-all">
+        <div className="flex items-center gap-1 text-xs sm:text-sm md:text-base font-medium text-[#D98B99] group-hover:gap-2 transition-all">
           <span className="truncate">View matching designs</span>
-          <ChevronRight className="w-4 h-4 md:w-5 md:h-5 group-hover:translate-x-1 transition-transform shrink-0" />
+          <ChevronRight className="w-3.5 h-3.5 sm:w-4 sm:h-4 md:w-5 md:h-5 group-hover:translate-x-1 transition-transform shrink-0" />
         </div>
       </button>
     </div>
